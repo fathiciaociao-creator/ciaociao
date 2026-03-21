@@ -1,5 +1,5 @@
 // src/app/api/admin/products/[id]/route.ts
-export const runtime = 'experimental-edge';
+export const runtime = 'edge';
 import { prisma } from "../../../../../db"; 
 import { NextResponse } from "next/server";
 
