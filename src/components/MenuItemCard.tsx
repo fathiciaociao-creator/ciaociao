@@ -45,9 +45,9 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
       className="flex flex-col gap-4 group h-full"
     >
       {/* IMAGE CONTAINER */}
-      <div className="relative w-full aspect-[4/3] rounded-[2rem] overflow-hidden bg-[#F9F7F2] border border-gray-100/50 shadow-sm transition-all duration-500 group-hover:shadow-xl group-hover:border-brand-red/10 flex items-center justify-center">
+      <div className="relative w-full aspect-[4/3] rounded-[2rem] overflow-hidden bg-white border border-gray-100/50 shadow-sm transition-all duration-500 group-hover:shadow-xl group-hover:border-brand-red/10 flex items-center justify-center">
         <Image 
-          src={item.imageUrl || `https://placehold.co/800x600/F9F7F2/1A1A1A.png?text=${item.nameAr}`} 
+          src={item.imageUrl || `https://placehold.co/800x600/FFFFFF/1A1A1A.png?text=${item.nameAr}`} 
           alt={item.nameEn || item.nameAr}
           fill 
           sizes="(max-width: 640px) 100vw, (max-width: 1014px) 50vw, 300px"
