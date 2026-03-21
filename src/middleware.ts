@@ -1,8 +1,10 @@
-// src/proxy.ts
+// src/middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function proxy(request: NextRequest) {
+export const runtime = 'edge';
+
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Protect /admin and /api/admin vectors globally
