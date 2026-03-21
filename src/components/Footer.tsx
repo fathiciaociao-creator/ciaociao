@@ -63,8 +63,16 @@ export default function Footer() {
           <p className="text-brand-offwhite/30 text-sm font-bold uppercase tracking-widest">
             All Rights Reserved © {currentYear} Xian Restaurant
           </p>
-          <div className="flex gap-8 text-xs font-bold text-brand-offwhite/20 uppercase tracking-widest">
-            {/* Links removed as per user request */}
+          <div className="text-xs font-bold text-brand-offwhite/20 uppercase tracking-widest flex items-center gap-2">
+            <span>Created by</span>
+            <Link 
+              href="https://weblix-jo.com/en/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-brand-offwhite/40 hover:text-brand-red transition-all no-underline"
+            >
+              weblix-jo
+            </Link>
           </div>
         </div>
       </div>
