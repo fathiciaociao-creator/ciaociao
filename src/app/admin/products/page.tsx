@@ -4,7 +4,8 @@ import {
   Plus, Edit2, Trash2, Camera, Tag, DollarSign, Package, 
   Check, X, ArrowRight, Save, LayoutGrid, AlertCircle, 
   Layers, Search, MoreVertical, ChevronLeft, ArrowLeft,
-  Link2, Folder, ChevronRight, ArrowUpDown, ChevronUp, ChevronDown, ListOrdered
+  Link2, Folder, ChevronRight, ArrowUpDown, ChevronUp, ChevronDown, ListOrdered,
+  CheckSquare, Square, MoveRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
@@ -29,11 +30,15 @@ export default function ProductsDashboard() {
   const [loading, setLoading] = useState(true);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
+  const [isBulkMoveModalOpen, setIsBulkMoveModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkCategory, setBulkCategory] = useState('');
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -61,6 +66,43 @@ export default function ProductsDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBulkUpdate = async () => {
+    if (selectedIds.length === 0 || !bulkCategory) return;
+    setIsBulkUpdating(true);
+    try {
+      const res = await fetch('/api/admin/products/bulk', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds, category: bulkCategory })
+      });
+      if (res.ok) {
+        toast.success(`تم نقل ${selectedIds.length} منتجات إلى قسم ${bulkCategory}`);
+        setSelectedIds([]);
+        setIsBulkMoveModalOpen(false);
+        fetchProducts();
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('فشل في النقل الجماعي');
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
+
+  const toggleSelectAll = (ids: string[]) => {
+    if (selectedIds.length === ids.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(ids);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
   };
 
   const fetchSettings = async () => {
@@ -270,16 +312,32 @@ export default function ProductsDashboard() {
             </div>
         </div>
 
-        {/* Search Bar (Only shows when in a category or search is used) */}
-        <div className="relative mb-10 max-w-md">
-          <Search size={18} className="absolute right-6 top-1/2 -translate-y-1/2 text-brand-black/20" />
-          <input 
-            type="text" 
-            placeholder={(selectedCategory && selectedCategory !== 'الكل') ? `البحث في ${selectedCategory}...` : "البحث في جميع المنتجات..."} 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-brand-gray/50 rounded-2xl py-4 pr-14 pl-6 outline-none focus:border-brand-red/30 transition-all font-bold text-sm"
-          />
+        {/* Search & Bulk Selection */}
+        <div className="flex flex-col md:flex-row items-center gap-6 mb-10">
+          <div className="relative flex-1 max-w-md">
+            <Search size={18} className="absolute right-6 top-1/2 -translate-y-1/2 text-brand-black/20" />
+            <input 
+              type="text" 
+              placeholder={(selectedCategory && selectedCategory !== 'الكل') ? `البحث في ${selectedCategory}...` : "البحث في جميع المنتجات..."} 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white border border-brand-gray/50 rounded-2xl py-4 pr-14 pl-6 outline-none focus:border-brand-red/30 transition-all font-bold text-sm"
+            />
+          </div>
+
+          {(selectedCategory || searchQuery) && (
+            <button 
+              onClick={() => toggleSelectAll(filteredProducts.map(p => p.id))}
+              className="flex items-center gap-3 bg-white px-8 py-4 rounded-2xl border border-brand-gray/50 text-brand-black/40 hover:text-brand-red transition-all shadow-sm font-bold text-sm"
+            >
+              {selectedIds.length === filteredProducts.length && filteredProducts.length > 0 ? (
+                <CheckSquare size={18} className="text-brand-red" />
+              ) : (
+                <Square size={18} />
+              )}
+              <span>تحديد الكل ({selectedIds.length})</span>
+            </button>
+          )}
         </div>
 
         {/* Dynamic Content View */}
@@ -366,13 +424,23 @@ export default function ProductsDashboard() {
                                     initial={{ opacity: 0, scale: 0.98 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
-                                    className={`bg-white rounded-[2rem] p-4 lg:p-6 border border-brand-gray/40 shadow-sm transition-all duration-300 hover:border-brand-red/10 group
-                                    ${!product.isAvailable ? 'bg-brand-cream/40 px-6 blur-[0.3px]' : ''}`}
+                                    onClick={() => toggleSelect(product.id)}
+                                    className={`bg-white rounded-[2rem] p-4 lg:p-6 border transition-all duration-300 group cursor-pointer
+                                    ${selectedIds.includes(product.id) ? 'border-brand-red ring-2 ring-brand-red/5' : 'border-brand-gray/40 shadow-sm hover:border-brand-red/10'}
+                                    ${!product.isAvailable ? 'bg-brand-cream/40 blur-[0.3px]' : ''}`}
                                 >
                                     <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-6 lg:gap-4 text-right">
                                         
+                                        {/* Selection & Thumbnail */}
+                                        <div className="col-span-1 lg:col-span-1 flex justify-center items-center">
+                                            <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all border
+                                                ${selectedIds.includes(product.id) ? 'bg-brand-red border-brand-red text-white' : 'bg-brand-cream border-brand-gray/50 text-transparent group-hover:border-brand-red/30'}`}>
+                                                <Check size={14} strokeWidth={3} />
+                                            </div>
+                                        </div>
+
                                         {/* Thumbnail & Info */}
-                                        <div className="col-span-1 lg:col-span-5 flex items-center gap-6">
+                                        <div className="col-span-1 lg:col-span-4 flex items-center gap-6">
                                             <div className="relative w-20 h-20 flex-shrink-0 rounded-2xl overflow-hidden border border-brand-gray/50 shadow-inner bg-[#F9F7F2]">
                                                 <Image 
                                                     src={product.imageUrl || 'https://placehold.co/100x100/F9F7F2/1A1A1A.png?text=Xian'} 
@@ -462,6 +530,37 @@ export default function ProductsDashboard() {
             )}
           </AnimatePresence>
         )}
+
+        {/* Bulk Action Floating Bar */}
+        <AnimatePresence>
+          {selectedIds.length > 0 && (
+            <motion.div 
+               initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 100, opacity: 0 }}
+               className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-brand-black text-white px-8 py-5 rounded-3xl shadow-2xl flex items-center gap-8 border border-white/10 backdrop-blur-xl"
+            >
+               <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-brand-red rounded-xl flex items-center justify-center font-black text-lg">
+                    {selectedIds.length}
+                  </div>
+                  <span className="text-xs font-bold opacity-60">منتجات مختارة</span>
+               </div>
+               <div className="w-px h-8 bg-white/10" />
+               <button 
+                  onClick={() => setIsBulkMoveModalOpen(true)}
+                  className="flex items-center gap-3 text-sm font-black hover:text-brand-red transition-colors group"
+               >
+                 <MoveRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                 <span>نقل إلى قسم آخر</span>
+               </button>
+               <button 
+                  onClick={() => setSelectedIds([])}
+                  className="text-[10px] font-bold opacity-40 hover:opacity-100 transition-opacity"
+               >
+                 إلغاء
+               </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Slide-over Panel (Add/Edit) */}
@@ -699,6 +798,75 @@ export default function ProductsDashboard() {
                     </>
                   )}
                 </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Bulk Move Modal */}
+      <AnimatePresence>
+        {isBulkMoveModalOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[110] bg-brand-black/40 backdrop-blur-[2px]"
+              onClick={() => setIsBulkMoveModalOpen(false)}
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[120] w-full max-w-md bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-brand-gray/50"
+            >
+              <div className="p-10">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-2xl font-black text-brand-red font-serif">نقل المنتجات ({selectedIds.length})</h2>
+                  <button onClick={() => setIsBulkMoveModalOpen(false)} className="bg-[#F9F7F2] p-2 rounded-xl text-brand-black/20 hover:text-brand-red">
+                    <X size={20} />
+                  </button>
+                </div>
+                
+                <div className="space-y-6">
+                   <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-brand-black/40">اختر القسم المستهدف</label>
+                      <div className="flex flex-wrap gap-2">
+                         {existingCategories.map(cat => (
+                            <button 
+                              key={cat}
+                              onClick={() => setBulkCategory(cat)}
+                              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border-2 
+                                ${bulkCategory === cat ? 'bg-brand-red text-white border-brand-red shadow-md' : 'bg-brand-cream text-brand-black/60 border-transparent hover:border-brand-gray'}`}
+                            >
+                              {cat}
+                            </button>
+                         ))}
+                      </div>
+                   </div>
+
+                   <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-brand-black/40">أو اكتب اسماً جديداً</label>
+                      <input 
+                        placeholder="اسم القسم الجديد..."
+                        value={bulkCategory}
+                        onChange={(e) => setBulkCategory(e.target.value)}
+                        className="w-full bg-[#F9F7F2] border border-brand-gray/50 rounded-2xl p-4 outline-none focus:border-brand-red/30 font-bold transition-all text-sm"
+                      />
+                   </div>
+
+                   <button 
+                      onClick={handleBulkUpdate}
+                      disabled={isBulkUpdating || !bulkCategory}
+                      className="w-full bg-brand-black text-white py-5 rounded-2xl font-black shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-4"
+                   >
+                      {isBulkUpdating ? (
+                        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        <>
+                          <Check size={18} />
+                          <span>تطبيق النقل الجماعي</span>
+                        </>
+                      )}
+                   </button>
+                </div>
               </div>
             </motion.div>
           </>
