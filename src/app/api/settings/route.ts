@@ -25,12 +25,12 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   try {
-    const { isStoreOpen } = await req.json();
+    const { isStoreOpen, categoryOrder } = await req.json();
 
     const settings = await prisma.storeSettings.upsert({
       where: { id: 1 },
-      update: { isStoreOpen },
-      create: { id: 1, isStoreOpen },
+      update: { isStoreOpen, categoryOrder },
+      create: { id: 1, isStoreOpen, categoryOrder },
     });
 
     return NextResponse.json(settings);

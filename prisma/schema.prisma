@@ -110,9 +110,10 @@ model Product {
 }
 
 model StoreSettings {
-  id          Int      @id @default(1)
-  isStoreOpen Boolean  @default(true)
-  updatedAt   DateTime @updatedAt
+  id            Int      @id @default(1)
+  isStoreOpen   Boolean  @default(true)
+  categoryOrder String?  // JSON string array of category names
+  updatedAt     DateTime @updatedAt
 }
 
 model Coupon {

@@ -12,6 +12,7 @@ import CartSidebar from '@/components/CartSidebar';
 export default function HomePage() {
   const { items, getTotalPrice } = useCart();
   const [products, setProducts] = useState<any[]>([]);
+  const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [menuLoading, setMenuLoading] = useState(true);
@@ -19,14 +20,37 @@ export default function HomePage() {
 
   useEffect(() => {
     setMounted(true);
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        if (data.categoryOrder) {
+          setCategoryOrder(JSON.parse(data.categoryOrder));
+        }
+      } catch (e) {
+        console.error("Failed to fetch settings", e);
+      }
+    };
+    
     const fetchMenu = async () => {
       try {
-        const res = await fetch('/api/products');
-        const data = await res.json();
+        const [menuRes, settingsRes] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/settings')
+        ]);
+        const data = await menuRes.json();
+        const settings = await settingsRes.json();
+        
+        let order: string[] = [];
+        if (settings.categoryOrder) {
+            order = JSON.parse(settings.categoryOrder);
+            setCategoryOrder(order);
+        }
+
         if (Array.isArray(data)) {
           setProducts(data);
           
-          // Auto-select the first available category
+          // Auto-select the first available category based on order
           const allCats = new Set<string>();
           data.forEach(p => {
             if (p.category) {
@@ -36,10 +60,17 @@ export default function HomePage() {
               });
             }
           });
-          const firstCat = Array.from(allCats)[0];
-          if (firstCat) setSelectedCategory(firstCat);
-        } else {
-          console.error("API returned error:", data);
+          
+          const sortedCats = Array.from(allCats).sort((a, b) => {
+            const indexA = order.indexOf(a);
+            const indexB = order.indexOf(b);
+            if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+          });
+
+          if (sortedCats[0]) setSelectedCategory(sortedCats[0]);
         }
       } catch (e) {
         console.error("Failed to fetch menu", e);
@@ -59,7 +90,15 @@ export default function HomePage() {
       });
     }
   });
-  const categories = Array.from(allCategories);
+
+  const categories = Array.from(allCategories).sort((a, b) => {
+    const indexA = categoryOrder.indexOf(a);
+    const indexB = categoryOrder.indexOf(b);
+    if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+    return indexA - indexB;
+  });
   const filteredData = products.filter((item) => {
     return item.category 
       ? item.category.split(',').map((c: string) => c.trim()).includes(selectedCategory)

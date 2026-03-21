@@ -4,7 +4,7 @@ import {
   Plus, Edit2, Trash2, Camera, Tag, DollarSign, Package, 
   Check, X, ArrowRight, Save, LayoutGrid, AlertCircle, 
   Layers, Search, MoreVertical, ChevronLeft, ArrowLeft,
-  Link2, Folder, ChevronRight
+  Link2, Folder, ChevronRight, ArrowUpDown, ChevronUp, ChevronDown, ListOrdered
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
@@ -28,9 +28,12 @@ export default function ProductsDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -60,9 +63,45 @@ export default function ProductsDashboard() {
     }
   };
 
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch('/api/settings');
+      const data = await res.json();
+      if (data.categoryOrder) {
+        setCategoryOrder(JSON.parse(data.categoryOrder));
+      }
+    } catch (e) {
+      console.error("Failed to fetch settings", e);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchSettings();
   }, []);
+
+  const handleSaveOrder = async (newOrder: string[]) => {
+    setIsSavingOrder(true);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoryOrder: JSON.stringify(newOrder) })
+      });
+      if (res.ok) {
+        setCategoryOrder(newOrder);
+        toast.success('تم حفظ ترتيب الأصناف بنجاح', {
+            style: { borderRadius: '20px', background: '#1A1A1A', color: '#fff' }
+        });
+        setIsReorderModalOpen(false);
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('فشل في حفظ الترتيب');
+    } finally {
+      setIsSavingOrder(false);
+    }
+  };
 
   const handleToggleAvailability = async (id: string, currentStatus: boolean) => {
     try {
@@ -168,6 +207,21 @@ export default function ProductsDashboard() {
               <Link href="/admin" className="inline-flex items-center gap-2 text-brand-black/30 hover:text-brand-red transition-colors text-xs font-bold uppercase tracking-widest bg-white h-[68px] px-8 rounded-full border border-brand-gray">
                  <ArrowRight size={14} /> الإدارة
               </Link>
+              <button 
+                onClick={() => {
+                    const cats = Array.from(new Set(products.flatMap(p => p.category ? p.category.split(',').map(c => c.trim()).filter(Boolean) : []))).sort();
+                    // Merge existing order with any new categories
+                    const mergedOrder = [...categoryOrder];
+                    cats.forEach(c => { if(!mergedOrder.includes(c)) mergedOrder.push(c); });
+                    // Remove categories that no longer exist
+                    const finalOrder = mergedOrder.filter(c => cats.includes(c));
+                    setCategoryOrder(finalOrder);
+                    setIsReorderModalOpen(true);
+                }}
+                className="inline-flex items-center gap-2 text-brand-black/30 hover:text-brand-red transition-colors text-xs font-bold uppercase tracking-widest bg-white h-[68px] px-8 rounded-full border border-brand-gray"
+              >
+                 <ListOrdered size={14} /> ترتيب الأقسام
+              </button>
               <button 
                 onClick={() => { setEditingProduct(null); setFormData({ nameEn: '', nameAr: '', price: '', category: selectedCategory === 'الكل' ? (existingCategories[0] || 'Sushi') : (selectedCategory || existingCategories[0] || 'Sushi'), imageUrl: '', descriptionAr: '', descriptionEn: '' }); setIsPanelOpen(true); }}
                 className="bg-[#1A1A1A] text-white px-8 py-5 rounded-full font-black flex items-center gap-3 shadow-2xl transition-all hover:scale-[1.02] active:scale-95 group w-full md:w-auto justify-center"
@@ -569,6 +623,82 @@ export default function ProductsDashboard() {
                       </button>
                    </div>
                 </form>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Reorder Categories Modal */}
+      <AnimatePresence>
+        {isReorderModalOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-brand-black/40 backdrop-blur-[2px]"
+              onClick={() => setIsReorderModalOpen(false)}
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] w-full max-w-md bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-brand-gray/50"
+            >
+              <div className="p-10">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-2xl font-black text-brand-red font-serif">ترتيب الأصناف</h2>
+                  <button onClick={() => setIsReorderModalOpen(false)} className="bg-[#F9F7F2] p-2 rounded-xl text-brand-black/20 hover:text-brand-red">
+                    <X size={20} />
+                  </button>
+                </div>
+                
+                <p className="text-xs font-bold text-brand-black/40 mb-6 leading-relaxed">اسحب الأصناف للأعلى أو الأسفل لتغيير ترتيب ظهورها في القائمة الرئيسية للعملاء.</p>
+
+                <div className="space-y-3 mb-10 max-h-[400px] overflow-y-auto no-scrollbar">
+                  {categoryOrder.map((cat, index) => (
+                    <div key={cat} className="flex items-center gap-4 bg-[#F9F7F2] p-4 rounded-2xl border border-brand-gray/40">
+                       <span className="w-6 h-6 bg-brand-red/10 text-brand-red text-[10px] font-black flex items-center justify-center rounded-lg">{index + 1}</span>
+                       <span className="flex-1 font-bold text-brand-black">{cat}</span>
+                       <div className="flex gap-1">
+                          <button 
+                            disabled={index === 0}
+                            onClick={() => {
+                               const newOrder = [...categoryOrder];
+                               [newOrder[index], newOrder[index-1]] = [newOrder[index-1], newOrder[index]];
+                               setCategoryOrder(newOrder);
+                            }}
+                            className="p-2 bg-white rounded-lg text-brand-black/20 hover:text-brand-red disabled:opacity-20 transition-all shadow-sm"
+                          >
+                             <ChevronUp size={16} />
+                          </button>
+                          <button 
+                            disabled={index === categoryOrder.length - 1}
+                            onClick={() => {
+                               const newOrder = [...categoryOrder];
+                               [newOrder[index], newOrder[index+1]] = [newOrder[index+1], newOrder[index]];
+                               setCategoryOrder(newOrder);
+                            }}
+                            className="p-2 bg-white rounded-lg text-brand-black/20 hover:text-brand-red disabled:opacity-20 transition-all shadow-sm"
+                          >
+                             <ChevronDown size={16} />
+                          </button>
+                       </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => handleSaveOrder(categoryOrder)}
+                  disabled={isSavingOrder}
+                  className="w-full bg-brand-black text-white py-5 rounded-2xl font-black shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                >
+                  {isSavingOrder ? (
+                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <Save size={18} />
+                      <span>حفظ الترتيب الجديد</span>
+                    </>
+                  )}
+                </button>
               </div>
             </motion.div>
           </>
