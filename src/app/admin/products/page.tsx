@@ -522,12 +522,12 @@ export default function ProductsDashboard() {
                            <div className="relative group">
                               <div className="w-full aspect-square rounded-[2rem] border-2 border-dashed border-brand-gray/50 bg-[#F9F7F2] flex flex-col items-center justify-center overflow-hidden relative group-hover:border-brand-red/20 transition-all">
                                  {formData.imageUrl ? (
-                                   <div className="relative w-full h-full">
+                                   <div className="relative w-full h-full p-6">
                                       <Image 
                                          src={formData.imageUrl} 
                                          alt="Preview" 
                                          fill 
-                                         className="object-cover" 
+                                         className="object-contain p-6" 
                                          onError={(e) => {
                                            (e.target as any).src = 'https://placehold.co/400x400/F9F7F2/922724.png?text=رابط+غير+صالح';
                                          }}
