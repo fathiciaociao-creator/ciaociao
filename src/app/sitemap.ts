@@ -8,7 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes = [
     {
       url: baseUrl,
-      lastModified: new Uint8Array(new Date().getTime() as any) as any, // TypeScript hack for Next.js 15
+      lastModified: new Date(),
       changeFrequency: 'daily' as any,
       priority: 1,
     },
