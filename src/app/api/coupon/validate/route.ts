@@ -6,14 +6,14 @@ import { isAllowedRequest, extractIP } from "@/lib/security/rateLimiter";
 export async function POST(request: Request) {
   const clientIp = extractIP(request);
   if (!isAllowedRequest(clientIp, 10, 5 * 60 * 1000)) {
-     return NextResponse.json({ valid: false, error: "محاولات كثيرة جداً، يرجى الانتظار." }, { status: 429 });
+     return NextResponse.json({ valid: false, error: "Too many requests, please wait." }, { status: 429 });
   }
 
   try {
     const session = await auth();
     
     if (!session || !session.user || !session.user.id) {
-      return NextResponse.json({ valid: false, error: "يجب تسجيل الدخول لاستخدام الكوبون" }, { status: 401 });
+      return NextResponse.json({ valid: false, error: "You must sign in to use a coupon" }, { status: 401 });
     }
 
     const { code } = await request.json();
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const upperCode = code?.trim().toUpperCase();
 
     if (!upperCode) {
-      return NextResponse.json({ valid: false, error: "كوبون غير صحيح" }, { status: 400 });
+      return NextResponse.json({ valid: false, error: "Invalid coupon" }, { status: 400 });
     }
 
     if (upperCode === 'WELCOME30') {
@@ -32,18 +32,18 @@ export async function POST(request: Request) {
       });
 
       if (!user) {
-        return NextResponse.json({ valid: false, error: "حساب المستخدم غير موجود" }, { status: 404 });
+        return NextResponse.json({ valid: false, error: "User account not found" }, { status: 404 });
       }
 
       if (user.hasUsedWelcomeDiscount) {
-        return NextResponse.json({ valid: false, error: "لقد استخدمت كوبون الترحيب مسبقاً، لا يمكن استخدامه مرة أخرى" }, { status: 400 });
+        return NextResponse.json({ valid: false, error: "You have already used the welcome coupon, it cannot be used again" }, { status: 400 });
       }
 
       // Valid Welcome Coupon
       return NextResponse.json({ 
         valid: true, 
         discountPercent: 0.30, 
-        message: "تم تفعيل خصم الترحيب (30%) بنجاح!" 
+        message: "Welcome discount (30%) applied successfully!" 
       });
     } else {
       // Dynamic Admin Coupon Check
@@ -53,15 +53,15 @@ export async function POST(request: Request) {
         return NextResponse.json({ 
           valid: true, 
           discountPercent: dynamicCoupon.discountPercent / 100, 
-          message: `تم تفعيل خصم ${dynamicCoupon.discountPercent}% بنجاح!` 
+          message: `Discount ${dynamicCoupon.discountPercent}% applied successfully!` 
         });
       }
 
-      return NextResponse.json({ valid: false, error: "الكوبون غير صالح أو غير مفعل" }, { status: 400 });
+      return NextResponse.json({ valid: false, error: "Coupon is invalid or deactivated" }, { status: 400 });
     }
 
   } catch (error) {
     console.error("Coupon Validate Error:", error);
-    return NextResponse.json({ valid: false, error: "حدث خطأ أثناء التحقق من الكوبون" }, { status: 500 });
+    return NextResponse.json({ valid: false, error: "An error occurred while validating the coupon" }, { status: 500 });
   }
 }

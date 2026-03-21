@@ -15,7 +15,7 @@ export default function TrackSearchPage() {
   }
 
   return (
-    <div className="bg-brand-cream min-h-screen pb-28 font-sans selection:bg-brand-red selection:text-white" dir="rtl">
+    <div className="bg-brand-cream min-h-screen pb-28 font-sans selection:bg-brand-red selection:text-white" dir="ltr">
       <Header />
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -29,13 +29,13 @@ export default function TrackSearchPage() {
             <PackageSearch size={48} strokeWidth={1.5} className="-rotate-12" />
           </div>
           
-          <h1 className="text-4xl font-black text-brand-black mb-3 tracking-tight">تتبع حالة طلبك</h1>
-          <p className="text-gray-500 mb-10 font-medium text-lg">أدخل رمز الطلب الخاص بك لمعرفة حالته لحظة بلحظة من المطبخ وحتى التسليم.</p>
+          <h1 className="text-4xl font-black text-brand-black mb-3 tracking-tight">Track Your Order</h1>
+          <p className="text-gray-500 mb-10 font-medium text-lg">Enter your order tracking code to stay updated from our kitchen to your door.</p>
           
           <form onSubmit={handleTrack} className="flex flex-col sm:flex-row gap-3">
             <input 
               type="text" 
-              placeholder="رقم الطلب (مثال: c9b2-4x...)" 
+              placeholder="Order Number (e.g. c9b2-4x...)" 
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
               className="flex-1 bg-brand-cream px-6 py-4 rounded-2xl border-[2px] border-brand-gray focus:border-brand-red outline-none transition-colors text-center sm:text-left text-lg font-mono font-bold placeholder:font-sans placeholder:font-medium text-brand-black" 
@@ -45,7 +45,7 @@ export default function TrackSearchPage() {
               type="submit" 
               className="bg-brand-red text-white p-4 sm:px-8 rounded-2xl font-black text-lg hover:bg-red-700 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(211,26,26,0.2)]"
             >
-              <Search size={22} /> تتبع
+              <Search size={22} /> Track
             </button>
           </form>
         </div>

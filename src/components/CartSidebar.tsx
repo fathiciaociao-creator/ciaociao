@@ -1,7 +1,7 @@
 'use client';
 import { useCart } from '@/store/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Phone, MapPin, User, CheckCircle2, ShoppingBag, Trash2, ArrowRight, AlertCircle, ShoppingCart, Clock, Store, Zap } from 'lucide-react';
+import { X, Phone, MapPin, User, CheckCircle2, Trash2, ArrowRight, AlertCircle, ShoppingCart, Clock, Store, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -62,7 +62,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
       }
     } catch {
       setDiscountPercent(0);
-      setCouponError("فشل التحقق من الكوبون");
+      setCouponError("Failed to validate coupon");
     } finally {
       setValidatingCoupon(false);
     }
@@ -77,23 +77,23 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
 
   const handleOrder = async () => {
     if (!session) {
-      setErrorMsg("يرجى تسجيل الدخول أولاً لتتمكن من الطلب");
+      setErrorMsg("Please sign in first to place an order");
       return;
     }
     if (form.name.trim().length < 2) {
-      setErrorMsg("يرجى إدخال اسمك الكريم");
+      setErrorMsg("Please enter your name");
       return;
     }
     if (form.phone.trim().length < 9) {
-      setErrorMsg("يرجى إدخال رقم هاتف صحيح (مثلاً 07XXXXXXXX)");
+      setErrorMsg("Please enter a valid phone number");
       return;
     }
     if (orderType === 'DELIVERY' && form.address.trim().length < 5) {
-      setErrorMsg("يرجى إدخال العنوان بالتفصيل");
+      setErrorMsg("Please enter your full address");
       return;
     }
     if (orderType === 'PICKUP' && !form.pickupTime) {
-      setErrorMsg("يرجى تحديد وقت الاستلام");
+      setErrorMsg("Please select a pickup time");
       return;
     }
     
@@ -107,7 +107,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
         body: JSON.stringify({
           customerName: form.name,
           phone: form.phone,
-          address: orderType === 'DELIVERY' ? form.address : 'استلام من المطعم',
+          address: orderType === 'DELIVERY' ? form.address : 'Store Pickup',
           deliveryArea: orderType === 'DELIVERY' ? form.deliveryArea : '',
           pickupTime: orderType === 'PICKUP' ? form.pickupTime : '',
           orderType: orderType,
@@ -131,10 +131,10 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
         setIsOrdered(true);
         clearCart();
       } else {
-        setErrorMsg(data.error || "حدث خطأ غير متوقع، يرجى المحاولة ثانية.");
+        setErrorMsg(data.error || "An unexpected error occurred, please try again.");
       }
     } catch { 
-      setErrorMsg("فشل الاتصال، يرجى التحقق من الإنترنت.");
+      setErrorMsg("Connection failed, please check your internet.");
     } finally { setLoading(false); }
   };
 
@@ -158,7 +158,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className="fixed top-0 right-0 bottom-0 w-full sm:w-[480px] bg-white z-[250] shadow-2xl flex flex-col"
-            dir="rtl"
+            dir="ltr"
           >
             {isOrdered ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center p-12 space-y-10">
@@ -167,13 +167,13 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                 </div>
                 
                 <div className="space-y-4">
-                  <h2 className="text-4xl font-black text-brand-black">تم استلام طلبك!</h2>
-                  <p className="text-brand-black/60 font-medium">شكراً لثقتك في شيان. طلبك الآن قيد المراجعة وسيقوم فريقنا بالاتصال بك قريباً.</p>
+                  <h2 className="text-4xl font-black text-brand-black">Order Received!</h2>
+                  <p className="text-brand-black/60 font-medium">Thank you for trusting Xian. Your order is under review and our team will contact you shortly.</p>
                 </div>
                 
                 {lastOrderId && (
                    <div className="w-full bg-brand-cream/30 p-6 rounded-2xl border border-brand-gray/50 flex flex-col items-center gap-3">
-                     <p className="text-brand-black/60 text-xs font-black uppercase tracking-widest">رقم التتبع السري لطلبك</p>
+                     <p className="text-brand-black/60 text-xs font-black uppercase tracking-widest">Your Secret Tracking Number</p>
                      <div className="flex w-full mt-2">
                        <input 
                          readOnly 
@@ -185,10 +185,10 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                            navigator.clipboard.writeText(`#${lastOrderId.slice(-6).toUpperCase()}`);
                            const btn = document.getElementById('copy-btn');
                            if(btn) {
-                             btn.innerText = 'تم النسخ!';
+                             btn.innerText = 'Copied!';
                              btn.classList.add('bg-green-600', 'border-green-600', 'text-white');
                              setTimeout(() => {
-                               btn.innerText = 'نسخ';
+                               btn.innerText = 'Copy';
                                btn.classList.remove('bg-green-600', 'border-green-600', 'text-white');
                              }, 2000);
                            }
@@ -196,30 +196,30 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                          id="copy-btn"
                          className="bg-brand-black text-white px-6 rounded-l-xl font-bold hover:bg-brand-red transition-colors min-w-[80px]"
                        >
-                         نسخ
+                         Copy
                        </button>
                      </div>
-                     <p className="text-[10px] font-bold text-brand-black/40 mt-1">يمكنك استخدام هذا الرمز لتتبع طلبك لاحقاً</p>
+                     <p className="text-[10px] font-bold text-brand-black/40 mt-1">You can use this code to track your order later</p>
                      
                      <Link 
                        href={`/order-status/${lastOrderId}`} 
                        onClick={onClose} 
                        className="btn-matte w-full justify-center mt-3 shadow-sm"
                      >
-                       تتبع مباشر للطلب الآن
+                       Live Order Tracking
                      </Link>
                    </div>
                 )}
                 
-                <button onClick={onClose} className="text-brand-black/40 font-bold hover:text-brand-red transition-all">العودة للرئيسية</button>
+                <button onClick={onClose} className="text-brand-black/40 font-bold hover:text-brand-red transition-all">Back to Home</button>
               </div>
             ) : (
               <>
                 {/* HEADER */}
                 <div className="p-8 border-b border-brand-gray/30 flex justify-between items-center bg-white">
                   <div className="flex items-center gap-4">
-                    <ShoppingBag size={28} className="text-brand-black" />
-                    <h2 className="text-2xl font-black text-brand-black luxury-heading">حقيبة المشتريات</h2>
+                    <ShoppingCart size={28} className="text-brand-black" />
+                    <h2 className="text-2xl font-black text-brand-black luxury-heading">Shopping Cart</h2>
                   </div>
                   <button onClick={onClose} className="p-2 text-brand-black/20 hover:text-brand-red transition-all"><X size={24} /></button>
                 </div>
@@ -231,7 +231,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                   {items.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-brand-black/10 space-y-6">
                       <ShoppingCart size={60} strokeWidth={1} />
-                      <p className="text-xl font-bold">لا توجد أطباق في السلة بعد..</p>
+                      <p className="text-xl font-bold">Your cart is empty..</p>
                     </div>
                   ) : (
                     items.map((item) => (
@@ -250,8 +250,8 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                         <div className="flex-1">
                           <h4 className="font-black text-brand-black text-lg">{item.name}</h4>
                           <div className="flex items-center gap-4 mt-1">
-                            <span className="text-brand-red font-black">{item.price.toFixed(2)} د.أ</span>
-                            <span className="text-brand-black/30 font-bold text-xs">الكمية: {item.quantity}</span>
+                            <span className="text-brand-red font-black">{item.price.toFixed(2)} JOD</span>
+                            <span className="text-brand-black/30 font-bold text-xs">Qty: {item.quantity}</span>
                           </div>
                         </div>
                         <button 
@@ -274,8 +274,8 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                              <Store size={40} />
                            </div>
                            <div className="space-y-3">
-                              <h3 className="text-2xl font-black text-brand-red">المطعم مغلق حالياً 🛑</h3>
-                              <p className="text-sm text-brand-red/80 font-bold leading-relaxed px-4">نعتذر، لا يمكننا استقبال طلبات جديدة في الوقت الحالي. يرجى المحاولة لاحقاً عند فتح المطعم.</p>
+                              <h3 className="text-2xl font-black text-brand-red">Store Currently Closed 🛑</h3>
+                              <p className="text-sm text-brand-red/80 font-bold leading-relaxed px-4">Sorry, we cannot accept new orders at this time. Please try again when the store is open.</p>
                            </div>
                        </div>
                     ) : !session ? (
@@ -284,8 +284,8 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                            <AlertCircle size={40} className="text-brand-red" />
                         </div>
                         <div className="space-y-2">
-                           <h3 className="text-xl font-black text-brand-black">تسجيل الدخول مطلوب</h3>
-                           <p className="text-sm text-brand-black/40 font-medium">خطوة واحدة باقية لتكملة طلبك ومشاركة التجربة معنا.</p>
+                           <h3 className="text-xl font-black text-brand-black">Sign In Required</h3>
+                           <p className="text-sm text-brand-black/40 font-medium">One step away from completing your order and sharing the experience with us.</p>
                         </div>
                         <button 
                           onClick={() => signIn('google')}
@@ -297,24 +297,24 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                             <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
                             <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                           </svg>
-                          <span>الدخول عبر جوجل للمتابعة</span>
+                          <span>Sign in with Google to continue</span>
                         </button>
                       </div>
                     ) : (
                       <div className="space-y-6">
                         <div className="flex items-center justify-between gap-4 mb-2">
-                           <h3 className="font-black text-xl text-brand-black">خيارات الطلب</h3>
+                           <h3 className="font-black text-xl text-brand-black">Order Options</h3>
                            
                            {/* TOGGLE PICKUP/DELIVERY */}
                            <div className="flex bg-gray-100 p-1 rounded-xl">
                               <button 
                                 onClick={() => setOrderType('DELIVERY')}
                                 className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${orderType === 'DELIVERY' ? 'bg-black text-white shadow-md' : 'text-gray-400'}`}
-                              >توصيل</button>
+                              >Delivery</button>
                               <button 
                                 onClick={() => setOrderType('PICKUP')}
                                 className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${orderType === 'PICKUP' ? 'bg-black text-white shadow-md' : 'text-gray-400'}`}
-                              >استلام</button>
+                              >Pickup</button>
                            </div>
                         </div>
                         
@@ -322,7 +322,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                           <div className="relative">
                             <User className="absolute right-5 top-1/2 -translate-y-1/2 text-brand-black/20" size={18} />
                             <input 
-                              placeholder="الاسم الثلاثي" 
+                              placeholder="Full Name" 
                               className="w-full bg-brand-cream/50 pr-12 pl-6 py-5 rounded-xl border border-brand-gray/40 focus:bg-white focus:border-brand-red/30 outline-none transition-all font-bold text-sm"
                               value={form.name}
                               onChange={(e) => setForm({...form, name: e.target.value})}
@@ -331,7 +331,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                           <div className="relative">
                             <Phone className="absolute right-5 top-1/2 -translate-y-1/2 text-brand-black/20" size={18} />
                             <input 
-                              placeholder="رقم الهاتف" 
+                              placeholder="Phone Number" 
                               className="w-full bg-brand-cream/50 pr-12 pl-6 py-5 rounded-xl border border-brand-gray/40 focus:bg-white focus:border-brand-red/30 outline-none transition-all font-bold text-sm"
                               dir="ltr"
                               value={form.phone}
@@ -344,7 +344,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                               <div className="relative">
                                 <MapPin className="absolute right-5 top-1/2 -translate-y-1/2 text-brand-black/20" size={18} />
                                 <input 
-                                  placeholder="العنوان (المنطقة، الشارع، العمارة)" 
+                                  placeholder="Address (Area, Street, Building)" 
                                   className="w-full bg-brand-cream/50 pr-12 pl-6 py-5 rounded-xl border border-brand-gray/40 focus:bg-white focus:border-brand-red/30 outline-none transition-all font-bold text-sm"
                                   value={form.address}
                                   onChange={(e) => setForm({...form, address: e.target.value})}
@@ -356,7 +356,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                               <Clock className="absolute right-5 top-1/2 -translate-y-1/2 text-brand-black/20" size={18} />
                               <input 
                                 type="time"
-                                placeholder="وقت الاستلام" 
+                                placeholder="Pickup Time" 
                                 className="w-full bg-brand-cream/50 pr-12 pl-6 py-5 rounded-xl border border-brand-gray/40 focus:bg-white focus:border-brand-red/30 outline-none transition-all font-bold text-sm"
                                 value={form.pickupTime}
                                 onChange={(e) => setForm({...form, pickupTime: e.target.value})}
@@ -365,7 +365,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                           )}
   
                           <textarea 
-                            placeholder="ملاحظات إضافية (اختياري)..." 
+                            placeholder="Additional Notes (Optional)..." 
                             className="w-full bg-brand-cream/50 px-6 py-5 rounded-xl border border-brand-gray/40 focus:bg-white focus:border-brand-red/30 outline-none transition-all font-bold text-sm min-h-[80px] resize-none"
                             value={form.notes}
                             onChange={(e) => setForm({...form, notes: e.target.value})}
@@ -374,10 +374,10 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
   
                         {/* PROMO CODE SECTION */}
                         <div className="pt-4 border-t border-brand-gray/20">
-                          <label className="text-[10px] font-black text-brand-black/40 uppercase tracking-widest mb-2 block">كود الخصم (اختياري)</label>
+                          <label className="text-[10px] font-black text-brand-black/40 uppercase tracking-widest mb-2 block">Promo Code (Optional)</label>
                           <div className="flex gap-2 relative">
                             <input 
-                              placeholder="أدخل كود الخصم (WELCOME30)" 
+                              placeholder="Enter promo code (WELCOME30)" 
                               className="w-full bg-brand-cream/50 pl-4 pr-4 py-3 rounded-xl border border-brand-gray/40 focus:bg-white focus:border-brand-red/30 outline-none transition-all font-bold text-sm uppercase"
                               value={couponCode}
                               onChange={(e) => {
@@ -399,7 +399,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                 disabled={validatingCoupon || !couponCode.trim()}
                                 className="bg-brand-black text-white px-4 py-3 rounded-xl font-black text-xs hover:bg-brand-red transition-all disabled:opacity-50 min-w-[80px]"
                               >
-                                {validatingCoupon ? '...' : 'تطبيق'}
+                                {validatingCoupon ? '...' : 'Apply'}
                               </button>
                             )}
                           </div>
@@ -413,26 +413,26 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
   
                         {/* PAYMENT METHOD SELECTION */}
                         <div className="pt-6 border-t border-brand-gray/20">
-                          <h4 className="font-black text-brand-black mb-3">طريقة الدفع</h4>
+                          <h4 className="font-black text-brand-black mb-3">Payment Method</h4>
                           <div className="grid grid-cols-2 gap-3 pb-2">
                              <button 
                                onClick={() => setPaymentMethod('CASH')}
                                className={`border-2 rounded-xl py-3 font-bold transition-all ${paymentMethod === 'CASH' ? 'border-brand-red bg-red-50 text-brand-red shadow-sm' : 'border-brand-gray/30 text-brand-black/50 hover:border-brand-gray'}`}
                              >
-                               كاش عند الاستلام
+                               Cash on Delivery
                              </button>
                              <button 
                                onClick={() => setPaymentMethod('CLIQ')}
                                className={`border-2 rounded-xl py-3 font-bold transition-all flex flex-col items-center justify-center gap-1 ${paymentMethod === 'CLIQ' ? 'border-purple-600 bg-purple-50 text-purple-700 shadow-sm' : 'border-brand-gray/30 text-brand-black/50 hover:border-brand-gray'}`}
                              >
-                               <span className="flex items-center gap-1"><Zap size={14} className={paymentMethod === 'CLIQ' ? 'text-purple-600' : 'text-gray-400'}/> كليك (CliQ)</span>
+                               <span className="flex items-center gap-1"><Zap size={14} className={paymentMethod === 'CLIQ' ? 'text-purple-600' : 'text-gray-400'}/> CliQ</span>
                              </button>
                           </div>
                           {paymentMethod === 'CLIQ' && (
                              <div className="bg-purple-100/50 p-4 rounded-xl border border-purple-200 text-center mb-2 animate-fade-in text-sm mt-3">
-                               <p className="text-purple-800 font-bold mb-1">يرجى التحويل إلى الاسم (Alias) التالي:</p>
+                               <p className="text-purple-800 font-bold mb-1">Please transfer to the following Alias:</p>
                                <span className="bg-white px-3 py-1 rounded-md border border-purple-200 font-black text-purple-900 tracking-widest text-lg inline-block my-1 shadow-sm select-all">XIANREST</span>
-                               <p className="text-purple-600/80 font-bold mt-1 text-xs px-2 leading-relaxed">سنقوم بالتحقق من الحوالة فوراً والموافقة على طلبك بالوقت الفعلي.</p>
+                               <p className="text-purple-600/80 font-bold mt-1 text-xs px-2 leading-relaxed">We will verify the transfer and approve your order in real-time.</p>
                              </div>
                           )}
                         </div>
@@ -440,17 +440,17 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                         <div className="pt-4 border-t border-brand-gray/20">
                           <div className="flex justify-between items-center mb-6">
                              <div className="flex flex-col">
-                               <span className="text-brand-black/40 font-bold">المجموع الفرعي</span>
-                               {discountPercent > 0 && <span className="text-green-600 text-xs font-black">خصم الترحيب ({(discountPercent * 100).toFixed(0)}%)</span>}
+                               <span className="text-brand-black/40 font-bold">Subtotal</span>
+                               {discountPercent > 0 && <span className="text-green-600 text-xs font-black">Welcome Discount ({(discountPercent * 100).toFixed(0)}%)</span>}
                              </div>
                              <div className="flex flex-col items-end">
                                {discountPercent > 0 ? (
                                  <>
-                                   <span className="font-bold text-sm text-brand-black/30 line-through">{currentTotal.toFixed(2)} د.أ</span>
-                                   <span className="font-black text-lg text-green-600">{getFinalPrice().toFixed(2)} د.أ</span>
+                                   <span className="font-bold text-sm text-brand-black/30 line-through">{currentTotal.toFixed(2)} JOD</span>
+                                   <span className="font-black text-lg text-green-600">{getFinalPrice().toFixed(2)} JOD</span>
                                  </>
                                ) : (
-                                 <span className="font-black text-lg">{currentTotal.toFixed(2)} د.أ</span>
+                                 <span className="font-black text-lg">{currentTotal.toFixed(2)} JOD</span>
                                )}
                              </div>
                           </div>
@@ -463,7 +463,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                               <div className="w-6 h-6 border-3 border-white/20 border-t-white rounded-full animate-spin" />
                             ) : (
                               <>
-                                <span>تأكيد الطلب • {getFinalPrice().toFixed(2)} د.أ</span>
+                                <span>Confirm Order • {getFinalPrice().toFixed(2)} JOD</span>
                                 <ArrowRight size={20} className="mr-2" />
                               </>
                             )}

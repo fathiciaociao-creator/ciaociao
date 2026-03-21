@@ -14,4 +14,4 @@ export const prisma =
   // Explicitly providing the exact "adapter" the strict engine type demands:
   new PrismaClient({ adapter })
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma

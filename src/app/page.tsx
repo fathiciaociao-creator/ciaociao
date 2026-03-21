@@ -1,7 +1,7 @@
 'use client';
 import { useCart } from '@/store/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Search, ShoppingBag } from 'lucide-react';
+import { Menu, Search, ShoppingCart } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 
@@ -15,7 +15,7 @@ export default function HomePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [menuLoading, setMenuLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('مختاراتنا 🔥');
+  const [selectedCategory, setSelectedCategory] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -23,7 +23,24 @@ export default function HomePage() {
       try {
         const res = await fetch('/api/products');
         const data = await res.json();
-        setProducts(data);
+        if (Array.isArray(data)) {
+          setProducts(data);
+          
+          // Auto-select the first available category
+          const allCats = new Set<string>();
+          data.forEach(p => {
+            if (p.category) {
+              p.category.split(',').forEach((c: string) => {
+                const trimmed = c.trim();
+                if (trimmed) allCats.add(trimmed);
+              });
+            }
+          });
+          const firstCat = Array.from(allCats)[0];
+          if (firstCat) setSelectedCategory(firstCat);
+        } else {
+          console.error("API returned error:", data);
+        }
       } catch (e) {
         console.error("Failed to fetch menu", e);
       } finally {
@@ -33,10 +50,20 @@ export default function HomePage() {
     fetchMenu();
   }, []);
 
-  const categories = ['مختاراتنا 🔥', ...Array.from(new Set(products.map(p => p.category)))];
+  const allCategories = new Set<string>();
+  products.forEach(p => {
+    if (p.category) {
+      p.category.split(',').forEach((c: string) => {
+        const trimmed = c.trim();
+        if (trimmed) allCategories.add(trimmed);
+      });
+    }
+  });
+  const categories = Array.from(allCategories);
   const filteredData = products.filter((item) => {
-    const isAll = selectedCategory === 'مختاراتنا 🔥';
-    return isAll || item.category === selectedCategory;
+    return item.category 
+      ? item.category.split(',').map((c: string) => c.trim()).includes(selectedCategory)
+      : false;
   });
 
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
@@ -46,7 +73,7 @@ export default function HomePage() {
   if (!mounted) return null;
 
   return (
-    <div className="bg-white min-h-screen font-body" dir="rtl">
+    <div className="bg-white min-h-screen font-body" dir="ltr">
       <Header onCartOpen={() => setIsSidebarOpen(true)} />
       
       <main className="pt-24 pb-32">
@@ -83,7 +110,7 @@ export default function HomePage() {
         {/* SECTION HEADER */}
         <div className="max-w-7xl mx-auto px-6 mb-10">
            <h2 className="text-3xl font-bold text-black luxury-heading mb-2">{selectedCategory}</h2>
-           <p className="text-gray-500 text-sm font-medium">أصناف مميزة وممتازة اخترناها لك بعناية فائقة</p>
+           <p className="text-gray-500 text-sm font-medium">Carefully selected premium dishes just for you</p>
         </div>
 
         {/* MENU GRID - 2 COL MOBILE / 4 COL DESKTOP */}
@@ -120,15 +147,15 @@ export default function HomePage() {
             className="fixed bottom-0 left-0 right-0 z-[110] bg-white border-t border-gray-100 p-6 flex items-center justify-between"
           >
             <div className="flex-1 flex flex-col">
-               <span className="text-xs font-bold text-gray-400">سعر الطلب الحالي</span>
+               <span className="text-xs font-bold text-gray-400">Current Order Total</span>
                <span className="text-xl font-bold text-black">{totalPrice.toFixed(2)} JOD</span>
             </div>
             <button 
               onClick={() => setIsSidebarOpen(true)}
               className="bg-black text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 active:scale-95 transition-all shadow-lg"
             >
-              <ShoppingBag size={20} />
-              <span>عرض الحقيبة ({cartCount})</span>
+              <ShoppingCart size={20} />
+              <span>View Cart ({cartCount})</span>
             </button>
           </motion.div>
         ) : null}

@@ -41,6 +41,10 @@ export default function ProductsDashboard() {
     descriptionAr: '',
     descriptionEn: ''
   });
+  
+  const existingCategories = Array.from(new Set(
+    products.flatMap(p => p.category ? p.category.split(',').map((c: string) => c.trim()).filter(Boolean) : [])
+  ));
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -137,7 +141,7 @@ export default function ProductsDashboard() {
   const stats = {
     total: products.length,
     outOfStock: products.filter(p => !p.isAvailable).length,
-    categories: new Set(products.map(p => p.category)).size
+    categories: existingCategories.length
   };
 
   return (
@@ -243,17 +247,16 @@ export default function ProductsDashboard() {
                         <div>
                           <h4 className="font-black text-lg text-brand-black mb-1 group-hover:text-brand-red transition-colors">{product.nameAr}</h4>
                           <p className="text-[10px] font-bold text-brand-black/20 uppercase tracking-widest">{product.nameEn}</p>
-                          <div className="lg:hidden mt-2 flex items-center gap-2">
-                             <span className="bg-brand-cream px-2 py-0.5 rounded text-[8px] font-black text-brand-black/40 uppercase tracking-widest">{product.category}</span>
+                          <div className="lg:hidden mt-2 flex items-center gap-2 flex-wrap">
+                             <span className="bg-brand-cream px-2 py-0.5 rounded text-[8px] font-black text-brand-black/40 tracking-widest">{product.category ? product.category.split(',').map((c: string) => c.trim()).join(' • ') : 'بدون تصنيف'}</span>
                              {!product.isAvailable && <span className="bg-brand-red/10 text-brand-red px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest leading-none pt-[1px]">Out of Stock</span>}
                           </div>
                         </div>
                       </div>
 
-                      {/* Category - Hidden on mobile, grouped above */}
                       <div className="hidden lg:col-span-2 flex justify-center items-center">
-                         <span className="bg-brand-cream border border-brand-gray/40 px-4 py-1.5 rounded-full text-[9px] font-black text-brand-black/30 uppercase tracking-[0.15em]">
-                           {product.category}
+                         <span className="bg-brand-cream border border-brand-gray/40 px-4 py-1.5 rounded-full text-[9px] font-black text-brand-black/30 tracking-[0.15em] text-center">
+                           {product.category ? product.category.split(',').map((c: string) => c.trim()).join(' • ') : 'بدون تصنيف'}
                          </span>
                       </div>
 
@@ -380,21 +383,44 @@ export default function ProductsDashboard() {
                               />
                            </div>
                         </div>
-                        <div className="space-y-3">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-brand-black/40">التصنيف</label>
-                            <div className="relative">
-                               <select 
-                                  value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}
-                                  className="w-full bg-[#F9F7F2] border border-brand-gray/50 rounded-2xl p-4 outline-none focus:border-brand-red/30 font-bold transition-all appearance-none"
-                               >
-                                  <option>Sushi</option>
-                                  <option>Signature</option>
-                                  <option>Noodles</option>
-                                  <option>Vegetarian</option>
-                                  <option>Drinks</option>
-                               </select>
-                               <Layers size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-black/20 pointer-events-none" />
+                        <div className="space-y-3 col-span-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-brand-black/40">
+                               تصنيفات المنتج (يمكن اختيار أكثر من واحد)
+                            </label>
+                            <div className="flex flex-wrap gap-2 mb-3">
+                               {existingCategories.map((cat: string) => {
+                                  const selectedCats = formData.category.split(',').map((c: string) => c.trim()).filter(Boolean);
+                                  const isSelected = selectedCats.includes(cat);
+                                  return (
+                                     <button 
+                                        key={cat} type="button"
+                                        onClick={() => {
+                                           if (isSelected) {
+                                              setFormData({...formData, category: selectedCats.filter(c => c !== cat).join(', ')});
+                                           } else {
+                                              setFormData({...formData, category: [...selectedCats, cat].join(', ')});
+                                           }
+                                        }}
+                                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border-2 
+                                           ${isSelected ? 'bg-brand-red text-white border-brand-red shadow-md' : 'bg-white text-brand-black/60 border-brand-gray/50 hover:border-brand-black/20 hover:bg-brand-gray/10'}`}
+                                     >
+                                        {cat}
+                                     </button>
+                                  );
+                               })}
+                               {existingCategories.length === 0 && <span className="text-xs text-brand-black/40">لا توجد تصنيفات سابقة</span>}
                             </div>
+
+                            <div className="relative flex items-center gap-2">
+                               <input 
+                                  placeholder="إضافة تصنيفات مخصصة أو تعديلها (مفصولة بفاصلة , )..."
+                                  value={formData.category} 
+                                  onChange={e => setFormData({...formData, category: e.target.value})}
+                                  className="w-full bg-[#F9F7F2] border border-brand-gray/50 rounded-2xl p-4 outline-none focus:border-brand-red/30 font-bold transition-all text-sm"
+                                  dir="ltr"
+                               />
+                            </div>
+                            <p className="text-[10px] text-brand-black/40 font-bold leading-relaxed">يمكنك المراجعة والتعديل اليدوي للتصنيفات في الحقل أعلاه، يجب أن تفصل بين التصنيفات بفاصلة ( , )</p>
                          </div>
                       </div>
  

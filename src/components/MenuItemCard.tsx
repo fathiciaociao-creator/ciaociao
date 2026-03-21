@@ -28,7 +28,7 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
       price: item.price, 
       imageUrl: item.imageUrl || undefined 
     });
-    toast.success(`${item.nameAr} تمت إضافته`, {
+    toast.success(`${item.nameEn || item.nameAr} added to cart`, {
       style: {
         background: '#000000',
         color: '#FFFFFF',
@@ -48,7 +48,7 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
       <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-gray-50 border border-gray-100">
         <Image 
           src={item.imageUrl || `https://placehold.co/600x600/FFFFFF/000000.png?text=${item.nameAr}`} 
-          alt={item.nameAr}
+          alt={item.nameEn || item.nameAr}
           fill 
           sizes="(max-width: 768px) 50vw, 25vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -69,7 +69,7 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
 
         {!isAvailable && (
           <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] flex items-center justify-center">
-            <span className="bg-black text-white px-4 py-1.5 rounded-full text-[10px] font-bold">غير متوفر</span>
+            <span className="bg-black text-white px-4 py-1.5 rounded-full text-[10px] font-bold">Out of Stock</span>
           </div>
         )}
       </div>
@@ -77,7 +77,7 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
       {/* TEXT SECTION */}
       <div className="flex flex-col gap-1 px-1">
         <h3 className="text-sm md:text-base font-bold text-black line-clamp-2 leading-snug">
-          {item.nameAr}
+          {item.nameEn || item.nameAr}
         </h3>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-gray-500">JOD</span>

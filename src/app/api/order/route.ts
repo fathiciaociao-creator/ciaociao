@@ -5,8 +5,8 @@ import { z } from "zod";
 import { isAllowedRequest, extractIP } from "@/lib/security/rateLimiter";
 
 const orderSchema = z.object({
-  customerName: z.string().min(2, "الاسم قصير جداً").max(100),
-  phone: z.string().min(8, "رقم الهاتف غير صحيح").max(30),
+  customerName: z.string().min(2, "Name is too short").max(100),
+  phone: z.string().min(8, "Invalid phone number").max(30),
   address: z.string().nullable().optional(),
   deliveryArea: z.string().nullable().optional(),
   notes: z.string().max(1000).nullable().optional(),
@@ -18,19 +18,19 @@ const orderSchema = z.object({
   items: z.array(z.object({
     productId: z.string(),
     name: z.string(),
-    quantity: z.number().int().min(1, "الكمية غير صالحة"),
+    quantity: z.number().int().min(1, "Invalid quantity"),
     // price from frontend is explicitly untrusted and ignored here
-  })).min(1, "السلة فارغة")
+  })).min(1, "Cart is empty")
 });
 
 export async function POST(request: Request) {
   const clientIp = extractIP(request);
-  if (!isAllowedRequest(clientIp, 5, 15 * 60 * 1000)) {
-     return NextResponse.json({ success: false, error: "تم تجاوز الحد المسموح للطلبات. استرح قليلاً!" }, { status: 429 });
+  if (!isAllowedRequest(clientIp, 10, 15 * 60 * 1000)) {
+     return NextResponse.json({ success: false, error: "Request limit exceeded. Please wait a moment!" }, { status: 429 });
   }
 
   if (!process.env.DATABASE_URL) {
-    return NextResponse.json({ success: false, error: "قاعدة البيانات غير متصلة (DATABASE_URL مفقود)" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Database not connected (Missing DATABASE_URL)" }, { status: 500 });
   }
 
   try {
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     // Zod Payload Sanitization
     const parseResult = orderSchema.safeParse(jsonBody);
     if (!parseResult.success) {
-      return NextResponse.json({ success: false, error: "بيانات الطلب غير صالحة", details: parseResult.error.format() }, { status: 400 });
+      return NextResponse.json({ success: false, error: "Invalid order data", details: parseResult.error.format() }, { status: 400 });
     }
     
     const data = parseResult.data;
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     // Check if the store is open
     const storeSettings = await prisma.storeSettings.findUnique({ where: { id: 1 } });
     if (storeSettings && !storeSettings.isStoreOpen) {
-      return NextResponse.json({ success: false, error: "عذراً، المطعم مغلق حالياً ولا يمكننا استقبال طلبات جديدة." }, { status: 403 });
+      return NextResponse.json({ success: false, error: "Sorry, the store is currently closed and we cannot accept new orders." }, { status: 403 });
     }
 
     // Zero-Trust Cost Recalculation
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     for (const item of data.items) {
       const dbPrice = realPriceMap.get(item.productId);
       if (dbPrice === undefined || dbPrice === null) {
-        return NextResponse.json({ success: false, error: `المنتج غير موجود: ${item.name}` }, { status: 400 });
+        return NextResponse.json({ success: false, error: `Product not found: ${item.name}` }, { status: 400 });
       }
       calculatedTotal += Number(dbPrice) * item.quantity;
       itemsToCreate.push({
@@ -81,11 +81,11 @@ export async function POST(request: Request) {
     // Server-side validation for coupons
     if (upperCoupon === 'WELCOME30') {
        if (!data.userId) {
-          return NextResponse.json({ success: false, error: "يجب تسجيل الدخول لاستخدام الكوبون الترحيبي" }, { status: 401 });
+          return NextResponse.json({ success: false, error: "You must sign in to use the welcome coupon" }, { status: 401 });
        }
        const user = await prisma.user.findUnique({ where: { id: data.userId } });
        if (!user || user.hasUsedWelcomeDiscount) {
-          return NextResponse.json({ success: false, error: "كوبون غير صالح أو تم استخدامه مسبقاً" }, { status: 400 });
+          return NextResponse.json({ success: false, error: "Invalid coupon or already used" }, { status: 400 });
        }
        // Apply 30% discount
        finalTotalPrice = calculatedTotal * 0.70;
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
        // Validate Dynamic Custom Coupon
        const dynamicCoupon = await prisma.coupon.findUnique({ where: { code: upperCoupon } });
        if (!dynamicCoupon || !dynamicCoupon.isActive) {
-          return NextResponse.json({ success: false, error: "كوبون غير صالح أو معطل حالياً" }, { status: 400 });
+          return NextResponse.json({ success: false, error: "Invalid or deactivated coupon" }, { status: 400 });
        }
        // Apply custom discount percentage
        finalTotalPrice = calculatedTotal * (1 - (dynamicCoupon.discountPercent / 100));
@@ -134,7 +134,7 @@ export async function POST(request: Request) {
     console.dir(error, { depth: null });
     
     return NextResponse.json(
-      { success: false, error: "فشل في إرسال الطلب لقاعدة البيانات", rawError: String(error) }, 
+      { success: false, error: "Failed to submit order to database", rawError: String(error) }, 
       { status: 500 }
     );
   }
