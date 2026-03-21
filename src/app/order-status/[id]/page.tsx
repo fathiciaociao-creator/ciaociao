@@ -1,4 +1,5 @@
 'use client';
+export const runtime = 'edge';
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import { Clock, CheckCircle2, UtensilsCrossed, Bike, PackageSearch, ArrowLeft, XCircle, Zap } from 'lucide-react';

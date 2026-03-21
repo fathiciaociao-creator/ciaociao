@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { prisma } from '@/db';
 import Header from '@/components/Header';
 import { Clock, PackageOpen } from 'lucide-react';
