@@ -1,8 +1,6 @@
-// src/app/api/products/route.ts
 import { prisma } from "../../../db"; 
 import { NextResponse } from "next/server";
 
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
