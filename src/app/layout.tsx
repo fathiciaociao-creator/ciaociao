@@ -66,7 +66,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="ar" className="h-full antialiased scroll-smooth">
+    <html lang="en" className="h-full antialiased scroll-smooth">
       <head>
         <script
           type="application/ld+json"
