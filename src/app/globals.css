@@ -90,3 +90,36 @@ h1, h2, h3, h4, .luxury-heading {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* --- RECEIPT PRINTING STYLES --- */
+@media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+  
+  body * {
+    visibility: hidden;
+  }
+
+  #print-area, #print-area * {
+    visibility: visible;
+  }
+
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm; /* Standard Thermal Receipt Width */
+    padding: 10mm;
+    background: white !important;
+    color: black !important;
+    font-family: 'Almarai', sans-serif !important;
+  }
+
+  /* Force colors even in ink-saver mode */
+  .force-print-color {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

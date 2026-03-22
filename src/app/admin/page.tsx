@@ -6,7 +6,8 @@ import AdminHeader from '@/components/AdminHeader';
 import { 
   CheckCircle, RefreshCcw, User, Phone, MapPin, Trash2, Clock, 
   ShieldCheck, Box, ChevronRight, Package, Volume2, VolumeX, 
-  Bell, ExternalLink, AlertCircle, CheckCircle2, Zap, Store, Ticket
+  Bell, ExternalLink, AlertCircle, CheckCircle2, Zap, Store, Ticket,
+  Printer
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
@@ -45,6 +46,7 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isStoreOpen, setIsStoreOpen] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [printingOrder, setPrintingOrder] = useState<Order | null>(null);
   const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
   const orderCountRef = useRef<number>(0);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -124,6 +126,15 @@ export default function AdminDashboard() {
     } finally {
       if (isInitial) setLoading(false);
     }
+  };
+
+  const handlePrint = (order: Order) => {
+    setPrintingOrder(order);
+    // Give state a moment to update the hidden div
+    setTimeout(() => {
+      window.print();
+      setPrintingOrder(null);
+    }, 100);
   };
 
   const handleDelete = async (id: string) => {
@@ -229,6 +240,73 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-[#F9F7F2] relative" dir="rtl">
       <Toaster position="bottom-center" />
+
+      {/* HIDDEN PRINT AREA */}
+      {printingOrder && (
+        <div id="print-area" className="hidden print:block">
+          <div className="text-center border-b-2 border-black pb-4 mb-4">
+            <h1 className="text-2xl font-black uppercase">Xian Restaurant</h1>
+            <p className="text-xs font-bold">مطعم شيان</p>
+            <p className="text-[10px] mt-1">عمان، الأردن • Amman, Jordan</p>
+            <p className="text-[10px]">+962 77 999 0504</p>
+          </div>
+
+          <div className="space-y-2 mb-4 text-xs">
+            <div className="flex justify-between">
+              <span>رقم الطلب:</span>
+              <span className="font-black">#{printingOrder.id.slice(-6).toUpperCase()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>التاريخ:</span>
+              <span>{new Date(printingOrder.createdAt).toLocaleString('ar-JO')}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>النوع:</span>
+              <span className="font-black">{printingOrder.orderType === 'DELIVERY' ? 'توصيل' : 'استلام'}</span>
+            </div>
+          </div>
+
+          <div className="border-b-2 border-black mb-4"></div>
+
+          <div className="space-y-3 mb-6">
+            {printingOrder.items.map((item, idx) => (
+              <div key={idx} className="flex justify-between items-start text-xs">
+                <div className="flex gap-2">
+                  <span className="font-black">{item.quantity}x</span>
+                  <span>{item.name}</span>
+                </div>
+                <span className="font-bold">{(item.price * item.quantity).toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t-2 border-black pt-4 space-y-1 text-sm">
+            <div className="flex justify-between font-black">
+              <span>الإجمالي:</span>
+              <span>{printingOrder.totalPrice.toFixed(2)} د.أ</span>
+            </div>
+            <div className="flex justify-between text-[10px]">
+              <span>طريقة الدفع:</span>
+              <span>{printingOrder.paymentMethod === 'CLIQ' ? 'كليك' : 'كاش'}</span>
+            </div>
+          </div>
+
+          <div className="mt-8 pt-4 border-t border-dashed border-gray-300 text-[10px] space-y-2">
+            <p className="font-black">العميل: {printingOrder.customerName}</p>
+            <p>الهاتف: {printingOrder.phoneNumber}</p>
+            {printingOrder.orderType === 'DELIVERY' && (
+              <p className="leading-tight">العنوان: {printingOrder.deliveryArea} - {printingOrder.address}</p>
+            )}
+            {printingOrder.notes && (
+              <p className="bg-gray-100 p-2 italic">ملاحظة: {printingOrder.notes}</p>
+            )}
+          </div>
+
+          <div className="mt-10 text-center text-[8px] uppercase tracking-widest opacity-50">
+            Thank you for choosing Xian!
+          </div>
+        </div>
+      )}
 
       {/* FORCE INTERACTION OVERLAY - Aggressive Mode */}
       <AnimatePresence>
@@ -387,6 +465,16 @@ export default function AdminDashboard() {
                            order.status === 'READY' ? 'جاهز للتسليم' :
                            'تم الاستلام'}
                         </div>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePrint(order);
+                          }}
+                          className="p-2 bg-white text-brand-black border border-brand-gray rounded-xl hover:bg-brand-red hover:text-white transition-all shadow-sm"
+                          title="طباعة الفاتورة"
+                        >
+                          <Printer size={18} />
+                        </button>
                       </div>
                     </div>
                     
