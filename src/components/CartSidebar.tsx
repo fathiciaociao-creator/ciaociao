@@ -401,11 +401,11 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                           </div>
                         </div>
 
-                        {/* STEP 2: FULFILLMENT - RED CARD */}
-                        <div className="bg-brand-red p-5 md:p-6 rounded-[2rem] border-2 border-white/10 shadow-lg space-y-4">
+                        {/* STEP 2: FULFILLMENT - BLACK CARD */}
+                        <div className="bg-brand-black p-5 md:p-6 rounded-[2rem] border-2 border-white/5 shadow-2xl space-y-4">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-3">
-                               <div className="w-6 h-6 rounded-full bg-white text-brand-red text-[10px] font-black flex items-center justify-center">2</div>
+                               <div className="w-6 h-6 rounded-full bg-white text-brand-black text-[10px] font-black flex items-center justify-center">2</div>
                                <h3 className="font-black text-lg text-white">
                                  {language === 'ar' ? 'طريقة الاستلام' : 'Fulfillment'}
                                </h3>
@@ -414,13 +414,13 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                             <div className="flex bg-white/10 p-1 rounded-xl border border-white/20">
                                <button 
                                  onClick={() => setOrderType('DELIVERY')}
-                                 className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${orderType === 'DELIVERY' ? 'bg-white text-brand-red shadow-md' : 'text-white/40'}`}
+                                 className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${orderType === 'DELIVERY' ? 'bg-white text-brand-black shadow-md' : 'text-white/40'}`}
                                >
                                  {language === 'ar' ? 'توصيل' : 'Delivery'}
                                </button>
                                <button 
                                  onClick={() => setOrderType('PICKUP')}
-                                 className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${orderType === 'PICKUP' ? 'bg-white text-brand-red shadow-md' : 'text-white/40'}`}
+                                 className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${orderType === 'PICKUP' ? 'bg-white text-brand-black shadow-md' : 'text-white/40'}`}
                                >
                                  {language === 'ar' ? 'استلام' : 'Pickup'}
                                </button>
@@ -466,7 +466,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                   disabled={isDetecting}
                                   className={`w-full py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 transition-all border-2 
                                     ${isDetecting 
-                                      ? 'bg-white text-brand-red border-white animate-pulse' 
+                                      ? 'bg-white text-brand-black border-white animate-pulse' 
                                       : 'bg-transparent text-white border-white/20 hover:border-white hover:bg-white/5'}`}
                                 >
                                   <Locate size={14} />
@@ -496,11 +496,11 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                           </div>
                         </div>
 
-                        {/* STEP 3: PAYMENT & PROMO - BLACK CARD */}
-                        <div className="bg-brand-black p-5 md:p-6 rounded-[2rem] border-2 border-white/5 shadow-2xl space-y-5">
+                        {/* STEP 3: PAYMENT & PROMO - WHITE CARD */}
+                        <div className="bg-white p-5 md:p-6 rounded-[2rem] border-2 border-brand-gray/10 shadow-sm space-y-5">
                           <div className="flex items-center gap-3 mb-1">
-                             <div className="w-6 h-6 rounded-full bg-white text-brand-black text-[10px] font-black flex items-center justify-center">3</div>
-                             <h3 className="font-black text-lg text-white">
+                             <div className="w-6 h-6 rounded-full bg-brand-black text-white text-[10px] font-black flex items-center justify-center">3</div>
+                             <h3 className="font-black text-lg text-brand-black">
                                {language === 'ar' ? 'الدفع والخصومات' : 'Payment & Discounts'}
                              </h3>
                           </div>
@@ -510,7 +510,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                             <div className="flex gap-2 relative">
                               <input 
                                 placeholder={language === 'ar' ? 'كود الخصم (اختياري)' : 'Promo Code (Optional)'} 
-                                className={`w-full bg-white/10 text-white px-4 py-3 rounded-xl border border-white/20 focus:border-white/40 outline-none transition-all font-bold text-[14px] uppercase ${language === 'ar' ? 'text-right' : 'text-left'} placeholder:text-white/40`}
+                                className={`w-full bg-brand-cream/5 text-brand-black px-4 py-3 rounded-xl border border-brand-gray/40 focus:border-brand-red/30 outline-none transition-all font-bold text-[14px] uppercase ${language === 'ar' ? 'text-right' : 'text-left'} placeholder:text-brand-black/30`}
                                 value={couponCode}
                                 onChange={(e) => {
                                   const val = e.target.value.toUpperCase();
@@ -529,39 +529,39 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                 <button 
                                   onClick={() => handleValidateCoupon()}
                                   disabled={validatingCoupon || !couponCode.trim()}
-                                  className="bg-brand-red text-white px-4 py-3 rounded-xl font-black text-[10px] hover:bg-white hover:text-brand-red transition-all disabled:opacity-50 min-w-[70px]"
+                                  className="bg-brand-black text-white px-4 py-3 rounded-xl font-black text-[10px] hover:bg-brand-red transition-all disabled:opacity-50 min-w-[70px]"
                                 >
                                   {validatingCoupon ? '...' : (language === 'ar' ? 'تطبيق' : 'Apply')}
                                 </button>
                               )}
                             </div>
                             {couponError && <p className="text-brand-red text-[10px] font-bold px-2">{couponError}</p>}
-                            {couponSuccess && <p className="text-green-500 text-[10px] font-bold px-2 flex items-center gap-1"><CheckCircle2 size={12}/> {couponSuccess}</p>}
+                            {couponSuccess && <p className="text-green-600 text-[10px] font-bold px-2 flex items-center gap-1"><CheckCircle2 size={12}/> {couponSuccess}</p>}
                           </div>
 
                           {/* PAYMENT METHOD */}
                           <div className="grid grid-cols-2 gap-3">
                              <button 
                                onClick={() => setPaymentMethod('CASH')}
-                               className={`border-2 rounded-2xl py-3 px-2 font-black text-[11px] transition-all flex flex-col items-center gap-1 ${paymentMethod === 'CASH' ? 'border-brand-red bg-brand-red text-white shadow-md' : 'border-transparent bg-white/5 text-white/40 hover:border-white/20'}`}
+                               className={`border-2 rounded-2xl py-3 px-2 font-black text-[11px] transition-all flex flex-col items-center gap-1 ${paymentMethod === 'CASH' ? 'border-brand-red bg-white text-brand-red shadow-md' : 'border-transparent bg-white/50 text-brand-black/40 hover:border-brand-gray/20'}`}
                              >
                                <Store size={16} />
                                {language === 'ar' ? 'عند الاستلام' : 'Cash on Delivery'}
                              </button>
                              <button 
                                onClick={() => setPaymentMethod('CLIQ')}
-                               className={`border-2 rounded-2xl py-3 px-2 font-black text-[11px] transition-all flex flex-col items-center gap-1 ${paymentMethod === 'CLIQ' ? 'border-purple-600 bg-purple-600 text-white shadow-md' : 'border-transparent bg-white/5 text-white/40 hover:border-white/20'}`}
+                               className={`border-2 rounded-2xl py-3 px-2 font-black text-[11px] transition-all flex flex-col items-center gap-1 ${paymentMethod === 'CLIQ' ? 'border-purple-600 bg-white text-purple-700 shadow-md' : 'border-transparent bg-white/50 text-brand-black/40 hover:border-brand-gray/20'}`}
                              >
-                               <Zap size={16} className={paymentMethod === 'CLIQ' ? 'text-white' : 'text-gray-400'}/>
+                               <Zap size={16} className={paymentMethod === 'CLIQ' ? 'text-purple-600' : 'text-gray-400'}/>
                                {language === 'ar' ? 'دفع عبر كليك' : 'Pay via CliQ'}
                              </button>
                           </div>
 
                           {paymentMethod === 'CLIQ' && (
                              <motion.div 
-                               initial={{ opacity: 0, scale: 0.95 }}
-                               animate={{ opacity: 1, scale: 1 }}
-                               className="bg-brand-red text-white p-4 rounded-2xl text-center space-y-2 border border-white/20"
+                               initial={{ opacity: 0, y: -10 }}
+                               animate={{ opacity: 1, y: 0 }}
+                               className="bg-purple-600 text-white p-4 rounded-2xl text-center space-y-2 border border-white/10"
                              >
                                <p className="text-[10px] font-black uppercase tracking-tighter opacity-80">
                                  {language === 'ar' ? 'حوّل إلى الاسم المستعار:' : 'Transfer to Alias:'}
