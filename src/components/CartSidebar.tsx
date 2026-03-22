@@ -92,17 +92,11 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&accept-language=en,ar`);
           const data = await res.json();
           
-          if (data && data.display_name) {
-            setForm(prev => ({ 
-              ...prev, 
-              address: `${data.display_name} (Maps: https://www.google.com/maps?q=${latitude},${longitude})` 
-            }));
-          } else {
-            setForm(prev => ({ 
-              ...prev, 
-              address: `Precision Coordinates: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (Maps: https://www.google.com/maps?q=${latitude},${longitude})` 
-            }));
-          }
+          const googleMapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+          setForm(prev => ({ 
+            ...prev, 
+            address: googleMapsUrl 
+          }));
         } catch (err) {
           console.error("Location error:", err);
           setErrorMsg("Could not detect address, please enter it manually.");

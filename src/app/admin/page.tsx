@@ -448,14 +448,41 @@ export default function AdminDashboard() {
 
                           {order.orderType === 'DELIVERY' ? (
                             <div className="flex items-start justify-between p-4 bg-[#F9F7F2] rounded-2xl border border-brand-gray group/link hover:border-brand-red/30 transition-all">
-                              <div className="flex items-start gap-4">
+                              <div className="flex items-start gap-4 flex-1">
                                 <div className="bg-white p-2 rounded-xl text-brand-red shadow-sm"><MapPin size={20} /></div>
-                                <div className="flex flex-col">
-                                   <span className="text-[10px] font-black text-brand-red uppercase tracking-widest mb-1">{order.deliveryArea || 'منطقة غير محددة'}</span>
-                                   <span className="font-bold text-brand-black text-sm leading-relaxed">{order.address}</span>
+                                <div className="flex flex-col flex-1 overflow-hidden">
+                                   <span className="text-[10px] font-black text-brand-red uppercase tracking-widest mb-1">{order.deliveryArea || 'منطقة التوصيل'}</span>
+                                   {order.address?.startsWith('http') ? (
+                                     <div className="flex flex-col gap-2">
+                                       <a 
+                                         href={order.address} 
+                                         target="_blank" 
+                                         rel="noopener noreferrer"
+                                         className="text-blue-600 font-bold text-sm underline break-all flex items-center gap-1 hover:text-blue-800"
+                                       >
+                                         <ExternalLink size={14} /> فتح الموقع على الخريطة
+                                       </a>
+                                       <button 
+                                         onClick={() => {
+                                           navigator.clipboard.writeText(order.address || '');
+                                           toast.success('تم نسخ الرابط!');
+                                         }}
+                                         className="text-[10px] bg-brand-black text-white px-3 py-1.5 rounded-lg w-fit font-black uppercase tracking-wider active:scale-95 transition-all"
+                                       >
+                                         نسخ الرابط (Copy Link)
+                                       </button>
+                                     </div>
+                                   ) : (
+                                     <span className="font-bold text-brand-black text-sm leading-relaxed">{order.address}</span>
+                                   )}
                                 </div>
                               </div>
-                              <a href={`https://maps.google.com/?q=${encodeURIComponent(order.address || '')}`} target="_blank" className="bg-brand-black text-white p-2 rounded-xl shadow-lg hover:scale-110 transition-all">
+                              <a 
+                                href={order.address?.startsWith('http') ? order.address : `https://maps.google.com/?q=${encodeURIComponent(order.address || '')}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="bg-brand-black text-white p-2 rounded-xl shadow-lg hover:scale-110 transition-all flex-shrink-0"
+                              >
                                 <MapPin size={14} fill="currentColor" />
                               </a>
                             </div>
