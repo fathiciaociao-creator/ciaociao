@@ -42,7 +42,7 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 10 }}
+      initial={priority ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       className="flex flex-col gap-4 group h-full"
@@ -53,10 +53,10 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
           src={item.imageUrl || `https://placehold.co/800x600/FFFFFF/1A1A1A.png?text=${item.nameAr}`} 
           alt={`${item.nameEn || item.nameAr} - Xian Restaurant (مطعم شيان) - Asian Food Jordan`}
           fill 
-          sizes="(max-width: 640px) 100vw, (max-width: 1014px) 50vw, 300px"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-contain transition-all duration-1000 group-hover:scale-105"
           priority={priority}
-          quality={100}
+          quality={80}
         />
         
         {/* CIRCULAR ADD BUTTON - ELEVATED DESIGN */}

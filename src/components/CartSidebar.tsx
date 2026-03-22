@@ -507,8 +507,10 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                           </div>
                           {paymentMethod === 'CLIQ' && (
                              <div className="bg-purple-100/50 p-4 rounded-xl border border-purple-200 text-center mb-2 animate-fade-in text-sm mt-3">
-                               <p className="text-purple-800 font-bold mb-1">{language === 'ar' ? 'يرجى التحويل إلى الاسم المستعار التالي:' : 'Please transfer to the following Alias:'}</p>
-                               <span className="bg-white px-3 py-1 rounded-md border border-purple-200 font-black text-purple-900 tracking-widest text-lg inline-block my-1 shadow-sm select-all">XIANREST</span>
+                               <p className="text-xs font-black text-brand-red uppercase tracking-widest bg-brand-red/5 p-3 rounded-xl border border-brand-red/10">
+              {language === 'ar' ? 'يرجى التحويل إلى الاسم المستعار التالي:' : 'Please transfer to the following Alias:'}
+              <span className="block text-2xl mt-1 select-all font-serif">XIAN99</span>
+            </p>
                                <p className="text-purple-600/80 font-bold mt-1 text-xs px-2 leading-relaxed">{language === 'ar' ? 'سنقوم بالتحقق من التحويل والموافقة على طلبك في الوقت الفعلي.' : 'We will verify the transfer and approve your order in real-time.'}</p>
                              </div>
                           )}

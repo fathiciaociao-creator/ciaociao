@@ -32,15 +32,6 @@ export default function Footer() {
           
           {/* BRAND & STORY */}
           <div className="flex flex-col items-center space-y-8">
-            <div className="relative h-16 w-40">
-              <Image 
-                src="/logo.png" 
-                alt="Xian Restaurant" 
-                fill 
-                className="object-contain brightness-200"
-                sizes="160px"
-              />
-            </div>
             <p className="text-brand-offwhite/50 text-lg leading-loose max-w-sm mx-auto">
               {t.story}
             </p>

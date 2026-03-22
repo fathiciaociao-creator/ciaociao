@@ -55,7 +55,7 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(menuSchema) }}
       />
-      <HomeClient />
+      <HomeClient initialData={products as any} />
     </>
   );
 }

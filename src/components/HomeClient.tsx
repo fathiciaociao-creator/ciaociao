@@ -8,14 +8,14 @@ import MenuItemCard from '@/components/MenuItemCard';
 import CartSidebar from '@/components/CartSidebar';
 import { useLanguage } from '@/store/useLanguage';
 
-export default function HomeClient() {
+export default function HomeClient({ initialData = [] }: { initialData?: any[] }) {
   const { language } = useLanguage();
   const { items, getTotalPrice } = useCart();
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>(initialData);
   const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [menuLoading, setMenuLoading] = useState(true);
+  const [menuLoading, setMenuLoading] = useState(initialData.length === 0);
   const [selectedCategory, setSelectedCategory] = useState('');
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function HomeClient() {
             return indexA - indexB;
           });
 
-          if (sortedCats[0]) setSelectedCategory(sortedCats[0]);
+          if (sortedCats[0] && !selectedCategory) setSelectedCategory(sortedCats[0]);
         }
       } catch (e) {
         console.error("Failed to fetch menu", e);
@@ -95,6 +95,23 @@ export default function HomeClient() {
 
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const totalPrice = getTotalPrice();
+
+  // Effect to set initial category if we have data from server
+  useEffect(() => {
+    if (initialData.length > 0 && !selectedCategory) {
+       const allCats = new Set<string>();
+       initialData.forEach(p => {
+         if (p.category) {
+           p.category.split(',').forEach((c: string) => {
+             const trimmed = c.trim();
+             if (trimmed) allCats.add(trimmed);
+           });
+         }
+       });
+       const sorted = Array.from(allCats);
+       if (sorted[0]) setSelectedCategory(sorted[0]);
+    }
+  }, [initialData]);
 
   if (!mounted) return null;
 

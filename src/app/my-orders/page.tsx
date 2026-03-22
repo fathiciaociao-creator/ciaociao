@@ -1,9 +1,9 @@
-'use client';
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import { PackageSearch, Clock, UtensilsCrossed, CheckCircle2, Bike, ArrowLeft, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { useLanguage } from '@/store/useLanguage';
 
 interface OrderItem {
   id: string;
@@ -24,6 +24,7 @@ interface Order {
 }
 
 export default function MyOrdersPage() {
+  const { language } = useLanguage();
   const { data: session, status } = useSession();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,13 +52,14 @@ export default function MyOrdersPage() {
   };
 
   const getStatusDisplay = (status: string, orderType: string) => {
+    const isAr = language === 'ar';
     switch (status) {
-      case 'PENDING': return { label: 'Awaiting Confirmation', color: 'bg-brand-red text-white' };
-      case 'PREPARING': return { label: 'Preparing', color: 'bg-orange-100 text-orange-700' };
-      case 'READY': return { label: orderType === 'PICKUP' ? 'Ready for Pickup' : 'Ready for Delivery', color: 'bg-yellow-100 text-yellow-700' };
-      case 'SHIPPED': return { label: orderType === 'PICKUP' ? 'Picked Up' : 'Delivered', color: 'bg-green-100 text-green-700' };
-      case 'CANCELLED': return { label: 'Cancelled', color: 'bg-gray-100 text-gray-500' };
-      default: return { label: 'Unknown', color: 'bg-gray-100 text-gray-500' };
+      case 'PENDING': return { label: isAr ? 'بانتظار التأكيد' : 'Awaiting Confirmation', color: 'bg-brand-red text-white' };
+      case 'PREPARING': return { label: isAr ? 'يتم التحضير' : 'Preparing', color: 'bg-orange-100 text-orange-700' };
+      case 'READY': return { label: orderType === 'PICKUP' ? (isAr ? 'جاهز للاستلام' : 'Ready for Pickup') : (isAr ? 'جاهز للتوصيل' : 'Ready for Delivery'), color: 'bg-yellow-100 text-yellow-700' };
+      case 'SHIPPED': return { label: orderType === 'PICKUP' ? (isAr ? 'تم الاستلام' : 'Picked Up') : (isAr ? 'تم التوصيل' : 'Delivered'), color: 'bg-green-100 text-green-700' };
+      case 'CANCELLED': return { label: isAr ? 'ملغي' : 'Cancelled', color: 'bg-gray-100 text-gray-500' };
+      default: return { label: isAr ? 'غير معروف' : 'Unknown', color: 'bg-gray-100 text-gray-500' };
     }
   };
 
@@ -71,13 +73,19 @@ export default function MyOrdersPage() {
 
   if (status === 'unauthenticated') {
     return (
-      <div className="bg-brand-cream min-h-screen font-body pb-20" dir="ltr">
+      <div className="bg-brand-cream min-h-screen font-body pb-20" dir={language === 'ar' ? 'rtl' : 'ltr'}>
         <Header />
         <div className="text-center mt-32 flex flex-col items-center gap-6 p-6">
           <div className="bg-white p-12 rounded-[2rem] shadow-sm border border-brand-gray/50 max-w-lg">
-            <h1 className="text-3xl font-black text-brand-black mb-4">Sign In Required</h1>
-            <p className="text-brand-black/60 font-bold mb-8">To view and track your past and active orders, please sign in.</p>
-            <Link href="/" className="btn-matte w-full justify-center">Back to Home</Link>
+            <h1 className="text-3xl font-black text-brand-black mb-4">
+              {language === 'ar' ? 'تسجيل الدخول مطلوب' : 'Sign In Required'}
+            </h1>
+            <p className="text-brand-black/60 font-bold mb-8">
+              {language === 'ar' ? 'لرؤية وتتبع طلباتك السابقة والحالية، يرجى تسجيل الدخول.' : 'To view and track your past and active orders, please sign in.'}
+            </p>
+            <Link href="/" className="btn-matte w-full justify-center">
+              {language === 'ar' ? 'العودة للرئيسية' : 'Back to Home'}
+            </Link>
           </div>
         </div>
       </div>
@@ -85,20 +93,32 @@ export default function MyOrdersPage() {
   }
 
   return (
-    <div className="bg-brand-cream min-h-screen font-body pb-20" dir="ltr">
+    <div className="bg-brand-cream min-h-screen font-body pb-20" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Header />
       <main className="max-w-5xl mx-auto p-6 md:p-12 pt-32 md:pt-40 lg:pt-48 animate-fade-in">
          <div className="flex items-center justify-between mb-10">
-           <h1 className="text-4xl font-black text-brand-black luxury-heading">My Orders</h1>
-           <span className="bg-white px-4 py-2 rounded-full font-bold text-sm shadow-sm">{orders.length} Orders</span>
+           <h1 className="text-4xl font-black text-brand-black luxury-heading">
+             {language === 'ar' ? 'طلباتي' : 'My Orders'}
+           </h1>
+           <span className="bg-white px-4 py-2 rounded-full font-bold text-sm shadow-sm">
+             {orders.length} {language === 'ar' ? 'طلبات' : 'Orders'}
+           </span>
          </div>
 
          {orders.length === 0 ? (
            <div className="bg-white rounded-[2rem] p-16 text-center border border-brand-gray flex flex-col items-center">
               <PackageSearch size={64} className="text-brand-black/20 mb-6" strokeWidth={1}/>
-              <h2 className="text-2xl font-black mb-2">No Past Orders</h2>
-              <p className="text-brand-black/50 font-bold mb-8">It seems you haven't placed any orders yet. Discover our menu and start your journey!</p>
-              <Link href="/" className="btn-burgundy">Order Now</Link>
+              <h2 className="text-2xl font-black mb-2">
+                {language === 'ar' ? 'لا توجد طلبات سابقة' : 'No Past Orders'}
+              </h2>
+              <p className="text-brand-black/50 font-bold mb-8">
+                {language === 'ar' 
+                  ? 'يبدو أنك لم تقم بأي طلبات بعد. استكشف قائمتنا وابدأ رحلتك!' 
+                  : "It seems you haven't placed any orders yet. Discover our menu and start your journey!"}
+              </p>
+              <Link href="/" className="btn-burgundy">
+                {language === 'ar' ? 'اطلب الآن' : 'Order Now'}
+              </Link>
            </div>
          ) : (
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -115,12 +135,12 @@ export default function MyOrdersPage() {
                      <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-brand-red to-orange-400 animate-pulse" />
                    )}
                    <div className="flex justify-between items-start mb-6">
-                     <div className="flex flex-col gap-1">
+                     <div className={`flex flex-col gap-1 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-black/30">
                          #{order.id.slice(-6).toUpperCase()}
                        </span>
                        <span className="font-bold text-brand-black text-sm text-brand-black/50">
-                         {new Date(order.createdAt).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                         {new Date(order.createdAt).toLocaleDateString(language === 'ar' ? 'ar-JO' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                        </span>
                      </div>
                      <span className={`px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest ${display.color}`}>
@@ -137,14 +157,18 @@ export default function MyOrdersPage() {
                        </div>
                      ))}
                      {order.items.length > 3 && (
-                       <p className="text-xs text-brand-black/40 font-bold">+ {order.items.length - 3} more items</p>
+                       <p className="text-xs text-brand-black/40 font-bold">
+                         + {order.items.length - 3} {language === 'ar' ? 'أصناف أخرى' : 'more items'}
+                       </p>
                      )}
                    </div>
 
                    <div className="pt-6 border-t border-brand-gray/30 flex justify-between items-center mt-auto">
-                     <span className="font-black text-brand-red text-xl">{order.totalPrice.toFixed(2)} JOD</span>
+                     <span className="font-black text-brand-red text-xl">
+                       {order.totalPrice.toFixed(2)} {language === 'ar' ? 'د.أ' : 'JOD'}
+                     </span>
                      <div className="flex items-center gap-2 text-xs font-black text-brand-black/40 group-hover:text-brand-red transition-all">
-                       Track <ArrowUpRight size={14} />
+                       {language === 'ar' ? 'تتبع' : 'Track'} <ArrowUpRight size={14} className={language === 'ar' ? 'rotate-180' : ''} />
                      </div>
                    </div>
                  </Link>
