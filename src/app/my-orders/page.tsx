@@ -1,3 +1,4 @@
+'use client';
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import { PackageSearch, Clock, UtensilsCrossed, CheckCircle2, Bike, ArrowLeft, ArrowUpRight } from 'lucide-react';
