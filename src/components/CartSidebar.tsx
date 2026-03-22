@@ -371,7 +371,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                     ) : (
                       <div className="space-y-6">
                         {/* STEP 1: CONTACT DETAILS */}
-                        <div className="bg-brand-cream/10 p-4 md:p-6 rounded-[2rem] border border-brand-gray/30 space-y-4">
+                        <div className="bg-white p-5 md:p-6 rounded-[2rem] border-2 border-brand-gray/20 shadow-sm space-y-4">
                           <div className="flex items-center gap-3 mb-2">
                              <div className="w-6 h-6 rounded-full bg-brand-black text-white text-[10px] font-black flex items-center justify-center">1</div>
                              <h3 className="font-black text-lg text-brand-black">
@@ -402,7 +402,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                         </div>
 
                         {/* STEP 2: FULFILLMENT */}
-                        <div className="bg-brand-cream/10 p-4 md:p-6 rounded-[2rem] border border-brand-gray/30 space-y-4">
+                        <div className="bg-white p-5 md:p-6 rounded-[2rem] border-2 border-brand-gray/20 shadow-sm space-y-4">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-3">
                                <div className="w-6 h-6 rounded-full bg-brand-black text-white text-[10px] font-black flex items-center justify-center">2</div>
@@ -497,7 +497,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                         </div>
 
                         {/* STEP 3: PAYMENT & PROMO */}
-                        <div className="bg-brand-cream/10 p-4 md:p-6 rounded-[2rem] border border-brand-gray/30 space-y-5">
+                        <div className="bg-white p-5 md:p-6 rounded-[2rem] border-2 border-brand-gray/20 shadow-sm space-y-5">
                           <div className="flex items-center gap-3 mb-1">
                              <div className="w-6 h-6 rounded-full bg-brand-black text-white text-[10px] font-black flex items-center justify-center">3</div>
                              <h3 className="font-black text-lg text-brand-black">
