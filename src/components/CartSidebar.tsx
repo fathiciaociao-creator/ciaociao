@@ -180,8 +180,8 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
             initial={{ x: language === 'ar' ? '-100%' : '100%' }}
             animate={{ x: 0 }}
             exit={{ x: language === 'ar' ? '-100%' : '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className={`fixed inset-y-0 ${language === 'ar' ? 'left-0' : 'right-0'} w-full md:w-[500px] bg-white z-[101] shadow-2xl flex flex-col h-full`}
+            transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 1 }}
+            className={`fixed inset-0 md:inset-y-0 ${language === 'ar' ? 'md:left-0 md:right-auto' : 'md:right-0 md:left-auto'} w-full md:w-[500px] bg-white z-[200] shadow-2xl flex flex-col h-[100dvh] md:h-screen`}
             dir={language === 'ar' ? 'rtl' : 'ltr'}
           >
             {/* HEADER */}
@@ -326,7 +326,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                   </div>
 
                   {/* CHECKOUT WIZARD SECTION */}
-                  <div className="p-4 md:p-8 bg-white border-t border-brand-gray/30 mt-auto overflow-y-auto max-h-[70vh]">
+                  <div className="p-4 md:p-8 bg-white border-t border-brand-gray/30 mt-auto overflow-y-auto max-h-[60vh] md:max-h-none shrink-0 shadow-[0_-8px_40px_-15px_rgba(0,0,0,0.08)]">
                     {!isStoreOpen ? (
                       <div className="flex flex-col items-center justify-center py-6 space-y-6 text-center bg-red-50 rounded-3xl border-2 border-dashed border-red-200 p-6">
                         <Store size={40} className="text-brand-red" />

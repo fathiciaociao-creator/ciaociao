@@ -178,7 +178,7 @@ export default function HomeClient({ initialData = [] }: { initialData?: any[] }
       </main>
 
       <AnimatePresence>
-        {totalPrice > 0 ? (
+        {totalPrice > 0 && !isSidebarOpen ? (
           <motion.div 
             initial={{ y: 100 }}
             animate={{ y: 0 }}
