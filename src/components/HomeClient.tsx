@@ -156,6 +156,7 @@ export default function HomeClient() {
                 ))}
                </AnimatePresence>
             </div>
+          )}
         </section>
       </main>
 
