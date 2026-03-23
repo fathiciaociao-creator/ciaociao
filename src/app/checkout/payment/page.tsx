@@ -4,12 +4,11 @@ import { useCart } from '@/store/useCart';
 import { useCheckout } from '@/store/useCheckout';
 import { useLanguage } from '@/store/useLanguage';
 import { DELIVERY_ZONES } from '@/constants/deliveryZones';
-import { ChevronRight, ChevronLeft, HelpCircle, CreditCard, Apple, CheckCircle2, AlertCircle, Loader2, Banknote, X, Info, ClipboardCheck, RefreshCcw, ShieldCheck, ArrowRight } from 'lucide-react';
+import { ChevronRight, ChevronLeft, HelpCircle, CheckCircle2, AlertCircle, Loader2, Banknote, X, Info, ClipboardCheck, RefreshCcw, ShieldCheck, ArrowRight } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 
 export default function PaymentPage() {
   const { language } = useLanguage();
@@ -17,7 +16,7 @@ export default function PaymentPage() {
   const { form, resetForm } = useCheckout();
   const router = useRouter();
 
-  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CLIQ' | 'APPLE_PAY' | 'CARD' | 'PAYPAL' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CLIQ' | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -60,17 +59,11 @@ export default function PaymentPage() {
     return () => { if (interval) clearInterval(interval); };
   }, [verificationPolling, orderId, pollOrderStatus]);
 
-  const handleOrder = async (method: 'CASH' | 'CLIQ' | 'APPLE_PAY' | 'CARD' | 'PAYPAL') => {
-    if (method === 'CARD' || method === 'APPLE_PAY') {
-      toast.error(language === 'ar' ? 'عذراً، هذه الخدمة غير متوفرة حالياً' : 'Sorry, this service is currently unavailable');
-      return;
-    }
+  const handleOrder = async (method: 'CASH' | 'CLIQ') => {
     if (method === 'CLIQ' && !showCliQModal && !orderId) {
       setShowCliQModal(true);
       return;
     }
-    if (method === 'PAYPAL') return; // Handled by PayPalButtons logic
-
     setPaymentMethod(method);
     setErrorMsg('');
     setLoading(true);
@@ -186,247 +179,147 @@ export default function PaymentPage() {
   }
 
   return (
-    <PayPalScriptProvider options={{ 
-      clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "",
-      currency: "USD"
-    }}>
-      <div className="min-h-screen bg-[#FDFDFD] flex flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-        {/* HEADER */}
-        <div className="p-6 flex items-center justify-between bg-white border-b border-gray-100 sticky top-0 z-10">
-          <div className="flex items-center gap-4">
-            <button onClick={() => router.back()} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
-              {language === 'ar' ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
-            </button>
-            <h1 className="text-xl font-black text-brand-black">{language === 'ar' ? 'إختر طريقة الدفع' : 'Choose Payment Method'}</h1>
-          </div>
-          <button className="text-brand-red font-bold text-sm flex items-center gap-1">
-            {language === 'ar' ? 'مساعدة؟' : 'Help?'}
+    <div className="min-h-screen bg-[#FDFDFD] flex flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      {/* HEADER */}
+      <div className="p-6 flex items-center justify-between bg-white border-b border-gray-100 sticky top-0 z-10">
+        <div className="flex items-center gap-4">
+          <button onClick={() => router.back()} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
+            {language === 'ar' ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
           </button>
+          <h1 className="text-xl font-black text-brand-black">{language === 'ar' ? 'إختر طريقة الدفع' : 'Choose Payment Method'}</h1>
+        </div>
+        <button className="text-brand-red font-bold text-sm flex items-center gap-1">
+          {language === 'ar' ? 'مساعدة؟' : 'Help?'}
+        </button>
+      </div>
+
+      <div className="flex-1 p-6 space-y-8 max-w-2xl mx-auto w-full">
+        {/* ORDER NUMBER INFO */}
+        <div className="text-center space-y-1">
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">{language === 'ar' ? 'رقم الطلب' : 'Order Number'}</p>
+          <p className="text-brand-black font-black text-lg">152718113</p>
         </div>
 
-        <div className="flex-1 p-6 space-y-8 max-w-2xl mx-auto w-full">
-          {/* ORDER NUMBER INFO */}
-          <div className="text-center space-y-1">
-            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">{language === 'ar' ? 'رقم الطلب' : 'Order Number'}</p>
-            <p className="text-brand-black font-black text-lg">152718113</p>
-          </div>
+        <div className="space-y-3">
+          <PaymentOption 
+            label={language === 'ar' ? 'كليك' : 'CliQ'}
+            icon={<div className="bg-white border border-gray-200 rounded-lg p-1 px-3 font-black text-sm italic">CliQ</div>}
+            onClick={() => handleOrder('CLIQ')}
+            loading={loading && paymentMethod === 'CLIQ'}
+          />
 
+          <PaymentOption 
+            label={language === 'ar' ? 'كاش عند الوصول' : 'Cash on Delivery'}
+            icon={<div className="bg-white border border-gray-200 rounded-lg p-1 px-2"><Banknote size={20} className="text-green-600" /></div>}
+            onClick={() => handleOrder('CASH')}
+            loading={loading && paymentMethod === 'CASH'}
+          />
+        </div>
+
+        {errorMsg && (
+          <div className="bg-red-50 text-red-500 p-4 rounded-xl flex items-center gap-3 text-sm font-bold border border-red-100">
+            <AlertCircle size={18} />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        <button 
+          onClick={() => router.back()}
+          className="w-full py-4 text-brand-black/40 font-black text-sm hover:text-brand-black transition-colors"
+        >
+          {language === 'ar' ? 'الرجوع لتعديل البيانات' : 'Back to Edit Details'}
+        </button>
+      </div>
+
+      {/* CliQ Instruction Modal */}
+      <AnimatePresence>
+        {showCliQModal && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowCliQModal(false)} className="absolute inset-0 bg-brand-black/60 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col p-8 md:p-10 space-y-8">
+               <div className="flex justify-between items-center">
+                  <div className="bg-blue-50 p-3 rounded-2xl text-blue-600"><Info size={24} /></div>
+                  <button onClick={() => setShowCliQModal(false)} className="p-2 text-brand-black/20 hover:text-brand-red transition-all"><X size={24} /></button>
+               </div>
+
+               <div className="space-y-3">
+                  <h3 className="text-2xl font-black text-brand-black">{language === 'ar' ? 'الدفع عبر كليك (CliQ)' : 'Payment via CliQ'}</h3>
+                  <p className="text-brand-black/60 font-bold text-sm leading-relaxed">
+                     {language === 'ar' 
+                       ? `يرجى إرسال مبلغ ${finalTotal.toFixed(2)} د.أ إلى الاسم المستعار (Alias) التالي:` 
+                       : `Please send ${finalTotal.toFixed(2)} JOD to the following Alias:`}
+                  </p>
+               </div>
+
+               <div className="bg-brand-cream/40 p-8 rounded-[2rem] border-2 border-dashed border-brand-gray/50 flex flex-col items-center gap-4 group relative">
+                  <span className="text-[10px] font-black uppercase tracking-[4px] text-brand-black/30">CliQ Alias</span>
+                  <p className="text-5xl font-black text-brand-red tracking-tight">XIAN99</p>
+                  <button onClick={() => { navigator.clipboard.writeText('XIAN99'); toast.success(language === 'ar' ? 'تم النسخ!' : 'Copied!'); }} className="flex items-center gap-2 text-[10px] font-black text-brand-black/40 hover:text-brand-black transition-colors border-t border-brand-gray/20 pt-4 w-full justify-center">
+                     <ClipboardCheck size={14} /> {language === 'ar' ? 'نسخ الاسم المستعار' : 'Copy Alias'}
+                  </button>
+               </div>
+
+               <div className="space-y-4">
+                  <div className="bg-blue-50/50 p-4 rounded-2xl flex gap-3 items-start">
+                     <div className="bg-blue-600 text-white w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-black mt-0.5">!</div>
+                     <p className="text-[11px] font-bold text-blue-800 leading-relaxed">
+                        {language === 'ar' 
+                          ? 'بمجرد الضغط على الزر أدناه، سنقوم بمراجعة طلبك وتأكيده خلال أقل من دقيقة.' 
+                          : 'As soon as you click the button below, we will review and confirm your order in less than a minute.'}
+                     </p>
+                  </div>
+                  
+                  <button 
+                    onClick={() => handleOrder('CLIQ')}
+                    disabled={loading}
+                    className="w-full bg-brand-black text-white py-6 rounded-2xl font-black text-xl shadow-xl hover:bg-brand-red transition-all flex items-center justify-center gap-4 active:scale-95 disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24} />}
+                    <span>{language === 'ar' ? 'لقد قمت بالتحويل' : 'I have transferred'}</span>
+                  </button>
+               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* PURCHASE SUMMARY */}
+      <div className="p-6 bg-gray-50/50">
+        <div className="max-w-2xl mx-auto w-full bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
+          <h3 className="text-lg font-black text-brand-black">{language === 'ar' ? 'ملخص الشراء' : 'Purchase Summary'}</h3>
           <div className="space-y-3">
-            <PaymentOption 
-              label={language === 'ar' ? 'كليك' : 'CliQ'}
-              icon={<div className="bg-white border border-gray-200 rounded-lg p-1 px-3 font-black text-sm italic">CliQ</div>}
-              onClick={() => handleOrder('CLIQ')}
-              loading={loading && paymentMethod === 'CLIQ'}
-            />
-
-            <PaymentOption 
-              label={language === 'ar' ? 'الباي بال' : 'PayPal'}
-              sublabel={language === 'ar' ? `دفع ${(finalTotal / 0.708).toFixed(2)} دولار` : `Pay $${(finalTotal / 0.708).toFixed(2)} USD`}
-              icon={<div className="bg-white border border-gray-200 rounded-lg p-1.5 flex items-center justify-center font-black text-xs text-blue-700">PayPal</div>}
-              onClick={() => {}}
-              loading={false}
-            >
-              <div className="mt-4 px-2 pb-2">
-                <PayPalButtons 
-                  style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
-                  createOrder={(_data, actions) => {
-                    const usdAmount = (finalTotal / 0.708).toFixed(2);
-                    return actions.order.create({
-                      intent: "CAPTURE",
-                      purchase_units: [{
-                        amount: {
-                          currency_code: "USD",
-                          value: usdAmount
-                        },
-                        description: `Order from Xian Restaurant - JOD ${finalTotal.toFixed(2)}`
-                      }]
-                    });
-                  }}
-                  onApprove={async (data, actions) => {
-                    const loadingToast = toast.loading(language === 'ar' ? 'جاري تأكيد الدفع...' : 'Capturing payment...');
-                    try {
-                      const res = await fetch('/api/checkout/capture', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          paypalOrderId: data.orderID,
-                          orderData: {
-                            customerName: form.name,
-                            phone: form.phone,
-                            address: form.orderType === 'DELIVERY' ? form.address : 'Store Pickup',
-                            deliveryArea: form.orderType === 'DELIVERY' ? selectedZone.nameEn : '',
-                            pickupTime: form.orderType === 'PICKUP' ? form.pickupTime : '',
-                            orderType: form.orderType,
-                            paymentMethod: 'PAYPAL',
-                            notes: form.notes,
-                            totalPrice: finalTotal,
-                            couponCode: form.discountPercent > 0 ? form.couponCode : null,
-                            items: items.map(item => ({
-                              productId: item.id.toString(),
-                              name: item.name,
-                              price: item.price,
-                              quantity: item.quantity
-                            }))
-                          }
-                        })
-                      });
-                      
-                      const result = await res.json();
-                      if (res.ok) {
-                        setOrderId(result.orderId);
-                        setPaymentMethod('PAYPAL');
-                        setIsPaymentVerified(true);
-                        clearCart();
-                        resetForm();
-                        toast.success(language === 'ar' ? 'تم الدفع بنجاح!' : 'Payment Success!', { id: loadingToast });
-                      } else {
-                        toast.error(result.error || "Payment Capture Failed", { id: loadingToast });
-                      }
-                    } catch (_e) {
-                      toast.error("Process failed", { id: loadingToast });
-                    }
-                  }}
-                />
-              </div>
-            </PaymentOption>
-
-            <PaymentOption 
-              label={language === 'ar' ? 'الدفع من خلال البطاقة' : 'Pay via Card'}
-              sublabel={language === 'ar' ? 'غير متوفر مؤقتاً' : 'Temporarily Unavailable'}
-              disabled={true}
-              icon={
-                <div className="flex gap-1 opacity-50">
-                  <div className="bg-white border border-gray-200 rounded-lg p-1.5"><CreditCard size={18} className="text-red-500" /></div>
-                  <div className="bg-white border border-gray-200 rounded-lg p-1.5"><CreditCard size={18} className="text-blue-600" /></div>
-                </div>
-              }
-              onClick={() => handleOrder('CARD')}
-              loading={loading && paymentMethod === 'CARD'}
-            />
-            <PaymentOption 
-              label={language === 'ar' ? 'أبل باي' : 'Apple Pay'}
-              sublabel={language === 'ar' ? 'غير متوفر مؤقتاً' : 'Temporarily Unavailable'}
-              disabled={true}
-              icon={<div className="bg-white border border-gray-200 rounded-lg p-1 px-2 flex items-center gap-1 font-black text-sm opacity-50"><Apple size={16} fill="black" /> Pay</div>}
-              onClick={() => handleOrder('APPLE_PAY')}
-              loading={loading && paymentMethod === 'APPLE_PAY'}
-            />
-            <PaymentOption 
-              label={language === 'ar' ? 'كاش عند الوصول' : 'Cash on Delivery'}
-              icon={<div className="bg-white border border-gray-200 rounded-lg p-1 px-2"><Banknote size={20} className="text-green-600" /></div>}
-              onClick={() => handleOrder('CASH')}
-              loading={loading && paymentMethod === 'CASH'}
-            />
-          </div>
-
-          {errorMsg && (
-            <div className="bg-red-50 text-red-500 p-4 rounded-xl flex items-center gap-3 text-sm font-bold border border-red-100">
-              <AlertCircle size={18} />
-              <span>{errorMsg}</span>
-            </div>
-          )}
-
-          <button 
-            onClick={() => router.back()}
-            className="w-full py-4 text-brand-black/40 font-black text-sm hover:text-brand-black transition-colors"
-          >
-            {language === 'ar' ? 'الرجوع لتعديل البيانات' : 'Back to Edit Details'}
-          </button>
-        </div>
-
-        {/* CliQ Instruction Modal */}
-        <AnimatePresence>
-          {showCliQModal && (
-            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowCliQModal(false)} className="absolute inset-0 bg-brand-black/60 backdrop-blur-sm" />
-              <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col p-8 md:p-10 space-y-8">
-                 <div className="flex justify-between items-center">
-                    <div className="bg-blue-50 p-3 rounded-2xl text-blue-600"><Info size={24} /></div>
-                    <button onClick={() => setShowCliQModal(false)} className="p-2 text-brand-black/20 hover:text-brand-red transition-all"><X size={24} /></button>
-                 </div>
-
-                 <div className="space-y-3">
-                    <h3 className="text-2xl font-black text-brand-black">{language === 'ar' ? 'الدفع عبر كليك (CliQ)' : 'Payment via CliQ'}</h3>
-                    <p className="text-brand-black/60 font-bold text-sm leading-relaxed">
-                       {language === 'ar' 
-                         ? `يرجى إرسال مبلغ ${finalTotal.toFixed(2)} د.أ إلى الاسم المستعار (Alias) التالي:` 
-                         : `Please send ${finalTotal.toFixed(2)} JOD to the following Alias:`}
-                    </p>
-                 </div>
-
-                 <div className="bg-brand-cream/40 p-8 rounded-[2rem] border-2 border-dashed border-brand-gray/50 flex flex-col items-center gap-4 group relative">
-                    <span className="text-[10px] font-black uppercase tracking-[4px] text-brand-black/30">CliQ Alias</span>
-                    <p className="text-5xl font-black text-brand-red tracking-tight">XIAN99</p>
-                    <button onClick={() => { navigator.clipboard.writeText('XIAN99'); toast.success(language === 'ar' ? 'تم النسخ!' : 'Copied!'); }} className="flex items-center gap-2 text-[10px] font-black text-brand-black/40 hover:text-brand-black transition-colors border-t border-brand-gray/20 pt-4 w-full justify-center">
-                       <ClipboardCheck size={14} /> {language === 'ar' ? 'نسخ الاسم المستعار' : 'Copy Alias'}
-                    </button>
-                 </div>
-
-                 <div className="space-y-4">
-                    <div className="bg-blue-50/50 p-4 rounded-2xl flex gap-3 items-start">
-                       <div className="bg-blue-600 text-white w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-black mt-0.5">!</div>
-                       <p className="text-[11px] font-bold text-blue-800 leading-relaxed">
-                          {language === 'ar' 
-                            ? 'بمجرد الضغط على الزر أدناه، سنقوم بمراجعة طلبك وتأكيده خلال أقل من دقيقة.' 
-                            : 'As soon as you click the button below, we will review and confirm your order in less than a minute.'}
-                       </p>
-                    </div>
-                    
-                    <button 
-                      onClick={() => handleOrder('CLIQ')}
-                      disabled={loading}
-                      className="w-full bg-brand-black text-white py-6 rounded-2xl font-black text-xl shadow-xl hover:bg-brand-red transition-all flex items-center justify-center gap-4 active:scale-95 disabled:opacity-50"
-                    >
-                      {loading ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={24} />}
-                      <span>{language === 'ar' ? 'لقد قمت بالتحويل' : 'I have transferred'}</span>
-                    </button>
-                 </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
-        {/* PURCHASE SUMMARY */}
-        <div className="p-6 bg-gray-50/50">
-          <div className="max-w-2xl mx-auto w-full bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
-            <h3 className="text-lg font-black text-brand-black">{language === 'ar' ? 'ملخص الشراء' : 'Purchase Summary'}</h3>
-            <div className="space-y-3">
-              <SummaryRow label={language === 'ar' ? 'المجموع الفرعي' : 'Subtotal'} value={`${subTotal.toFixed(2)} ${language === 'ar' ? 'دينار' : 'JOD'}`} />
-              <SummaryRow label={language === 'ar' ? 'الخصم' : 'Discount'} value={`${discountAmount.toFixed(2)} ${language === 'ar' ? 'دينار' : 'JOD'}`} valueClass="text-brand-red" />
-              <SummaryRow label={language === 'ar' ? 'رسوم الخدمة' : 'Service Fee'} value={`${serviceFee.toFixed(2)} ${language === 'ar' ? 'دينار' : 'JOD'}`} info />
-              <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
-                <span className="text-xl font-black text-brand-black">{language === 'ar' ? 'المجموع' : 'Total'}</span>
-                <span className="text-xl font-black text-brand-black">{finalTotal.toFixed(2)} {language === 'ar' ? 'دينار' : 'JOD'}</span>
-              </div>
+            <SummaryRow label={language === 'ar' ? 'المجموع الفرعي' : 'Subtotal'} value={`${subTotal.toFixed(2)} ${language === 'ar' ? 'دينار' : 'JOD'}`} />
+            <SummaryRow label={language === 'ar' ? 'الخصم' : 'Discount'} value={`${discountAmount.toFixed(2)} ${language === 'ar' ? 'دينار' : 'JOD'}`} valueClass="text-brand-red" />
+            <SummaryRow label={language === 'ar' ? 'رسوم الخدمة' : 'Service Fee'} value={`${serviceFee.toFixed(2)} ${language === 'ar' ? 'دينار' : 'JOD'}`} info />
+            <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
+              <span className="text-xl font-black text-brand-black">{language === 'ar' ? 'المجموع' : 'Total'}</span>
+              <span className="text-xl font-black text-brand-black">{finalTotal.toFixed(2)} {language === 'ar' ? 'دينار' : 'JOD'}</span>
             </div>
           </div>
         </div>
       </div>
-    </PayPalScriptProvider>
+    </div>
   );
 }
 
-function PaymentOption({ label, sublabel, icon, onClick, loading, disabled = false, children }: { label: string, sublabel?: string, icon: React.ReactNode, onClick: () => void, loading: boolean, disabled?: boolean, children?: React.ReactNode }) {
+function PaymentOption({ label, sublabel, icon, onClick, loading, disabled = false }: { label: string, sublabel?: string, icon: React.ReactNode, onClick: () => void, loading: boolean, disabled?: boolean }) {
   const { language } = useLanguage();
   return (
-    <div className="bg-white border-b border-gray-50 overflow-hidden">
-      <button 
-        onClick={onClick}
-        disabled={loading || disabled}
-        className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors group ${disabled ? 'cursor-not-allowed grayscale-[0.5]' : ''}`}
-      >
-        <div className="flex items-center gap-4">
-          {!disabled && (language === 'ar' ? <ChevronLeft size={20} className="text-blue-500 transition-transform group-hover:-translate-x-1" /> : <ChevronRight size={20} className="text-blue-500 transition-transform group-hover:translate-x-1" />)}
-          {icon}
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          <span className={`font-bold ${disabled ? 'text-gray-400 line-through' : 'text-gray-700'}`}>{label}</span>
-          {sublabel && <span className="text-[10px] font-black text-brand-red uppercase tracking-tighter animate-pulse">{sublabel}</span>}
-          {loading && <Loader2 size={18} className="animate-spin text-brand-red" />}
-        </div>
-      </button>
-      {children}
-    </div>
+    <button 
+      onClick={onClick}
+      disabled={loading || disabled}
+      className={`w-full flex items-center justify-between p-4 bg-white border-b border-gray-50 hover:bg-gray-50 transition-colors group ${disabled ? 'cursor-not-allowed grayscale-[0.5]' : ''}`}
+    >
+      <div className="flex items-center gap-4">
+        {!disabled && (language === 'ar' ? <ChevronLeft size={20} className="text-blue-500 transition-transform group-hover:-translate-x-1" /> : <ChevronRight size={20} className="text-blue-500 transition-transform group-hover:translate-x-1" />)}
+        {icon}
+      </div>
+      <div className="flex flex-col items-end gap-1">
+        <span className={`font-bold ${disabled ? 'text-gray-400 line-through' : 'text-gray-700'}`}>{label}</span>
+        {sublabel && <span className="text-[10px] font-black text-brand-red uppercase tracking-tighter animate-pulse">{sublabel}</span>}
+        {loading && <Loader2 size={18} className="animate-spin text-brand-red" />}
+      </div>
+    </button>
   );
 }
 
