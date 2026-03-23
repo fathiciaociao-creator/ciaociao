@@ -66,6 +66,7 @@ export default function AdminDashboard() {
   const [isPushSubscribed, setIsPushSubscribed] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [alarmVolume, setAlarmVolume] = useState(1.0);
   const orderCountRef = useRef<number>(0);
   const audioContextRef = useRef<AudioContext | null>(null);
   const alarmRef = useRef<HTMLAudioElement | null>(null);
@@ -85,7 +86,8 @@ export default function AdminDashboard() {
 
     // Initialize the looping alarm object
     if (!alarmRef.current) {
-      alarmRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+      // Using a much more aggressive 'Siren' style sound
+      alarmRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3');
       alarmRef.current.loop = true;
     }
 
@@ -97,6 +99,7 @@ export default function AdminDashboard() {
 
   const playAlarm = () => {
     if (!isAudioUnlocked || !alarmRef.current) return;
+    alarmRef.current.volume = alarmVolume;
     alarmRef.current.play().catch(e => console.error("Alarm failed:", e));
   };
 
@@ -492,6 +495,34 @@ export default function AdminDashboard() {
                   </button>
               </div>
             </div>
+
+            {/* Volume Control */}
+            {isAudioUnlocked && (
+              <div className="w-full flex items-center gap-6 bg-brand-cream/30 p-6 rounded-3xl border border-brand-gray/50">
+                <div className="bg-brand-red p-2 rounded-xl text-white">
+                  {alarmVolume > 0 ? <Volume2 size={24} /> : <VolumeX size={24} />}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/40">مستوى صوت الإنذار (Alarm Volume)</span>
+                    <span className="text-[10px] font-black text-brand-red">{Math.round(alarmVolume * 100)}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="1" 
+                    step="0.1" 
+                    value={alarmVolume} 
+                    onChange={(e) => {
+                      const newVol = parseFloat(e.target.value);
+                      setAlarmVolume(newVol);
+                      if (alarmRef.current) alarmRef.current.volume = newVol;
+                    }}
+                    className="w-full h-1.5 bg-brand-gray rounded-lg appearance-none cursor-pointer accent-brand-red"
+                  />
+                </div>
+              </div>
+            )}
             
             {/* New: Push Notification Banner */}
             {!isPushSubscribed && (

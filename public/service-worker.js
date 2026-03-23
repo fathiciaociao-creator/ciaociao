@@ -18,7 +18,7 @@ self.addEventListener('push', function(event) {
     body: data.body,
     icon: data.icon || '/logo.png',
     badge: data.badge || '/logo.png',
-    vibrate: [200, 100, 200, 100, 200, 100, 200],
+    vibrate: [500, 110, 500, 110, 450, 110, 200, 110, 170, 40, 450, 110, 200, 110, 170, 40, 500],
     data: {
       url: '/admin'
     },
