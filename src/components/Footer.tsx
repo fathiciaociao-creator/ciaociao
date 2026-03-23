@@ -1,6 +1,5 @@
 'use client';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Instagram, Facebook, Phone, MapPin } from 'lucide-react';
 import { useCart } from '@/store/useCart';
 

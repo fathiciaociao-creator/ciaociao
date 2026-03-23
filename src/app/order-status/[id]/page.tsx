@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Header from '@/components/Header';
 import { Clock, CheckCircle2, UtensilsCrossed, Bike, PackageSearch, ArrowLeft, XCircle, Zap } from 'lucide-react';
 import Link from 'next/link';
@@ -30,7 +30,7 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchStatus = async (showLoading = false) => {
+  const fetchStatus = useCallback(async (showLoading = false) => {
     if (showLoading) setLoading(true);
     try {
       const res = await fetch(`/api/order/${id}`);
@@ -43,7 +43,7 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
     } finally {
       if (showLoading) setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchStatus(true);
@@ -84,7 +84,7 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
         supabase.removeChannel(channel);
       }
     };
-  }, [id]);
+  }, [id, fetchStatus]);
 
   if (loading) {
     return (
@@ -105,7 +105,7 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
           <div className="bg-white p-12 rounded-[2rem] shadow-sm border border-brand-gray/50 max-w-lg">
             <PackageSearch size={80} className="text-brand-red/20 mx-auto mb-8" strokeWidth={1} />
             <h1 className="text-4xl font-black text-brand-black luxury-heading mb-4">Order Not Found</h1>
-            <p className="text-brand-black/40 font-bold max-w-xs mx-auto mb-10 leading-relaxed">Sorry, we couldn't find this order. Please make sure the number is correct.</p>
+            <p className="text-brand-black/40 font-bold max-w-xs mx-auto mb-10 leading-relaxed">Sorry, we couldn&apos;t find this order. Please make sure the number is correct.</p>
             <Link href="/" className="btn-matte w-full justify-center">
               <ArrowLeft size={20} /> Back to Home
             </Link>
@@ -130,7 +130,7 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
               Sorry, your order was rejected
             </h1>
             <p className="text-brand-black/60 font-bold max-w-md mx-auto mb-10 leading-relaxed text-lg">
-              Unfortunately, we couldn't approve your order at this time. This might be due to heavy traffic or unavailability of some ingredients. Please contact us for inquiries.
+              Unfortunately, we couldn&apos;t approve your order at this time. This might be due to heavy traffic or unavailability of some ingredients. Please contact us for inquiries.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-sm mx-auto">
               <Link href="/" className="btn-matte flex-1 justify-center">

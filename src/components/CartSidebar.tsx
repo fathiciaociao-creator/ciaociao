@@ -15,7 +15,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
   const { items, getSubTotal, getTotalPrice, clearCart, removeItem } = useCart();
   const [isOrdered, setIsOrdered] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [, setErrorMsg] = useState('');
   const [form, setForm] = useState({ name: '', phone: '', address: '', deliveryArea: '', notes: '', pickupTime: '' });
   const [orderType, setOrderType] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CLIQ'>('CASH');

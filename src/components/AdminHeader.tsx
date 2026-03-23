@@ -14,7 +14,10 @@ export default function AdminHeader({ title, subtitle, icon, actions }: AdminHea
 
   useEffect(() => {
     const saved = localStorage.getItem('xian_admin_audio_enabled');
-    if (saved === 'true') setIsAudioEnabled(true);
+    if (saved === 'true') {
+      // Use requestAnimationFrame to avoid synchronous state update during effect execution
+      requestAnimationFrame(() => setIsAudioEnabled(true));
+    }
   }, []);
 
   const toggleAudio = () => {

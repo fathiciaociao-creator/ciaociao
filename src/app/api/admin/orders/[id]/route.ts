@@ -12,7 +12,7 @@ export async function PATCH(
     return NextResponse.json({ error: "معرف الطلب مفقود" }, { status: 400 });
   }
 
-  const updateData: any = {};
+  const updateData: { status?: string; paymentStatus?: string } = {};
   if (status) updateData.status = status;
   if (paymentStatus) updateData.paymentStatus = paymentStatus;
 

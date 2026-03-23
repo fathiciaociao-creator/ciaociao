@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       where: { id: { in: productIds } }
     });
     
-    const realPriceMap = new Map(dbProducts.map((p: any) => [p.id, p.price]));
+    const realPriceMap = new Map(dbProducts.map((p: { id: string; price: number }) => [p.id, p.price]));
     
     let calculatedTotal = 0;
     const itemsToCreate = [];
@@ -137,7 +137,7 @@ export async function POST(request: Request) {
         
         // Send to all registered devices (iPad, mobiles, etc.)
         await Promise.allSettled(
-          subscriptions.map((sub: any) => 
+          subscriptions.map((sub) => 
             sendOrderNotification(sub, newOrder.id, newOrder.totalPrice)
           )
         );

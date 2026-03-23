@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, ShoppingCart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
-import MenuItemCard from '@/components/MenuItemCard';
+import MenuItemCard, { Product } from '@/components/MenuItemCard';
 import CartSidebar from '@/components/CartSidebar';
 import { useLanguage } from '@/store/useLanguage';
 
@@ -12,17 +12,17 @@ export default function HomeClient({
   initialData = [], 
   initialSettings = null 
 }: { 
-  initialData?: any[], 
-  initialSettings?: any 
+  initialData?: Product[], 
+  initialSettings?: { categoryOrder?: string } | null 
 }) {
   const { language } = useLanguage();
   const { items, getTotalPrice } = useCart();
-  const [products, setProducts] = useState<any[]>(initialData);
+  const [products, setProducts] = useState<Product[]>(initialData);
   const [categoryOrder, setCategoryOrder] = useState<string[]>(() => {
     if (initialSettings?.categoryOrder) {
       try {
         return JSON.parse(initialSettings.categoryOrder);
-      } catch (e) {
+      } catch {
         return [];
       }
     }
@@ -36,7 +36,7 @@ export default function HomeClient({
   const [selectedCategory, setSelectedCategory] = useState(() => {
     if (initialData.length > 0) {
       const allCats = new Set<string>();
-      initialData.forEach((p: any) => {
+      initialData.forEach((p) => {
         if (p.category) {
           p.category.split(',').forEach((c: string) => {
             const trimmed = c.trim();
@@ -111,6 +111,7 @@ export default function HomeClient({
       }
     };
     fetchMenu();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const allCategories = new Set<string>();

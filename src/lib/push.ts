@@ -11,7 +11,11 @@ if (publicKey && privateKey) {
   );
 }
 
-export async function sendOrderNotification(subscription: any, orderId: string, total: number) {
+export async function sendOrderNotification(
+  subscription: { endpoint: string; p256dh: string; auth: string }, 
+  orderId: string, 
+  total: number
+) {
   try {
     const pushSubscription = {
       endpoint: subscription.endpoint,

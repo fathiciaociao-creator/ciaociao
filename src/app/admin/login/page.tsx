@@ -37,7 +37,7 @@ export default function AdminLogin() {
         toast.error(data.error || "كلمة المرور خاطئة");
         setIsLoading(false);
       }
-    } catch (err) {
+    } catch {
       toast.error("فشل الاتصال بالخادم");
       setIsLoading(false);
     }

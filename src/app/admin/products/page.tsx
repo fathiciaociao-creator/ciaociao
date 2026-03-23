@@ -1,10 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
 import {
-  Plus, Edit2, Trash2, Camera, Tag, DollarSign, Package,
-  Check, X, ArrowRight, Save, LayoutGrid, AlertCircle,
+  Plus, Edit2, Trash2, Camera, DollarSign, Package,
+  Check, X, ArrowRight, Save, LayoutGrid,
   Layers, Search, MoreVertical, ChevronLeft, ArrowLeft,
-  Link2, Folder, ChevronRight, ArrowUpDown, ChevronUp, ChevronDown, ListOrdered,
+  Link2, Folder, ChevronRight, ChevronUp, ChevronDown, ListOrdered,
   CheckSquare, Square, MoveRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -682,7 +682,7 @@ export default function ProductsDashboard() {
                                   fill
                                   className="object-contain"
                                   onError={(e) => {
-                                    (e.target as any).src = 'https://placehold.co/400x400/F9F7F2/922724.png?text=رابط+غير+صالح';
+                                    (e.target as HTMLImageElement).src = 'https://placehold.co/400x400/F9F7F2/922724.png?text=رابط+غير+صالح';
                                   }}
                                 />
                                 <div className="absolute inset-0 bg-brand-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

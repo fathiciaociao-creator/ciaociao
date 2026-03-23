@@ -1,12 +1,11 @@
 'use client';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import AdminHeader from '@/components/AdminHeader';
 import { 
   CheckCircle, RefreshCcw, User, Phone, MapPin, Trash2, Clock, 
-  ShieldCheck, Box, ChevronRight, Package, Volume2, VolumeX, 
-  Bell, ExternalLink, AlertCircle, CheckCircle2, Zap, Store, Ticket,
+  ShieldCheck, Box, ChevronRight, Package, 
+  Bell, AlertCircle, Zap, Store, Ticket,
   Printer
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -73,7 +72,7 @@ export default function AdminDashboard() {
   // Initialize Audio Context to bypass browser restrictions
   const unlockAudio = () => {
     if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      audioContextRef.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
     }
     
     // Play a silent buffer to unlock
@@ -95,40 +94,31 @@ export default function AdminDashboard() {
     });
   };
 
-  const playAlarm = () => {
+  const playAlarm = useCallback(() => {
     if (!isAudioUnlocked || !alarmRef.current) return;
     alarmRef.current.play().catch(e => console.error("Alarm failed:", e));
-  };
+  }, [isAudioUnlocked]);
 
-  const stopAlarm = () => {
+  const stopAlarm = useCallback(() => {
     if (alarmRef.current) {
       alarmRef.current.pause();
       alarmRef.current.currentTime = 0;
     }
-  };
+  }, []);
 
-  const fetchOrders = async (isInitial = false) => {
+  const fetchOrders = useCallback(async (isInitial = false) => {
     if (isInitial) setLoading(true);
     try {
       const res = await fetch('/api/admin/orders', { cache: 'no-store' });
       const data = await res.json();
-      
       if (res.ok) {
         setOrders(data);
-        
-        // Check for ANY pending orders or Unverified CliQ Payments to trigger/keep alarm going
         const shouldRing = data.some((o: Order) => 
           o.status === 'PENDING' || 
           (o.paymentMethod === 'CLIQ' && o.paymentStatus === 'PENDING' && o.status !== 'CANCELLED' && o.status !== 'SHIPPED')
         );
-        
-        if (shouldRing && isAudioUnlocked) {
-          playAlarm();
-        } else {
-          stopAlarm();
-        }
-
-        // Specific toast for NEW arrivals (only if count increased)
+        if (shouldRing && isAudioUnlocked) playAlarm();
+        else stopAlarm();
         if (!isInitial && data.length > orderCountRef.current) {
           const newOrder = data[0]; 
           toast(`🔥 طلب جديد وصل! رقم: #${newOrder.id.slice(-4)}`, {
@@ -144,7 +134,7 @@ export default function AdminDashboard() {
     } finally {
       if (isInitial) setLoading(false);
     }
-  };
+  }, [isAudioUnlocked, playAlarm, stopAlarm]);
 
   const handlePrint = (order: Order) => {
     setPrintingOrder(order);
@@ -286,9 +276,10 @@ export default function AdminDashboard() {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Server rejected subscription');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Push subscription failed:', error);
-      toast.error(`فشل تفعيل التنبيهات: ${error.message || 'خطأ غير متوقع'}`);
+      const message = error instanceof Error ? error.message : 'خطأ غير متوقع';
+      toast.error(`فشل تفعيل التنبيهات: ${message}`);
     } finally {
       setPushLoading(false);
     }
@@ -329,7 +320,7 @@ export default function AdminDashboard() {
     fetchOrders(true);
     const interval = setInterval(() => fetchOrders(false), 8000); // Aggressive 8s refresh
     return () => clearInterval(interval);
-  }, [isAudioUnlocked]);
+  }, [isAudioUnlocked, fetchOrders]);
 
   return (
     <div className="min-h-screen bg-[#F9F7F2] relative" dir="rtl">
@@ -502,7 +493,7 @@ export default function AdminDashboard() {
                   <div>
                     <h3 className="text-brand-black font-black text-lg">تفعيل التنبيهات الفورية</h3>
                     <p className="text-brand-black/40 text-sm font-bold">استقبل إشعارات الطلبات الجديدة حتى لو كان المتصفح في الخلفية.</p>
-                    {mounted && !((window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches) && (
+                    {mounted && !((window.navigator as unknown as { standalone?: boolean }).standalone || window.matchMedia('(display-mode: standalone)').matches) && (
                       <p className="text-brand-red text-[11px] font-black mt-2 uppercase tracking-wide">
                         ⚠️ لمستخدمي الآيفون: يجب إضافة الموقع إلى الشاشة الرئيسية أولاً للعمل.
                       </p>
@@ -724,7 +715,7 @@ export default function AdminDashboard() {
                               <div className="bg-white p-3 rounded-2xl shadow-sm border border-yellow-200 text-yellow-600">
                                  <AlertCircle size={24} />
                               </div>
-                              <p className="text-brand-black font-black text-xl italic leading-relaxed pt-1">"{order.notes}"</p>
+                              <p className="text-brand-black font-black text-xl italic leading-relaxed pt-1">&quot;{order.notes}&quot;</p>
                             </div>
                           </div>
                         </div>

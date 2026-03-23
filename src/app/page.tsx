@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import HomeClient from '@/components/HomeClient';
+import { Product } from '@/components/MenuItemCard';
 import { prisma } from "@/db";
 
 export const metadata: Metadata = {
@@ -60,7 +61,7 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(menuSchema) }}
       />
-      <HomeClient initialData={products as any} initialSettings={settings as any} />
+      <HomeClient initialData={products as Product[]} initialSettings={settings as { categoryOrder?: string } | null} />
     </>
   );
 }

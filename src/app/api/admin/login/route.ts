@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: false, error: "كلمة المرور غير صحيحة" }, { status: 401 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ success: false, error: "حدث خطأ غير متوقع" }, { status: 500 });
   }
 }

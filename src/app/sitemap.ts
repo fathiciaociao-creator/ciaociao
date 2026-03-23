@@ -1,5 +1,4 @@
 import { MetadataRoute } from 'next';
-import { prisma } from '@/db';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://xianjo.com';
@@ -9,7 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     {
       url: baseUrl,
       lastModified: new Date(),
-      changeFrequency: 'daily' as any,
+      changeFrequency: 'daily' as const,
       priority: 1,
     },
   ];

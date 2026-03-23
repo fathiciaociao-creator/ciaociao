@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react';
 import { useLanguage } from '@/store/useLanguage';
 import toast from 'react-hot-toast';
 
-interface Product {
+export interface Product {
   id: number | string;
   nameEn?: string;
   nameAr: string;

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
-import { PackageSearch, Clock, UtensilsCrossed, CheckCircle2, Bike, ArrowLeft, ArrowUpRight } from 'lucide-react';
+import { PackageSearch, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/store/useLanguage';
@@ -26,7 +26,7 @@ interface Order {
 
 export default function MyOrdersPage() {
   const { language } = useLanguage();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
