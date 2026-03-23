@@ -24,6 +24,7 @@ model Order {
   couponCode   String?     // Null if no coupon applied
   paymentMethod String     @default("CASH")    // CASH or CLIQ
   paymentStatus String     @default("PENDING") // PENDING, COMPLETED
+  isArchived    Boolean    @default(false)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 

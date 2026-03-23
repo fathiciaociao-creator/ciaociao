@@ -6,15 +6,16 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const { status, paymentStatus } = await request.json();
+  const { status, paymentStatus, isArchived } = await request.json();
 
   if (!id) {
     return NextResponse.json({ error: "معرف الطلب مفقود" }, { status: 400 });
   }
 
-  const updateData: { status?: string; paymentStatus?: string } = {};
+  const updateData: { status?: string; paymentStatus?: string; isArchived?: boolean } = {};
   if (status) updateData.status = status;
   if (paymentStatus) updateData.paymentStatus = paymentStatus;
+  if (typeof isArchived === 'boolean') updateData.isArchived = isArchived;
 
   try {
     const updatedOrder = await prisma.order.update({

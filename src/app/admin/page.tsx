@@ -1,11 +1,9 @@
 'use client';
 import { useEffect, useState, useRef, useCallback } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { 
   CheckCircle, RefreshCcw, User, Phone, MapPin, Trash2, Clock, 
-  ShieldCheck, Box, ChevronRight, Package, 
-  Bell, AlertCircle, Zap, Store, Ticket,
+  ShieldCheck, Box, Package, 
+  Bell, Zap, Store,
   Printer
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,20 +39,20 @@ interface Order {
   };
 }
 
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/\-/g, '+')
-    .replace(/_/g, '/');
-
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
+interface Customer {
+  name: string;
+  phone: string;
+  area: string;
+  orderCount: number;
+  lastOrder: string;
 }
+
+interface ReportSummary {
+  totalOrders: number;
+  totalRevenue: number;
+  orders: Order[];
+}
+
 
 export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -62,12 +60,22 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [printingOrder, setPrintingOrder] = useState<Order | null>(null);
   const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
-  const [isPushSubscribed, setIsPushSubscribed] = useState(false);
-  const [pushLoading, setPushLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const orderCountRef = useRef<number>(0);
   const audioContextRef = useRef<AudioContext | null>(null);
   const alarmRef = useRef<HTMLAudioElement | null>(null);
+
+  type Tab = 'ORDERS' | 'HISTORY' | 'CUSTOMERS' | 'REPORTS' | 'SYSTEM';
+  const [activeTab, setActiveTab] = useState<Tab>('ORDERS');
+  
+  // New States for expanded features
+  const [historyOrders, setHistoryOrders] = useState<Order[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [reportData, setReportData] = useState<ReportSummary | null>(null);
+  const [reportType, setReportType] = useState('daily');
+  const [dateRange] = useState({ start: '', end: '' });
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [customersLoading, setCustomersLoading] = useState(false);
+  const [reportsLoading, setReportsLoading] = useState(false);
 
   // Initialize Audio Context to bypass browser restrictions
   const unlockAudio = () => {
@@ -145,20 +153,36 @@ export default function AdminDashboard() {
     }, 100);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('هل أنت متأكد من أرشفة هذا الطلب؟')) return;
+  const handleArchive = async (id: string) => {
+    if (!confirm('هل أنت متأكد من أرشفة هذا الطلب؟ سيبقى في السجلات ولكن سيختفي من القائمة الرئيسية.')) return;
     try {
-      const res = await fetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/orders/${id}`, { 
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isArchived: true })
+      });
       if (res.ok) {
         setOrders(orders.filter(o => o.id !== id));
         orderCountRef.current -= 1;
         toast.success('تمت أرشفة الطلب بنجاح');
         
-        // Check if we should stop alarm after removal
         const shouldRing = orders.some((o: Order) => 
           o.id !== id && (o.status === 'PENDING' || (o.paymentMethod === 'CLIQ' && o.paymentStatus === 'PENDING' && o.status !== 'CANCELLED' && o.status !== 'SHIPPED'))
         );
         if (!shouldRing) stopAlarm();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleDeletePermanent = async (id: string) => {
+    if (!confirm('تحذير: سيتم حذف هذا الطلب نهائياً من قاعدة البيانات! هل تريد المتابعة؟')) return;
+    try {
+      const res = await fetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setOrders(orders.filter(o => o.id !== id));
+        toast.success('تم حذف الطلب نهائياً');
       }
     } catch (e) {
       console.error(e);
@@ -233,71 +257,84 @@ export default function AdminDashboard() {
     }
   };
 
-  const subscribeToPush = async () => {
-    setPushLoading(true);
+  const fetchHistory = async () => {
+    setHistoryLoading(true);
     try {
-      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-        throw new Error('Push notifications not supported in this browser');
-      }
-
-      // Check Notification Permission First
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        throw new Error('Permission denied by user');
-      }
-
-      const registration = await navigator.serviceWorker.ready;
-      const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-      
-      if (!publicKey) {
-        console.error('VAPID key is missing in ENV');
-        throw new Error('Configuration error: Missing VAPID key');
-      }
-
-      console.log('Subscribing with public key:', publicKey);
-
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey)
-      });
-
-      console.log('Subscription successful:', subscription);
-
-      const res = await fetch('/api/admin/push/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(subscription)
-      });
-
-      if (res.ok) {
-        setIsPushSubscribed(true);
-        toast.success('تم تفعيل التنبيهات الفورية بنجاح! 📱');
-      } else {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Server rejected subscription');
-      }
-    } catch (error: unknown) {
-      console.error('Push subscription failed:', error);
-      const message = error instanceof Error ? error.message : 'خطأ غير متوقع';
-      toast.error(`فشل تفعيل التنبيهات: ${message}`);
+      const res = await fetch('/api/admin/reports?type=all');
+      const data = await res.json();
+      if (res.ok) setHistoryOrders(data.orders);
+    } catch (e) {
+      console.error(e);
+      toast.error('فشل تحميل الأرشيف');
     } finally {
-      setPushLoading(false);
+      setHistoryLoading(false);
     }
   };
 
+  const fetchCustomers = async () => {
+    setCustomersLoading(true);
+    try {
+      const res = await fetch('/api/admin/customers');
+      const data = await res.json();
+      if (res.ok) setCustomers(data);
+    } catch (e) {
+      console.error(e);
+      toast.error('فشل تحميل قائمة الزبائن');
+    } finally {
+      setCustomersLoading(false);
+    }
+  };
+
+  const fetchReports = async (type = reportType, range = dateRange) => {
+    setReportsLoading(true);
+    try {
+      let url = `/api/admin/reports?type=${type}`;
+      if (type === 'custom' && range.start && range.end) {
+        url += `&start=${range.start}&end=${range.end}`;
+      }
+      const res = await fetch(url);
+      const data = await res.json();
+      if (res.ok) setReportData(data);
+    } catch (e) {
+      console.error(e);
+      toast.error('فشل تحميل التقارير');
+    } finally {
+      setReportsLoading(false);
+    }
+  };
+
+  const handleResetSystem = async () => {
+    const code = prompt('لتأكيد تصفير الموقع بالكامل (حذف جميع الطلبات والزبائن)، اكتب الكلمة التالية بالضبط: RESET');
+    if (code !== 'RESET') return;
+    
+    const loadingToast = toast.loading('جاري تصفير البيانات...');
+    try {
+      const res = await fetch('/api/admin/system/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'RESET_ALL_DATA' })
+      });
+      if (res.ok) {
+        toast.success('تم تصفير جميع بيانات الطلبات بنجاح.', { id: loadingToast });
+        fetchOrders(true);
+        setActiveTab('ORDERS');
+      } else {
+        toast.error('فشلت العملية. حاول مرة أخرى.', { id: loadingToast });
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('حدث خطأ أثناء التصفير', { id: loadingToast });
+    }
+  };
+
+
   useEffect(() => {
-    setMounted(true);
     // Check if push is supported and subscribed
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       console.log('Registering service worker...');
       navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
         .then(registration => {
           console.log('Service Worker registered with scope:', registration.scope);
-          return registration.pushManager.getSubscription();
-        })
-        .then(subscription => {
-          console.log('Current push subscription:', subscription);
-          setIsPushSubscribed(!!subscription);
         })
         .catch(err => {
           console.error('Service Worker registration failed:', err);
@@ -323,489 +360,401 @@ export default function AdminDashboard() {
   }, [isAudioUnlocked, fetchOrders]);
 
   return (
-    <div className="min-h-screen bg-[#F9F7F2] relative" dir="rtl">
+    <div className="min-h-screen bg-[#F1F3F6] flex flex-col md:flex-row font-body" dir="rtl">
       <Toaster position="bottom-center" />
 
       {/* HIDDEN PRINT AREA */}
       {printingOrder && (
         <div id="print-area" className="hidden print:block">
-          <div className="text-center border-b-2 border-black pb-4 mb-4">
+           <div className="text-center border-b-2 border-black pb-4 mb-4">
             <h1 className="text-2xl font-black uppercase">Xian Restaurant</h1>
             <p className="text-xs font-bold">مطعم شيان</p>
             <p className="text-[10px] mt-1">عمان، الأردن • Amman, Jordan</p>
             <p className="text-[10px]">+962 77 999 0504</p>
           </div>
-
           <div className="space-y-2 mb-4 text-xs">
-            <div className="flex justify-between">
-              <span>رقم الطلب:</span>
-              <span className="font-black">#{printingOrder.id.slice(-6).toUpperCase()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>التاريخ:</span>
-              <span>{new Date(printingOrder.createdAt).toLocaleString('ar-JO')}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>النوع:</span>
-              <span className="font-black">{printingOrder.orderType === 'DELIVERY' ? 'توصيل' : 'استلام'}</span>
-            </div>
+            <div className="flex justify-between"><span>رقم الطلب:</span><span className="font-black">#{printingOrder.id.slice(-6).toUpperCase()}</span></div>
+            <div className="flex justify-between"><span>التاريخ:</span><span>{new Date(printingOrder.createdAt).toLocaleString('ar-JO')}</span></div>
+            <div className="flex justify-between"><span>النوع:</span><span className="font-black">{printingOrder.orderType === 'DELIVERY' ? 'توصيل' : 'استلام'}</span></div>
           </div>
-
           <div className="border-b-2 border-black mb-4"></div>
-
           <div className="space-y-3 mb-6">
             {printingOrder.items.map((item, idx) => (
               <div key={idx} className="flex justify-between items-start text-xs">
-                <div className="flex gap-2">
-                  <span className="font-black">{item.quantity}x</span>
-                  <span>{item.name}</span>
-                </div>
+                <div className="flex gap-2"><span className="font-black">{item.quantity}x</span><span>{item.name}</span></div>
                 <span className="font-bold">{(item.price * item.quantity).toFixed(2)}</span>
               </div>
             ))}
           </div>
-
           <div className="border-t-2 border-black pt-4 space-y-1 text-sm">
-            <div className="flex justify-between font-black">
-              <span>الإجمالي:</span>
-              <span>{printingOrder.totalPrice.toFixed(2)} د.أ</span>
-            </div>
-            <div className="flex justify-between text-[10px]">
-              <span>طريقة الدفع:</span>
-              <span>{printingOrder.paymentMethod === 'CLIQ' ? 'كليك' : 'كاش'}</span>
-            </div>
+            <div className="flex justify-between font-black"><span>الإجمالي:</span><span>{printingOrder.totalPrice.toFixed(2)} د.أ</span></div>
+            <div className="flex justify-between text-[10px]"><span>طريقة الدفع:</span><span>{printingOrder.paymentMethod === 'CLIQ' ? 'كليك' : 'كاش'}</span></div>
           </div>
-
           <div className="mt-8 pt-4 border-t border-dashed border-gray-300 text-[10px] space-y-2">
             <p className="font-black">العميل: {printingOrder.customerName}</p>
             <p>الهاتف: {printingOrder.phoneNumber}</p>
-            {printingOrder.orderType === 'DELIVERY' && (
-              <p className="leading-tight">العنوان: {printingOrder.deliveryArea} - {printingOrder.address}</p>
-            )}
-            {printingOrder.notes && (
-              <p className="bg-gray-100 p-2 italic">ملاحظة: {printingOrder.notes}</p>
-            )}
-          </div>
-
-          <div className="mt-10 text-center text-[8px] uppercase tracking-widest opacity-50">
-            Thank you for choosing Xian!
+            {printingOrder.orderType === 'DELIVERY' && <p className="leading-tight">العنوان: {printingOrder.deliveryArea} - {printingOrder.address}</p>}
           </div>
         </div>
       )}
 
-      {/* FORCE INTERACTION OVERLAY - Aggressive Mode */}
+      {/* INTERACTION OVERLAY */}
       <AnimatePresence>
         {!isAudioUnlocked && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-brand-black/95 backdrop-blur-xl flex items-center justify-center p-6"
-          >
-            <motion.div 
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              className="max-w-md w-full text-center space-y-12"
-            >
-              <div className="flex justify-center">
-                <div className="bg-brand-red p-8 rounded-[3rem] text-white shadow-[0_0_50px_rgba(146,39,36,0.5)] animate-pulse">
-                  <Bell size={64} strokeWidth={1} />
-                </div>
-              </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-brand-black/95 backdrop-blur-xl flex items-center justify-center p-6">
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="max-w-md w-full text-center space-y-12">
+              <div className="bg-brand-red p-8 rounded-[3rem] text-white shadow-2xl mx-auto w-fit animate-pulse"><Bell size={64} /></div>
               <div className="space-y-4">
-                <h1 className="text-4xl font-black text-white font-serif leading-tight">نظام التنبيهات الفوري</h1>
-                <p className="text-white/40 font-bold uppercase tracking-[0.3em] text-[10px]">Security Protocol • Audio Init Required</p>
-                <p className="text-white/60 text-lg font-medium leading-relaxed">يرجى تفعيل الصوت لضمان استقبال الطلبات فور وصولها. سينطلق الإنذار تلقائياً عند أي طلب جديد.</p>
+                <h1 className="text-4xl font-black text-white font-serif">تفعيل التنبيهات</h1>
+                <p className="text-white/60">يرجى تفعيل الصوت لضمان استقبال الطلبات فور وصولها.</p>
               </div>
-              <button 
-                onClick={unlockAudio}
-                className="w-full bg-white text-brand-black hover:bg-brand-red hover:text-white py-8 rounded-[2.5rem] font-black text-xl shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-4 group"
-              >
-                <span>تفعيل الإنذار الآن 🔔</span>
-                <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
-              </button>
+              <button onClick={unlockAudio} className="w-full bg-white text-brand-black py-8 rounded-[2.5rem] font-black text-xl active:scale-95 transition-all">تفعيل الآن 🔔</button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="p-6 md:p-12 flex flex-col items-center">
-        <div className="w-full max-w-7xl">
-          
-          {/* Admin Header */}
-          <div className="flex flex-col lg:flex-row gap-8 justify-between items-start lg:items-center mb-16 bg-white p-10 lg:p-12 rounded-[3.5rem] border-2 border-brand-gray shadow-sm relative overflow-hidden transition-all">
-            <div className="flex items-center gap-6">
-              <div className="bg-brand-red p-5 rounded-3xl text-white shadow-xl shadow-brand-red/10">
-                <ShieldCheck size={40} strokeWidth={1.5} />
-              </div>
-              <div>
-                <h1 className="text-4xl font-black text-brand-red font-serif mb-2">إدارة شيان</h1>
-                <div className="flex items-center gap-2">
-                   <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
-                   <p className="text-brand-black/30 font-bold uppercase tracking-[0.3em] text-xs">Live Monitoring Active</p>
-                </div>
-              </div>
-            </div>
+      {/* SIDEBAR */}
+      <div className="w-full md:w-72 bg-brand-black text-white flex flex-col p-6 sticky top-0 md:h-screen z-50 overflow-y-auto no-scrollbar">
+        <div className="flex items-center gap-4 mb-20 px-2 mt-4">
+          <div className="bg-brand-red p-3 rounded-2xl shadow-xl"><ShieldCheck size={28} /></div>
+          <div>
+            <h1 className="font-serif text-2xl font-black tracking-tight leading-none mb-1">إدارة شيان</h1>
+            <p className="text-[9px] font-bold text-white/30 uppercase tracking-[0.3em]">Control Panel</p>
+          </div>
+        </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
-              {isStoreOpen !== null && (
-                <button 
-                  onClick={handleToggleStore}
-                  className={`flex flex-col md:flex-row items-center justify-center gap-3 px-8 py-4 rounded-3xl font-black transition-all shadow-sm border-2 ${isStoreOpen ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' : 'bg-red-50 text-brand-red border-red-200 hover:bg-red-100'} hover:scale-[1.02] active:scale-95`}
-                >
-                  <Store size={24} />
-                  <span>{isStoreOpen ? 'المطعم يعمل حالياً ✅' : 'المطعم مغلق 🛑'}</span>
-                </button>
+        <nav className="flex-1 space-y-3">
+          {[
+            { id: 'ORDERS', label: 'الطلبات الحالية', icon: Box, color: 'text-brand-red' },
+            { id: 'HISTORY', label: 'أرشيف الطلبات', icon: Package, color: 'text-blue-400' },
+            { id: 'CUSTOMERS', label: 'الزبائن', icon: User, color: 'text-green-400' },
+            { id: 'REPORTS', label: 'التقارير', icon: Printer, color: 'text-purple-400' },
+            { id: 'SYSTEM', label: 'النظام', icon: Store, color: 'text-orange-400' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id as Tab);
+                if (tab.id === 'HISTORY') fetchHistory();
+                if (tab.id === 'CUSTOMERS') fetchCustomers();
+                if (tab.id === 'REPORTS') fetchReports();
+              }}
+              className={`w-full flex items-center gap-4 px-5 py-4 rounded-3xl font-black transition-all
+                ${activeTab === tab.id ? 'bg-white/10 text-white shadow-lg' : 'text-white/30 hover:bg-white/5 hover:text-white'}`}
+            >
+              <tab.icon size={20} className={activeTab === tab.id ? tab.color : 'text-current'} />
+              <span className="text-sm">{tab.label}</span>
+              {tab.id === 'ORDERS' && orders.filter(o => o.status === 'PENDING').length > 0 && (
+                <span className="mr-auto bg-brand-red text-white text-[10px] px-2 py-0.5 rounded-full animate-bounce">
+                  {orders.filter(o => o.status === 'PENDING').length}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+
+        <div className="mt-20 pt-10 border-t border-white/5 space-y-6 mb-4">
+           {isStoreOpen !== null && (
+              <button onClick={handleToggleStore} className={`w-full flex items-center justify-between px-6 py-4 rounded-2xl text-xs font-black transition-all ${isStoreOpen ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20' : 'bg-brand-red/10 text-brand-red hover:bg-brand-red/20'}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${isStoreOpen ? 'bg-green-500 animate-ping' : 'bg-brand-red'}`}></div>
+                  <span>{isStoreOpen ? 'المطعم مفتوح' : 'المطعم مغلق'}</span>
+                </div>
+              </button>
+           )}
+           <p className="text-[10px] text-white/20 font-medium text-center uppercase tracking-widest pb-4">Xian Ops • Stable 2.5</p>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col p-6 md:p-12 relative overflow-x-hidden">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-16">
+          <div>
+            <h2 className="text-4xl font-black text-brand-black luxury-heading mb-3 tracking-tighter">
+              {activeTab === 'ORDERS' ? 'لوحة المراقبة الحية' : 
+               activeTab === 'HISTORY' ? 'سجل الطلبات القديمة' : 
+               activeTab === 'CUSTOMERS' ? 'قاعدة بيانات الزبائن' : 
+               activeTab === 'REPORTS' ? 'التقارير والمبيعات' : 'إعدادات النظام'}
+            </h2>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              <p className="text-brand-black/40 font-black text-xs uppercase tracking-widest">
+                {activeTab === 'ORDERS' ? 'Live Monitoring Active' : 'System Secure'}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 w-full md:w-auto">
+             <button onClick={() => fetchOrders(true)} className="flex-1 md:flex-none btn-burgundy px-10 py-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-brand-red/10 group active:scale-95 transition-all">
+                <RefreshCcw size={20} className="group-hover:rotate-180 transition-transform duration-700" />
+                <span>تحديث</span>
+             </button>
+             <button onClick={() => window.print()} className="flex-1 md:flex-none bg-white border-2 border-brand-gray text-brand-black px-10 py-5 rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-brand-gray transition-all shadow-sm">
+                <Printer size={20} />
+                <span>طباعة</span>
+             </button>
+          </div>
+        </div>
+
+        <div className="flex-1">
+          <AnimatePresence mode="wait">
+            {activeTab === 'ORDERS' && (
+              <motion.div key="orders" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                 {loading ? (
+                    <div className="flex flex-col items-center justify-center py-40 gap-4">
+                      <div className="w-12 h-12 border-4 border-brand-red/20 border-t-brand-red rounded-full animate-spin"></div>
+                      <p className="text-brand-black/40 font-black">جاري التحميل...</p>
+                    </div>
+                  ) : orders.length === 0 ? (
+                    <div className="bg-white py-40 text-center flex flex-col items-center gap-8 rounded-[4rem] border-2 border-dashed border-brand-gray">
+                      <Box size={80} className="text-brand-black/10" strokeWidth={1} />
+                      <h2 className="text-3xl font-serif text-brand-black/30">لا توجد طلبات نشطة حالياً</h2>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                       {orders.map((order) => (
+                         <OrderCard 
+                            key={order.id} 
+                            order={order} 
+                            onUpdateStatus={handleUpdateStatus}
+                            onArchive={handleArchive}
+                            onPrint={handlePrint}
+                            onPaymentReceived={handlePaymentReceived}
+                          />
+                       ))}
+                    </div>
+                  )}
+              </motion.div>
+            )}
+
+            {activeTab === 'HISTORY' && (
+                <motion.div key="history" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                   {historyLoading ? (
+                     <div className="py-20 text-center font-black">جاري تحميل السجلات...</div>
+                   ) : historyOrders.length === 0 ? (
+                     <div className="py-20 text-center text-gray-400">لا توجد سجلات قديمة</div>
+                   ) : (
+                     <div className="bg-white rounded-[2rem] overflow-hidden border border-brand-gray shadow-sm overflow-x-auto">
+                        <table className="w-full text-right border-collapse min-w-[600px]">
+                           <thead className="bg-brand-cream/20 border-b border-brand-gray">
+                              <tr>
+                                <th className="p-6 text-xs font-black uppercase text-brand-black/40">رقم الطلب</th>
+                                <th className="p-6 text-xs font-black uppercase text-brand-black/40">الزبون</th>
+                                <th className="p-6 text-xs font-black uppercase text-brand-black/40">التاريخ</th>
+                                <th className="p-6 text-xs font-black uppercase text-brand-black/40">المبلغ</th>
+                                <th className="p-6 text-xs font-black uppercase text-brand-black/40">الإجراءات</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              {historyOrders.map((order) => (
+                                <tr key={order.id} className="border-b border-brand-gray hover:bg-gray-50 transition-all">
+                                   <td className="p-6 font-black text-xs text-brand-red">#{order.id.slice(-6).toUpperCase()}</td>
+                                   <td className="p-6">
+                                      <p className="font-black text-xs">{order.customerName}</p>
+                                      <p className="text-[10px] text-gray-400">{order.phoneNumber}</p>
+                                   </td>
+                                   <td className="p-6 text-[10px] font-bold">{new Date(order.createdAt).toLocaleDateString('ar-JO')}</td>
+                                   <td className="p-6 font-black text-xs text-green-600">{order.totalPrice.toFixed(2)} د.أ</td>
+                                   <td className="p-6">
+                                      <div className="flex gap-2">
+                                        <button onClick={() => handlePrint(order)} className="p-2 text-brand-black hover:text-brand-red transition-all"><Printer size={16}/></button>
+                                        <button onClick={() => handleDeletePermanent(order.id)} className="p-2 text-gray-300 hover:text-red-600 transition-all"><Trash2 size={16}/></button>
+                                      </div>
+                                   </td>
+                                </tr>
+                              ))}
+                           </tbody>
+                        </table>
+                     </div>
+                   )}
+                </motion.div>
               )}
 
-              <div className="flex flex-wrap gap-4 w-full md:w-auto">
-                 <Link 
-                    href="/admin/coupons"
-                    className="flex-1 lg:flex-none bg-brand-cream text-brand-black border border-brand-gray px-6 xl:px-8 py-4 xl:py-5 rounded-full font-black shadow-sm transition-all flex items-center justify-center gap-3 hover:border-brand-red/20 hover:scale-105"
-                  >
-                    <Ticket size={24} className="text-brand-red" />
-                    <span className="hidden lg:inline text-lg">الكوبونات</span>
-                  </Link>
-                  
-                 <Link 
-                    href="/admin/products"
-                    className="flex-1 lg:flex-none bg-white text-brand-black border border-brand-gray px-6 xl:px-8 py-4 xl:py-5 rounded-full font-black shadow-sm transition-all flex items-center justify-center gap-3 hover:border-brand-red/20 hover:scale-105"
-                  >
-                    <Package size={24} />
-                    <span className="hidden lg:inline text-lg">المنتجات</span>
-                  </Link>
-                  
-                  <button 
-                    onClick={() => fetchOrders(true)}
-                    className="flex-none btn-burgundy px-10 py-4 xl:py-5 rounded-full font-black shadow-xl shadow-brand-red/10 transition-all flex items-center justify-center gap-3"
-                  >
-                    <RefreshCcw size={24} />
-                  </button>
+              {activeTab === 'CUSTOMERS' && (
+                <motion.div key="customers" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                   {customersLoading ? (
+                     <div className="py-20 text-center font-black">جاري التحميل...</div>
+                   ) : (
+                     <div className="bg-white rounded-[2rem] overflow-hidden border border-brand-gray shadow-sm overflow-x-auto">
+                        <table className="w-full text-right border-collapse min-w-[600px]">
+                           <thead className="bg-brand-cream/20 border-b border-brand-gray">
+                              <tr>
+                                <th className="p-6 text-xs font-black text-brand-black/40">الاسم</th>
+                                <th className="p-6 text-xs font-black text-brand-black/40">الهاتف</th>
+                                <th className="p-6 text-xs font-black text-brand-black/40">المنطقة</th>
+                                <th className="p-6 text-xs font-black text-brand-black/40">عدد الطلبات</th>
+                                <th className="p-6 text-xs font-black text-brand-black/40">آخر طلب</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              {customers.map((c, i) => (
+                                <tr key={i} className="border-b border-brand-gray hover:bg-gray-50 transition-all">
+                                   <td className="p-6 font-black text-xs">{c.name}</td>
+                                   <td className="p-6 text-xs font-bold" dir="ltr">{c.phone}</td>
+                                   <td className="p-6 text-[10px] text-gray-500">{c.area || 'غير محدد'}</td>
+                                   <td className="p-6"><span className="bg-brand-red/10 text-brand-red px-3 py-1 rounded-full text-[10px] font-black">{c.orderCount}</span></td>
+                                   <td className="p-6 text-[10px] text-gray-400">{new Date(c.lastOrder).toLocaleDateString('ar-JO')}</td>
+                                </tr>
+                              ))}
+                           </tbody>
+                        </table>
+                     </div>
+                   )}
+                </motion.div>
+              )}
+
+              {activeTab === 'REPORTS' && (
+                <motion.div key="reports" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
+                   <div className="flex flex-wrap gap-4 bg-white p-4 rounded-2xl border border-brand-gray shadow-sm">
+                      {['daily', 'weekly', 'monthly', 'all'].map(t => (
+                        <button 
+                          key={t}
+                          onClick={() => { setReportType(t); fetchReports(t); }}
+                          className={`px-8 py-4 rounded-xl text-xs font-black transition-all ${reportType === t ? 'bg-brand-red text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                        >
+                          {t === 'daily' ? 'اليوم لفواتير 24 ساعة' : t === 'weekly' ? 'أسبوعي' : t === 'monthly' ? 'شهري' : 'الكل'}
+                        </button>
+                      ))}
+                   </div>
+
+                   {reportsLoading ? (
+                     <div className="py-20 text-center font-black">جاري إنشاء التقرير...</div>
+                   ) : reportData && (
+                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="bg-brand-black text-white p-12 rounded-[3rem] shadow-2xl relative overflow-hidden">
+                           <div className="absolute top-0 right-0 w-32 h-32 bg-brand-red/10 rounded-bl-[8rem]"></div>
+                           <h4 className="text-white/40 text-[10px] font-black uppercase tracking-[0.4em] mb-4">Gross Revenue</h4>
+                           <p className="text-6xl font-black font-serif tracking-tighter mb-2">{reportData.totalRevenue.toFixed(2)} <small className="text-xs opacity-30 font-sans tracking-normal font-medium">JOD</small></p>
+                           <p className="text-green-400 text-xs font-bold flex items-center gap-2">إجمالي مبيعات الفترة</p>
+                        </div>
+                        <div className="bg-white p-12 rounded-[3rem] border-2 border-brand-gray shadow-sm">
+                           <h4 className="text-brand-black/20 text-[10px] font-black uppercase tracking-[0.4em] mb-4">Total Orders</h4>
+                           <p className="text-6xl font-black text-brand-black font-serif tracking-tighter mb-2">{reportData.totalOrders}</p>
+                           <p className="text-brand-red text-xs font-bold">عدد الطلبات المكتملة</p>
+                        </div>
+                     </div>
+                   )}
+                </motion.div>
+              )}
+
+              {activeTab === 'SYSTEM' && (
+                <motion.div key="system" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-2xl bg-white p-12 rounded-[3rem] border border-brand-gray shadow-sm">
+                    <h3 className="text-2xl font-black text-brand-black mb-6">أدوات النظام المتقدمة</h3>
+                    <div className="space-y-8">
+                       <div className="p-8 bg-red-50 border-2 border-red-100 rounded-[2rem] space-y-4">
+                          <h4 className="font-black text-brand-red flex items-center gap-2"><Trash2 size={20}/> تصفير الموقع (Data Reset)</h4>
+                          <p className="text-xs text-red-600 font-bold">سيؤدي هذا الإجراء إلى حذف جميع الطلبات والزبائن بشكل نهائي وبدء الموقع ببيانات نظيفة. لا يمكن التراجع عن هذا الفعل.</p>
+                          <button onClick={handleResetSystem} className="bg-brand-red text-white px-8 py-4 rounded-xl font-black text-sm hover:bg-red-700 transition-all shadow-lg active:scale-95">تصفير بالكامل الآن</button>
+                       </div>
+                       
+                       <div className="p-8 bg-gray-50 border border-brand-gray rounded-[2rem] space-y-4 opacity-50">
+                          <h4 className="font-black text-brand-black">تصدير قاعدة البيانات (قريباً)</h4>
+                          <p className="text-xs text-brand-black/40">بإمكانك قريباً تحميل نسخة من بيانات الطلبات بصيغة Excel.</p>
+                       </div>
+                    </div>
+                </motion.div>
+              )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OrderCard({ order, onUpdateStatus, onArchive, onPrint, onPaymentReceived }: { 
+  order: Order, 
+  onUpdateStatus: (id: string, status: string) => void, 
+  onArchive: (id: string) => void, 
+  onPrint: (order: Order) => void,
+  onPaymentReceived: (id: string, e: React.MouseEvent) => void
+}) {
+  return (
+    <div className={`bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-brand-gray flex flex-col group relative
+      ${order.status === 'PENDING' ? 'ring-2 ring-brand-red ring-inset' : ''}`}>
+      
+      <div className="p-6 pb-3 flex justify-between items-center bg-brand-cream/5 border-b border-brand-gray/30">
+        <div className="flex flex-col">
+          <span className="text-[9px] font-black text-brand-black/20">Ref: #{order.id.slice(-6).toUpperCase()}</span>
+          <span className="font-black text-brand-black text-sm flex items-center gap-2">
+            <Clock size={14} className="text-brand-red" />
+            {new Date(order.createdAt).toLocaleTimeString('ar-JO', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        </div>
+        <div className={`px-3 py-1.5 rounded-full font-black text-[9px] uppercase tracking-widest flex items-center gap-2 border shadow-sm
+          ${order.orderType === 'PICKUP' ? 'bg-orange-500 text-white' : 'bg-blue-500 text-white'}`}>
+             {order.orderType === 'PICKUP' ? 'استلام' : 'توصيل'}
+        </div>
+      </div>
+
+      <div className="p-6 space-y-6 flex-1 flex flex-col">
+        <div className="space-y-4">
+           <div className="flex items-center gap-3">
+              <div className="bg-brand-red/5 p-2 rounded-xl text-brand-red"><User size={18} /></div>
+              <span className="font-black text-brand-black text-sm">{order.customerName}</span>
+           </div>
+           <div className="flex items-center gap-3">
+              <div className="bg-brand-red/5 p-2 rounded-xl text-brand-red"><Phone size={18} /></div>
+              <span className="font-bold text-brand-black text-sm tracking-tight" dir="ltr">{order.phoneNumber}</span>
+           </div>
+           {order.orderType === 'DELIVERY' && order.deliveryArea && (
+              <div className="flex items-center gap-3">
+                <div className="bg-brand-red/5 p-2 rounded-xl text-brand-red"><MapPin size={18} /></div>
+                <span className="font-bold text-brand-black text-xs">{order.deliveryArea}</span>
               </div>
-            </div>
-            
-            {!isPushSubscribed && (
-              <div className="w-full mt-8 bg-brand-red/5 border border-brand-red/20 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="flex items-center gap-4 text-center md:text-right">
-                  <div className="bg-brand-red text-white p-3 rounded-2xl shadow-lg">
-                    <Bell size={24} className="animate-bounce" />
-                  </div>
-                  <div>
-                    <h3 className="text-brand-black font-black text-lg">تفعيل التنبيهات الفورية</h3>
-                    <p className="text-brand-black/40 text-sm font-bold">استقبل إشعارات الطلبات الجديدة حتى لو كان المتصفح في الخلفية.</p>
-                    {mounted && !((window.navigator as unknown as { standalone?: boolean }).standalone || window.matchMedia('(display-mode: standalone)').matches) && (
-                      <p className="text-brand-red text-[11px] font-black mt-2 uppercase tracking-wide">
-                        ⚠️ لمستخدمي الآيفون: يجب إضافة الموقع إلى الشاشة الرئيسية أولاً للعمل.
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <button 
-                  onClick={subscribeToPush}
-                  disabled={pushLoading}
-                  className="bg-brand-red text-white px-8 py-4 rounded-2xl font-black text-lg shadow-xl shadow-brand-red/20 active:scale-95 transition-all disabled:opacity-50"
-                >
-                  {pushLoading ? 'جاري التفعيل...' : 'تفعيل الإشعارات الآن 📱'}
-                </button>
-              </div>
-            )}
+           )}
+        </div>
+
+        <div className="bg-brand-black/5 p-4 rounded-2xl space-y-3">
+           {order.items.map((item, idx) => (
+             <div key={idx} className="flex justify-between items-center text-xs">
+                <span className="font-black text-gray-500">{item.quantity}x {item.name}</span>
+                <span className="font-bold text-gray-400">{(item.price * item.quantity).toFixed(2)}</span>
+             </div>
+           ))}
+        </div>
+
+        {order.notes && (
+          <div className="bg-yellow-50 p-4 rounded-2xl border border-yellow-100">
+             <p className="text-[11px] font-black text-brand-black italic">&quot;{order.notes}&quot;</p>
+          </div>
+        )}
+
+        <div className="mt-auto pt-6 border-t border-brand-gray/30">
+          <div className="flex justify-between items-center mb-6">
+             <span className="text-[10px] font-black text-brand-black/30">المجموع</span>
+             <span className="text-2xl font-black text-brand-red font-serif tracking-tighter">{order.totalPrice.toFixed(2)} <small className="text-[9px] tracking-normal font-sans uppercase">JD</small></span>
           </div>
 
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-40 gap-8">
-               <div className="relative">
-                  <div className="w-20 h-20 border-2 border-brand-red/10 border-t-brand-red rounded-full animate-spin"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Box size={24} className="text-brand-red animate-pulse" />
-                  </div>
-               </div>
-               <p className="text-brand-red font-black text-xl tracking-widest animate-pulse font-serif">جاري المزامنة..</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 xl:gap-10">
-              {orders.length === 0 ? (
-                 <div className="col-span-full bg-white py-40 text-center flex flex-col items-center gap-8 rounded-[4rem] border-2 border-dashed border-brand-gray">
-                   <Box size={80} className="text-brand-black/10" strokeWidth={1} />
-                   <h2 className="text-3xl font-serif text-brand-black/30">لا توجد طلبات حالياً</h2>
-                   <p className="text-brand-black/10 font-bold uppercase tracking-[0.4em] text-[10px]">Waiting for new gastro inquiries</p>
-                 </div>
-              ) : (
-                orders.map((order) => (
-                  <div key={order.id} className={`bg-white rounded-[3rem] overflow-hidden shadow-sm border border-brand-gray hover:shadow-xl transition-all duration-700 flex flex-col group relative
-                    ${order.status === 'PENDING' ? 'ring-4 ring-brand-red ring-inset animate-pulse' : ''}`}>
-                    
-                    {/* Status Header */}
-                    <div className="p-8 pb-4 flex justify-between items-center bg-brand-cream/10 border-b border-brand-gray">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-black/20">Ref: #{order.id.slice(-6).toUpperCase()}</span>
-                        <span className="font-black text-brand-black text-xl font-serif flex items-center gap-2">
-                          <Clock size={16} className="text-brand-red" />
-                          {new Date(order.createdAt).toLocaleTimeString('ar-JO', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className={`px-4 py-2 rounded-full font-black text-[9px] uppercase tracking-widest flex items-center gap-2 border 
-                          ${order.orderType === 'PICKUP' ? 'bg-orange-500 text-white border-orange-500 shadow-md' : 'bg-blue-500 text-white border-blue-500 shadow-md'}`}>
-                          {order.orderType === 'PICKUP' ? (
-                            <>
-                              <Clock size={12} />
-                              <span>استلام</span>
-                            </>
-                          ) : (
-                            <>
-                              <Package size={12} />
-                              <span>توصيل</span>
-                            </>
-                          )}
-                        </div>
-                        {order.paymentMethod === 'CLIQ' && (
-                          <div className={`px-4 py-2 rounded-full font-black text-[9px] uppercase tracking-widest flex items-center gap-2 border shadow-md
-                            ${order.paymentStatus === 'COMPLETED' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-purple-600 text-white border-purple-600 animate-pulse'}`}>
-                            <Zap size={12} />
-                            <span>كليك</span>
-                          </div>
-                        )}
-                        <div className={`px-4 py-2 rounded-full font-black text-[9px] uppercase tracking-widest flex items-center gap-2 border 
-                          ${order.status === 'PENDING' ? 'bg-brand-red text-white border-brand-red shadow-lg shadow-brand-red/20' : 
-                            order.status === 'PREPARING' ? 'bg-orange-50 text-orange-600 border-orange-100' :
-                            order.status === 'READY' ? 'bg-brand-red/5 text-brand-red border-brand-red/10' :
-                            'bg-green-50 text-green-600 border-green-100'}`}>
-                          <div className={`w-1.5 h-1.5 rounded-full ${order.status === 'PENDING' ? 'bg-white animate-ping' : 'bg-current'}`}></div>
-                          {order.status === 'PENDING' ? 'طلب جديد • عاجل' : 
-                           order.status === 'PREPARING' ? 'تحت التجهيز' :
-                           order.status === 'READY' ? 'جاهز للتسليم' :
-                           'تم الاستلام'}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="p-8 pt-6 space-y-10 flex-1 flex flex-col">
-                      
-                      {/* SECTION A: Customer Info */}
-                      <div className="space-y-6">
-                        <div className="flex justify-between items-center mb-4">
-                           <h5 className="text-[11px] font-black text-brand-red uppercase tracking-[0.4em] border-r-4 border-brand-red pr-3">A. بيانات العميل</h5>
-                           {order.user && (
-                             <div className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-blue-100 flex items-center gap-1">
-                               <ShieldCheck size={10} /> حساب موثق (Google)
-                             </div>
-                           )}
-                        </div>
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between p-4 bg-[#F9F7F2] rounded-2xl border border-brand-gray relative overflow-hidden">
-                            {order.user?.image && (
-                              <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full overflow-hidden border border-brand-gray/50 shadow-sm opacity-50">
-                                <Image src={order.user.image} alt="User" fill className="object-cover" />
-                              </div>
-                            )}
-                            <div className="flex items-center gap-4">
-                              <div className="bg-white p-2 rounded-xl text-brand-red shadow-sm"><User size={20} /></div>
-                              <div className="flex flex-col">
-                                <span className="font-black text-brand-black text-lg">{order.customerName}</span>
-                                {order.user?.email && <span className="text-[10px] text-brand-black/40 font-bold">{order.user.email}</span>}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between p-4 bg-[#F9F7F2] rounded-2xl border border-brand-gray group/link hover:border-brand-red/30 transition-all">
-                            <div className="flex items-center gap-4">
-                              <div className="bg-white p-2 rounded-xl text-brand-red shadow-sm"><Phone size={20} /></div>
-                              <span className="font-bold text-brand-black text-lg tracking-tight" dir="ltr">{order.phoneNumber}</span>
-                            </div>
-                            <a href={`tel:${order.phoneNumber}`} className="bg-brand-red text-white p-2 rounded-xl shadow-lg shadow-brand-red/20 hover:scale-110 transition-all">
-                              <Phone size={14} fill="currentColor" />
-                            </a>
-                          </div>
-
-                          {/* PAYMENT METHOD UI DISPLAY */}
-                          <div className={`flex items-center justify-between p-4 rounded-2xl border transition-all
-                            ${order.paymentMethod === 'CLIQ' ? 'bg-purple-50 border-purple-200' : 'bg-green-50 border-green-200'}`}>
-                            <div className="flex items-center gap-4">
-                              <div className={`p-2 rounded-xl shadow-sm flex items-center justify-center ${order.paymentMethod === 'CLIQ' ? 'bg-purple-600 text-white' : 'bg-green-600 text-white w-9 h-9'}`}>
-                                {order.paymentMethod === 'CLIQ' ? <Zap size={20} /> : <span className="font-extrabold text-sm">$</span>}
-                              </div>
-                              <div className="flex flex-col">
-                                <span className={`text-[10px] font-black uppercase tracking-widest mb-1 ${order.paymentMethod === 'CLIQ' ? 'text-purple-600' : 'text-green-600'}`}>طريقة الدفع المختارة</span>
-                                <span className="font-black text-brand-black text-sm">{order.paymentMethod === 'CLIQ' ? 'حوالة بنكية (CliQ)' : 'كاش عند الاستلام'}</span>
-                              </div>
-                            </div>
-                            {order.paymentMethod === 'CLIQ' && (
-                              <span className={`px-3 py-1 rounded-full text-[9px] font-black shadow-sm border ${order.paymentStatus === 'COMPLETED' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-purple-200 text-purple-800 border-purple-300 animate-pulse'}`}>
-                                {order.paymentStatus === 'COMPLETED' ? 'تم الاستلام' : 'بانتظار التحويل'}
-                              </span>
-                            )}
-                          </div>
-
-                          {order.orderType === 'DELIVERY' ? (
-                            <div className="flex items-start justify-between p-4 bg-[#F9F7F2] rounded-2xl border border-brand-gray group/link hover:border-brand-red/30 transition-all">
-                              <div className="flex items-start gap-4 flex-1">
-                                <div className="bg-white p-2 rounded-xl text-brand-red shadow-sm"><MapPin size={20} /></div>
-                                <div className="flex flex-col flex-1 min-w-0">
-                                   <span className="text-[10px] font-black text-brand-red uppercase tracking-widest mb-2 px-1">{order.deliveryArea || 'منطقة التوصيل'}</span>
-                                   {order.address?.startsWith('http') ? (
-                                     <div className="flex flex-col gap-3">
-                                       <button 
-                                         onClick={() => {
-                                           navigator.clipboard.writeText(order.address || '');
-                                           toast.success('تم نسخ الرابط الموقع!');
-                                         }}
-                                         className="w-full bg-brand-black text-white py-4 rounded-xl font-black text-xs uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3 group"
-                                       >
-                                         <MapPin size={16} className="text-brand-red" />
-                                         <span>نسخ رابط الموقع (Copy Link)</span>
-                                       </button>
-                                       <div className="px-1 flex items-center gap-1.5 opacity-30">
-                                         <div className="w-1.5 h-1.5 bg-brand-red rounded-full"></div>
-                                         <p className="text-[9px] font-bold truncate">رابط قوقل ماب مفعل</p>
-                                       </div>
-                                     </div>
-                                   ) : (
-                                     <div className="p-4 bg-white/50 rounded-2xl border border-brand-gray/50">
-                                        <p className="font-bold text-brand-black text-sm leading-relaxed whitespace-pre-line">{order.address}</p>
-                                     </div>
-                                   )}
-                                </div>
-                              </div>
-                              <a 
-                                href={order.address?.startsWith('http') ? order.address : `https://maps.google.com/?q=${encodeURIComponent(order.address || '')}`} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="bg-brand-black text-white p-2 rounded-xl shadow-lg hover:scale-110 transition-all flex-shrink-0"
-                              >
-                                <MapPin size={14} fill="currentColor" />
-                              </a>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-between p-4 bg-orange-50/50 rounded-2xl border-2 border-orange-200 group/link transition-all">
-                              <div className="flex items-center gap-4">
-                                <div className="bg-white p-2 rounded-xl text-orange-600 shadow-sm border border-orange-100"><Clock size={20} /></div>
-                                <div className="flex flex-col">
-                                   <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1">وقت الاستلام المفضل</span>
-                                   <span className="font-black text-brand-black text-2xl tracking-tighter">{order.pickupTime}</span>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* SECTION B: Order Content */}
-                      <div className="space-y-6">
-                        <h5 className="text-[11px] font-black text-brand-red uppercase tracking-[0.4em] mb-4 border-r-4 border-brand-red pr-3">B. تفاصيل الطلب</h5>
-                        <div className={`rounded-[2.5rem] p-6 space-y-4 border transition-all duration-500
-                          ${order.status === 'PENDING' ? 'bg-brand-red text-white border-brand-red shadow-2xl scale-[1.02]' : 'bg-brand-black/5 border-brand-gray/50'}`}>
-                          {order.items?.map((item) => (
-                            <div key={item.id} className="flex justify-between items-center text-sm py-1">
-                              <div className="flex items-center gap-4">
-                                <span className={`${order.status === 'PENDING' ? 'bg-white text-brand-red' : 'bg-brand-red text-white'} px-2.5 py-1 rounded-lg text-[10px] font-black shadow-lg`}>{item.quantity}x</span>
-                                <span className={`font-black text-lg ${order.status === 'PENDING' ? 'text-white' : 'text-brand-black/80'}`}>{item.name}</span>
-                              </div>
-                              <span className={`font-serif font-black tracking-tighter ${order.status === 'PENDING' ? 'text-white/80' : 'text-brand-black/30'}`}>{item.price.toFixed(2)} <small className="text-[8px] tracking-normal font-sans uppercase">JD</small></span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* SECTION C: Kitchen Notes */}
-                      {order.notes && (
-                        <div className="space-y-6">
-                          <h5 className="text-[11px] font-black text-brand-red uppercase tracking-[0.4em] mb-4 border-r-4 border-brand-red pr-3">C. ملاحظات المطبخ</h5>
-                          <div className="bg-yellow-50 border-2 border-yellow-200 p-6 rounded-3xl relative overflow-hidden group/notes">
-                            <div className="absolute top-0 right-0 w-16 h-16 bg-yellow-200/40 rounded-bl-[4rem] -mr-4 -mt-4 transition-all group-hover/notes:scale-150" />
-                            <div className="relative flex items-start gap-4">
-                              <div className="bg-white p-3 rounded-2xl shadow-sm border border-yellow-200 text-yellow-600">
-                                 <AlertCircle size={24} />
-                              </div>
-                              <p className="text-brand-black font-black text-xl italic leading-relaxed pt-1">&quot;{order.notes}&quot;</p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Footer & Actions */}
-                      <div className="pt-10 mt-auto border-t border-brand-gray flex flex-col gap-8">
-                        <div className="flex justify-between items-center bg-brand-red/5 p-6 rounded-3xl border border-brand-red/10">
-                           <div className="flex flex-col">
-                              <span className="text-[8px] font-black text-brand-red uppercase tracking-[0.4em]">صافي المبلغ</span>
-                              <span className="text-brand-black/20 text-[10px] uppercase font-bold tracking-widest mt-1">Order Final Value</span>
-                           </div>
-                           <div className="flex flex-col items-end">
-                             {order.couponCode && (
-                               <span className="text-[10px] font-black text-green-600 bg-green-100 px-3 py-1.5 rounded-lg mb-2 uppercase tracking-widest border border-green-200 shadow-sm">
-                                 كوبون الترحيب: {order.couponCode}
-                               </span>
-                             )}
-                             <div className="text-4xl font-black text-brand-red font-serif tracking-tighter">
-                               {order.totalPrice.toFixed(2)} <span className="text-xs text-brand-black/20 tracking-normal font-sans uppercase">JD</span>
-                             </div>
-                           </div>
-                        </div>
-
-                        {order.paymentMethod === 'CLIQ' && order.paymentStatus === 'PENDING' && order.status !== 'CANCELLED' && order.status !== 'SHIPPED' && (
-                           <div className="bg-purple-50 border border-purple-200 rounded-3xl p-6 relative overflow-hidden mb-2 shadow-inner">
-                              <div className="absolute top-0 left-0 w-2 h-full bg-purple-500 animate-pulse"></div>
-                              <h4 className="text-purple-800 font-black mb-2 flex items-center gap-2"><Zap size={18} /> بانتظار حوالة كليك!</h4>
-                              <p className="text-purple-600 text-xs font-bold mb-4">يرجى التأكد من وصول الحوالة المالية، هذا الإجراء سيوقف الإنذار فوراً ويحدث شاشة العميل بالوقت الفعلي.</p>
-                              <button 
-                                onClick={(e) => handlePaymentReceived(order.id, e)}
-                                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-xl font-black text-sm transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
-                              >
-                                تأكيد الاستلام • إيقاف الإنذار
-                              </button>
-                           </div>
-                         )}
-
-                         <div className="flex flex-col gap-4">
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handlePrint(order);
-                              }}
-                              className="w-full bg-white text-brand-black border-2 border-brand-gray py-5 rounded-2xl flex items-center justify-center gap-4 font-black transition-all hover:bg-brand-black hover:text-white active:scale-95 shadow-sm mb-2 group/print"
-                            >
-                              <Printer size={24} className="text-brand-red group-hover/print:text-white" />
-                              <span className="text-xl">طـباعة الـفاتورة (Print)</span>
-                            </button>
-                          {order.status === 'PENDING' && (
-                            <button 
-                              onClick={() => handleUpdateStatus(order.id, 'PREPARING')}
-                              className="w-full bg-brand-red text-white py-8 rounded-2xl flex items-center justify-center gap-4 font-black shadow-[0_20px_40px_rgba(146,39,36,0.3)] transition-all hover:scale-[1.02] active:scale-95 text-xl group"
-                            >
-                              <Zap size={24} className="animate-bounce" />
-                              <span>قبول الطلب • ابدأ المطبخ</span>
-                            </button>
-                          )}
-                          {order.status === 'PREPARING' && (
-                            <button 
-                              onClick={() => handleUpdateStatus(order.id, 'READY')}
-                              className="w-full bg-brand-black text-white py-6 rounded-2xl flex items-center justify-center gap-4 font-black shadow-2xl transition-all hover:scale-[1.02] active:scale-95 text-lg"
-                            >
-                              تم الانتهاء • الطلب جاهز <CheckCircle size={20} />
-                            </button>
-                          )}
-                          {order.status === 'READY' && (
-                            <button 
-                              onClick={() => handleUpdateStatus(order.id, 'SHIPPED')}
-                              className="w-full bg-green-600 text-white py-6 rounded-2xl flex items-center justify-center gap-4 font-black shadow-2xl shadow-green-200 transition-all hover:scale-[1.02] active:scale-95 text-lg"
-                            >
-                              استلام وتسليم الطلب <Box size={20} />
-                            </button>
-                          )}
-                          
-                          <button 
-                            onClick={() => (order.status === 'PENDING' ? handleUpdateStatus(order.id, 'CANCELLED') : handleDelete(order.id))}
-                            className={`w-full mt-4 flex items-center justify-center gap-2 font-black transition-all text-[10px] font-bold uppercase tracking-[0.2em]
-                              ${order.status === 'PENDING' ? 'text-brand-red hover:bg-brand-red/5 p-4 rounded-xl' : 'text-brand-black/20 hover:text-brand-red'}`}
-                          >
-                            <Trash2 size={14} /> {order.status === 'PENDING' ? 'رفض الطلب وإلغاء' : 'أرشيف الطلب'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
+          <div className="flex flex-col gap-3">
+             {order.paymentMethod === 'CLIQ' && order.paymentStatus === 'PENDING' && (
+               <button 
+                 onClick={(e) => onPaymentReceived(order.id, e)}
+                 className="w-full bg-blue-600 text-white py-4 rounded-xl font-black shadow-lg shadow-blue-200 active:scale-95 transition-all flex items-center justify-center gap-2"
+               >
+                 <CheckCircle size={16} /> تأكيد استلام التحويل كليك
+               </button>
+             )}
+             {order.status === 'PENDING' && (
+               <button onClick={() => onUpdateStatus(order.id, 'PREPARING')} className="w-full bg-brand-red text-white py-4 rounded-xl font-black shadow-lg shadow-brand-red/20 active:scale-95 transition-all flex items-center justify-center gap-2">
+                 <Zap size={16} /> قبول الطلب
+               </button>
+             )}
+             {order.status === 'PREPARING' && (
+               <button onClick={() => onUpdateStatus(order.id, 'READY')} className="w-full bg-brand-black text-white py-4 rounded-xl font-black active:scale-95 transition-all">
+                  جاهز للتسليم
+               </button>
+             )}
+             {order.status === 'READY' && (
+               <button onClick={() => onUpdateStatus(order.id, 'SHIPPED')} className="w-full bg-green-600 text-white py-4 rounded-xl font-black active:scale-95 transition-all">
+                  تم الاستلام ✅
+               </button>
+             )}
+             
+             <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => onPrint(order)} className="p-3 bg-gray-50 text-gray-600 rounded-xl border border-brand-gray flex items-center justify-center gap-2 font-black text-[10px] hover:bg-gray-100 transition-all"><Printer size={14}/> طباعة</button>
+                <button onClick={() => onArchive(order.id)} className="p-3 bg-gray-50 text-gray-400 rounded-xl border border-brand-gray flex items-center justify-center gap-2 font-black text-[10px] hover:text-brand-red transition-all"><Trash2 size={14}/> أرشفة</button>
+             </div>
+          </div>
         </div>
       </div>
     </div>

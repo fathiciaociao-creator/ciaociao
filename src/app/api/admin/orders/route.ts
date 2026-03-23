@@ -16,9 +16,10 @@ export async function GET() {
   try {
     // جلب الطلبات مع الأصناف التابعة لها وبيانات المستخدم إن وجدت
     const allOrders = await prisma.order.findMany({
+      where: { isArchived: false },
       include: {
         items: true,
-        user: true // إضافة بيانات المستخدم (الاسم، الإيميل، الصورة)
+        user: true 
       },
       orderBy: { createdAt: 'desc' }
     });

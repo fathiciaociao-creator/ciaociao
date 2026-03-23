@@ -21,110 +21,31 @@ export default function HomeClient({
   const [categoryOrder, setCategoryOrder] = useState<string[]>(() => {
     if (initialSettings?.categoryOrder) {
       try {
-        return JSON.parse(initialSettings.categoryOrder);
+        const parsed = JSON.parse(initialSettings.categoryOrder);
+        return Array.isArray(parsed) ? parsed : [];
       } catch {
         return [];
       }
     }
     return [];
   });
+  
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [menuLoading, setMenuLoading] = useState(initialData.length === 0);
+  const [menuLoading, setMenuLoading] = useState(false); // Default to false if we have initialData
   
-  // Predict the initial selected category based on initialData and categoryOrder
-  const [selectedCategory, setSelectedCategory] = useState(() => {
-    if (initialData.length > 0) {
-      const allCats = new Set<string>();
-      initialData.forEach((p) => {
-        if (p.category) {
-          p.category.split(',').forEach((c: string) => {
-            const trimmed = c.trim();
-            if (trimmed) allCats.add(trimmed);
-          });
-        }
-      });
-      
-      const currentOrder = initialSettings?.categoryOrder 
-        ? JSON.parse(initialSettings.categoryOrder) 
-        : [];
-        
-      const sorted = Array.from(allCats).sort((a, b) => {
-        const indexA = currentOrder.indexOf(a);
-        const indexB = currentOrder.indexOf(b);
-        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
-        if (indexA === -1) return 1;
-        if (indexB === -1) return -1;
-        return indexA - indexB;
-      });
-      
-      return sorted[0] || '';
-    }
-    return '';
-  });
-
-  useEffect(() => {
-    setMounted(true);
-    const fetchMenu = async () => {
-      try {
-        const [menuRes, settingsRes] = await Promise.all([
-          fetch('/api/products'),
-          fetch('/api/settings')
-        ]);
-        const data = await menuRes.json();
-        const settings = await settingsRes.json();
-        
-        let order: string[] = [];
-        if (settings.categoryOrder) {
-            order = JSON.parse(settings.categoryOrder);
-            setCategoryOrder(order);
-        }
-
-        if (Array.isArray(data)) {
-          setProducts(data);
-          
-          const allCats = new Set<string>();
-          data.forEach(p => {
-            if (p.category) {
-              p.category.split(',').forEach((c: string) => {
-                const trimmed = c.trim();
-                if (trimmed) allCats.add(trimmed);
-              });
-            }
-          });
-          
-          const sortedCats = Array.from(allCats).sort((a, b) => {
-            const indexA = order.indexOf(a);
-            const indexB = order.indexOf(b);
-            if (indexA === -1 && indexB === -1) return a.localeCompare(b);
-            if (indexA === -1) return 1;
-            if (indexB === -1) return -1;
-            return indexA - indexB;
-          });
-
-          if (sortedCats[0] && !selectedCategory) setSelectedCategory(sortedCats[0]);
-        }
-      } catch (e) {
-        console.error("Failed to fetch menu", e);
-      } finally {
-        setMenuLoading(false);
-      }
-    };
-    fetchMenu();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const allCategories = new Set<string>();
+  // Calculate categories from CURRENT products and categoryOrder
+  const allCategoriesSet = new Set<string>();
   products.forEach(p => {
     if (p.category) {
       p.category.split(',').forEach((c: string) => {
         const trimmed = c.trim();
-        if (trimmed) allCategories.add(trimmed);
+        if (trimmed) allCategoriesSet.add(trimmed);
       });
     }
   });
 
-  const categories = Array.from(allCategories).sort((a, b) => {
+  const categories = Array.from(allCategoriesSet).sort((a, b) => {
     const indexA = categoryOrder.indexOf(a);
     const indexB = categoryOrder.indexOf(b);
     if (indexA === -1 && indexB === -1) return a.localeCompare(b);
@@ -133,8 +54,56 @@ export default function HomeClient({
     return indexA - indexB;
   });
 
+  // Predict the initial selected category
+  const [selectedCategory, setSelectedCategory] = useState(() => {
+    // If we have categories based on initial data/settings, use the first one
+    if (categories.length > 0) return categories[0];
+    return '';
+  });
+
+  useEffect(() => {
+    setMounted(true);
+    
+    // Only fetch if initialData is empty, otherwise we trust SSR
+    if (initialData.length === 0) {
+      const fetchMenu = async () => {
+        setMenuLoading(true);
+        try {
+          const [menuRes, settingsRes] = await Promise.all([
+            fetch('/api/products'),
+            fetch('/api/settings')
+          ]);
+          const data = await menuRes.json();
+          const settings = await settingsRes.json();
+          
+          if (settings.categoryOrder) {
+            const order = JSON.parse(settings.categoryOrder);
+            setCategoryOrder(order);
+          }
+
+          if (Array.isArray(data)) {
+            setProducts(data);
+          }
+        } catch (e) {
+          console.error("Failed to fetch menu", e);
+        } finally {
+          setMenuLoading(false);
+        }
+      };
+      fetchMenu();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Update selectedCategory if it's empty but categories are now available
+  useEffect(() => {
+    if (!selectedCategory && categories.length > 0) {
+      setSelectedCategory(categories[0]);
+    }
+  }, [categories, selectedCategory]);
+
   const filteredData = products.filter((item) => {
-    return item.category 
+    return (item.category && selectedCategory)
       ? item.category.split(',').map((c: string) => c.trim()).includes(selectedCategory)
       : false;
   });
