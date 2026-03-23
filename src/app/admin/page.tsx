@@ -65,6 +65,7 @@ export default function AdminDashboard() {
   const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
   const [isPushSubscribed, setIsPushSubscribed] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const orderCountRef = useRef<number>(0);
   const audioContextRef = useRef<AudioContext | null>(null);
   const alarmRef = useRef<HTMLAudioElement | null>(null);
@@ -294,6 +295,7 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
+    setMounted(true);
     // Check if push is supported and subscribed
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       console.log('Registering service worker...');
@@ -501,6 +503,11 @@ export default function AdminDashboard() {
                   <div>
                     <h3 className="text-brand-black font-black text-lg">تفعيل التنبيهات الفورية</h3>
                     <p className="text-brand-black/40 text-sm font-bold">استقبل إشعارات الطلبات الجديدة حتى لو كان المتصفح في الخلفية.</p>
+                    {mounted && !((window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches) && (
+                      <p className="text-brand-red text-[11px] font-black mt-2 uppercase tracking-wide">
+                        ⚠️ لمستخدمي الآيفون: يجب إضافة الموقع إلى الشاشة الرئيسية أولاً للعمل.
+                      </p>
+                    )}
                   </div>
                 </div>
                 <button 
