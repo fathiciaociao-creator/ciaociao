@@ -46,6 +46,7 @@ interface Customer {
   area: string;
   email?: string | null;
   orderCount: number;
+  totalSpent: number;
   lastOrder: string;
 }
 
@@ -556,9 +557,9 @@ export default function AdminDashboard() {
                                 <th className="p-6 text-xs font-black uppercase text-brand-black/40">الإجراءات</th>
                               </tr>
                            </thead>
-                           <tbody>
+                           <tbody className="divide-y divide-brand-gray">
                               {historyOrders.map((order) => (
-                                <tr key={order.id} className="border-b border-brand-gray hover:bg-gray-50 transition-all cursor-pointer group" onClick={() => setSelectedOrder(order)}>
+                                <tr key={order.id} className="hover:bg-gray-50 transition-all cursor-pointer group" onClick={() => setSelectedOrder(order)}>
                                    <td className="p-6 font-black text-xs text-brand-red">#{order.id.slice(-6).toUpperCase()}</td>
                                    <td className="p-6">
                                       <p className="font-black text-xs">{order.customerName}</p>
@@ -568,8 +569,8 @@ export default function AdminDashboard() {
                                    <td className="p-6 font-black text-xs text-green-600">{order.totalPrice.toFixed(2)} د.أ</td>
                                    <td className="p-6">
                                       <div className="flex gap-2">
-                                        <button onClick={() => handlePrint(order)} className="p-2 text-brand-black hover:text-brand-red transition-all"><Printer size={16}/></button>
-                                        <button onClick={() => handleDeletePermanent(order.id)} className="p-2 text-gray-300 hover:text-red-600 transition-all"><Trash2 size={16}/></button>
+                                        <button onClick={(e) => { e.stopPropagation(); handlePrint(order); }} className="p-2 text-brand-black hover:text-brand-red transition-all"><Printer size={16}/></button>
+                                        <button onClick={(e) => { e.stopPropagation(); handleDeletePermanent(order.id); }} className="p-2 text-gray-300 hover:text-red-600 transition-all"><Trash2 size={16}/></button>
                                       </div>
                                    </td>
                                 </tr>
@@ -579,9 +580,9 @@ export default function AdminDashboard() {
                      </div>
                    )}
                 </motion.div>
-              )}
+            )}
 
-              {activeTab === 'CUSTOMERS' && (
+            {activeTab === 'CUSTOMERS' && (
                 <motion.div key="customers" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                    {customersLoading ? (
                      <div className="py-20 text-center font-black">جاري التحميل...</div>
@@ -592,127 +593,128 @@ export default function AdminDashboard() {
                               <tr>
                                 <th className="p-6 text-xs font-black text-brand-black/40">الاسم</th>
                                 <th className="p-6 text-xs font-black text-brand-black/40">الهاتف</th>
-                                <th className="p-6 text-xs font-black text-brand-black/40">البريد الإلكتروني</th>
-                                <th className="p-6 text-xs font-black text-brand-black/40">المنطقة</th>
-                                <th className="p-6 text-xs font-black text-brand-black/40">عدد الطلبات</th>
-                                <th className="p-6 text-xs font-black text-brand-black/40">آخر طلب</th>
+                                <th className="p-6 text-xs font-black text-brand-black/40 text-left">آخر طلب</th>
                               </tr>
                            </thead>
-                           <tbody>
-                              {customers.map((c, i) => (
-                                <tr key={i} className="border-b border-brand-gray hover:bg-gray-50 transition-all cursor-pointer group" onClick={() => setSelectedCustomer(c)}>
-                                   <td className="p-6 font-black text-xs">{c.name}</td>
-                                   <td className="p-6 text-xs font-bold" dir="ltr">{c.phone}</td>
-                                   <td className="p-6 text-[10px] font-bold text-gray-400">{c.email || (language === 'ar' ? 'غير مسجل' : 'Not Registered')}</td>
-                                   <td className="p-6 text-[10px] text-gray-500">{c.area || 'غير محدد'}</td>
-                                   <td className="p-6"><span className="bg-brand-red/10 text-brand-red px-3 py-1 rounded-full text-[10px] font-black">{c.orderCount}</span></td>
-                                   <td className="p-6 text-[10px] text-gray-400">{new Date(c.lastOrder).toLocaleDateString('ar-JO')}</td>
+                           <tbody className="divide-y divide-brand-gray">
+                              {customers.map((c, j) => (
+                                <tr key={j} className="hover:bg-gray-50 transition-all cursor-pointer group" onClick={() => setSelectedCustomer(c)}>
+                                   <td className="p-6 font-black text-xs text-brand-black">{c.name}</td>
+                                   <td className="p-6 text-xs font-bold text-brand-black/60" dir="ltr">{c.phone}</td>
+                                   <td className="p-6 text-xs font-bold text-gray-400 text-left whitespace-nowrap">
+                                     {new Date(c.lastOrder).toLocaleDateString(language === 'ar' ? 'ar-JO' : 'en-US')} @ {new Date(c.lastOrder).toLocaleTimeString(language === 'ar' ? 'ar-JO' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                                   </td>
                                 </tr>
                               ))}
+                              {customers.length === 0 && (
+                                <tr>
+                                  <td colSpan={3} className="p-20 text-center font-black text-brand-black/20">لا يوجد زبائن حالياً</td>
+                                </tr>
+                              )}
                            </tbody>
                         </table>
                      </div>
                    )}
                 </motion.div>
-              )}
+            )}
 
-              {activeTab === 'REPORTS' && (
-                <motion.div key="reports" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
-                   <div className="flex flex-wrap gap-4 bg-white p-4 rounded-2xl border border-brand-gray shadow-sm">
-                      {['daily', 'weekly', 'monthly', 'all'].map(t => (
-                        <button 
-                          key={t}
-                          onClick={() => { setReportType(t); fetchReports(t); }}
-                          className={`px-8 py-4 rounded-xl text-xs font-black transition-all ${reportType === t ? 'bg-brand-red text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
-                        >
-                          {t === 'daily' ? 'اليوم لفواتير 24 ساعة' : t === 'weekly' ? 'أسبوعي' : t === 'monthly' ? 'شهري' : 'الكل'}
-                        </button>
-                      ))}
-                   </div>
-
-                   {reportsLoading ? (
-                     <div className="py-20 text-center font-black">جاري إنشاء التقرير...</div>
-                   ) : reportData && (
-                     <>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                         <div className="bg-brand-black text-white p-12 rounded-[3rem] shadow-2xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-red/10 rounded-bl-[8rem]"></div>
-                            <h4 className="text-white/40 text-[10px] font-black uppercase tracking-[0.4em] mb-4">Gross Revenue</h4>
-                            <p className="text-6xl font-black font-serif tracking-tighter mb-2">{reportData.totalRevenue.toFixed(2)} <small className="text-xs opacity-30 font-sans tracking-normal font-medium">JOD</small></p>
-                            <p className="text-green-400 text-xs font-bold flex items-center gap-2">إجمالي مبيعات الفترة</p>
-                         </div>
-                         <div className="bg-white p-12 rounded-[3rem] border-2 border-brand-gray shadow-sm">
-                            <h4 className="text-brand-black/20 text-[10px] font-black uppercase tracking-[0.4em] mb-4">Total Orders</h4>
-                            <p className="text-6xl font-black text-brand-black font-serif tracking-tighter mb-2">{reportData.totalOrders}</p>
-                            <p className="text-brand-red text-xs font-bold">عدد الطلبات المكتملة</p>
-                         </div>
-                      </div>
-
-                      <div className="bg-white rounded-[3rem] border-2 border-brand-gray shadow-sm overflow-hidden mt-8">
-                         <div className="p-8 border-b border-brand-gray/20 flex items-center justify-between">
-                            <h4 className="text-xl font-black text-brand-black">{language === 'ar' ? 'الأكثر مبيعاً للفترة المختارة' : 'Sales by Product'}</h4>
-                            <span className="text-xs font-bold text-brand-black/40">{reportData.itemBreakdown?.length} {language === 'ar' ? 'صنفاً' : 'Products'}</span>
-                         </div>
-                         <div className="overflow-x-auto">
-                            <table className="w-full text-right border-collapse">
-                               <thead className="bg-brand-gray/5 border-b border-brand-gray">
-                                  <tr>
-                                     <th className="p-6 text-xs font-black uppercase text-brand-black/40">الصنف</th>
-                                     <th className="p-6 text-xs font-black uppercase text-brand-black/40">الكمية المباعة</th>
-                                     <th className="p-6 text-xs font-black uppercase text-brand-black/40">الأداء</th>
-                                  </tr>
-                               </thead>
-                               <tbody>
-                                  {reportData.itemBreakdown?.map((item, idx) => (
-                                     <tr key={idx} className="border-b border-brand-gray last:border-0 hover:bg-gray-50 transition-all">
-                                        <td className="p-6 font-black text-xs text-brand-black">{item.name}</td>
-                                        <td className="p-6">
-                                           <div className="flex items-center gap-2">
-                                              <span className="font-black text-lg text-brand-red">{item.quantity}</span>
-                                              <span className="text-[10px] font-bold text-brand-black/20">طلبات</span>
-                                           </div>
-                                        </td>
-                                        <td className="p-6">
-                                           <div className="w-48 bg-brand-gray/20 h-2 rounded-full overflow-hidden">
-                                              <div 
-                                                 className="bg-brand-red h-full rounded-full transition-all duration-1000"
-                                                 style={{ width: `${Math.min(100, (item.quantity / (reportData.itemBreakdown[0]?.quantity || 1)) * 100)}%` }}
-                                              />
-                                           </div>
-                                        </td>
-                                     </tr>
-                                  ))}
-                                  {(!reportData.itemBreakdown || reportData.itemBreakdown.length === 0) && (
-                                     <tr>
-                                        <td colSpan={3} className="p-12 text-center text-brand-black/20 font-bold">{language === 'ar' ? 'لا يوجد بيانات مبيعات لهذه الفترة' : 'No sales data for this period'}</td>
-                                     </tr>
-                                  )}
-                               </tbody>
-                            </table>
-                         </div>
-                      </div>
-                     </>
-                   )}
-                </motion.div>
-              )}
-
-              {activeTab === 'SYSTEM' && (
-                <motion.div key="system" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-2xl bg-white p-12 rounded-[3rem] border border-brand-gray shadow-sm">
-                    <h3 className="text-2xl font-black text-brand-black mb-6">أدوات النظام المتقدمة</h3>
-                    <div className="space-y-8">
-                       <div className="p-8 bg-red-50 border-2 border-red-100 rounded-[2rem] space-y-4">
-                          <h4 className="font-black text-brand-red flex items-center gap-2"><Trash2 size={20}/> تصفير الموقع (Data Reset)</h4>
-                          <p className="text-xs text-red-600 font-bold">سيؤدي هذا الإجراء إلى حذف جميع الطلبات والزبائن بشكل نهائي وبدء الموقع ببيانات نظيفة. لا يمكن التراجع عن هذا الفعل.</p>
-                          <button onClick={handleResetSystem} className="bg-brand-red text-white px-8 py-4 rounded-xl font-black text-sm hover:bg-red-700 transition-all shadow-lg active:scale-95">تصفير بالكامل الآن</button>
-                       </div>
-                       
-                       <div className="p-8 bg-gray-50 border border-brand-gray rounded-[2rem] space-y-4 opacity-50">
-                          <h4 className="font-black text-brand-black">تصدير قاعدة البيانات (قريباً)</h4>
-                          <p className="text-xs text-brand-black/40">بإمكانك قريباً تحميل نسخة من بيانات الطلبات بصيغة Excel.</p>
-                       </div>
+               {activeTab === 'REPORTS' && (
+                 <motion.div key="reports" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
+                    <div className="flex flex-wrap gap-4 bg-white p-4 rounded-2xl border border-brand-gray shadow-sm">
+                       {['daily', 'weekly', 'monthly', 'all'].map(t => (
+                         <button 
+                           key={t}
+                           onClick={() => { setReportType(t); fetchReports(t); }}
+                           className={`px-8 py-4 rounded-xl text-xs font-black transition-all ${reportType === t ? 'bg-brand-red text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                         >
+                           {t === 'daily' ? 'اليوم لفواتير 24 ساعة' : t === 'weekly' ? 'أسبوعي' : t === 'monthly' ? 'شهري' : 'الكل'}
+                         </button>
+                       ))}
                     </div>
-                </motion.div>
-              )}
+
+                    {reportsLoading ? (
+                      <div className="py-20 text-center font-black">جاري إنشاء التقرير...</div>
+                    ) : reportData && (
+                      <>
+                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                          <div className="bg-brand-black text-white p-12 rounded-[3rem] shadow-2xl relative overflow-hidden">
+                             <div className="absolute top-0 right-0 w-32 h-32 bg-brand-red/10 rounded-bl-[8rem]"></div>
+                             <h4 className="text-white/40 text-[10px] font-black uppercase tracking-[0.4em] mb-4">Gross Revenue</h4>
+                             <p className="text-6xl font-black font-serif tracking-tighter mb-2">{reportData.totalRevenue.toFixed(2)} <small className="text-xs opacity-30 font-sans tracking-normal font-medium">JOD</small></p>
+                             <p className="text-green-400 text-xs font-bold flex items-center gap-2">إجمالي مبيعات الفترة</p>
+                          </div>
+                          <div className="bg-white p-12 rounded-[3rem] border-2 border-brand-gray shadow-sm">
+                             <h4 className="text-brand-black/20 text-[10px] font-black uppercase tracking-[0.4em] mb-4">Total Orders</h4>
+                             <p className="text-6xl font-black text-brand-black font-serif tracking-tighter mb-2">{reportData.totalOrders}</p>
+                             <p className="text-brand-red text-xs font-bold">عدد الطلبات المكتملة</p>
+                          </div>
+                       </div>
+
+                       <div className="bg-white rounded-[3rem] border-2 border-brand-gray shadow-sm overflow-hidden mt-8">
+                          <div className="p-8 border-b border-brand-gray/20 flex items-center justify-between">
+                             <h4 className="text-xl font-black text-brand-black">{language === 'ar' ? 'الأكثر مبيعاً للفترة المختارة' : 'Sales by Product'}</h4>
+                             <span className="text-xs font-bold text-brand-black/40">{reportData.itemBreakdown?.length} {language === 'ar' ? 'صنفاً' : 'Products'}</span>
+                          </div>
+                          <div className="overflow-x-auto">
+                             <table className="w-full text-right border-collapse">
+                                <thead className="bg-brand-gray/5 border-b border-brand-gray">
+                                   <tr>
+                                      <th className="p-6 text-xs font-black uppercase text-brand-black/40">الصنف</th>
+                                      <th className="p-6 text-xs font-black uppercase text-brand-black/40">الكمية المباعة</th>
+                                      <th className="p-6 text-xs font-black uppercase text-brand-black/40">الأداء</th>
+                                   </tr>
+                                </thead>
+                                <tbody>
+                                   {reportData.itemBreakdown?.map((item, idx) => (
+                                      <tr key={idx} className="border-b border-brand-gray last:border-0 hover:bg-gray-50 transition-all">
+                                         <td className="p-6 font-black text-xs text-brand-black">{item.name}</td>
+                                         <td className="p-6">
+                                            <div className="flex items-center gap-2">
+                                               <span className="font-black text-lg text-brand-red">{item.quantity}</span>
+                                               <span className="text-[10px] font-bold text-brand-black/20">طلبات</span>
+                                            </div>
+                                         </td>
+                                         <td className="p-6">
+                                            <div className="w-48 bg-brand-gray/20 h-2 rounded-full overflow-hidden">
+                                               <div 
+                                                  className="bg-brand-red h-full rounded-full transition-all duration-1000"
+                                                  style={{ width: `${Math.min(100, (item.quantity / (reportData.itemBreakdown[0]?.quantity || 1)) * 100)}%` }}
+                                               />
+                                            </div>
+                                         </td>
+                                      </tr>
+                                   ))}
+                                   {(!reportData.itemBreakdown || reportData.itemBreakdown.length === 0) && (
+                                      <tr>
+                                         <td colSpan={3} className="p-12 text-center text-brand-black/20 font-bold">{language === 'ar' ? 'لا يوجد بيانات مبيعات لهذه الفترة' : 'No sales data for this period'}</td>
+                                      </tr>
+                                   )}
+                                </tbody>
+                             </table>
+                          </div>
+                       </div>
+                      </>
+                    )}
+                 </motion.div>
+               )}
+
+               {activeTab === 'SYSTEM' && (
+                 <motion.div key="system" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-2xl bg-white p-12 rounded-[3rem] border border-brand-gray shadow-sm">
+                     <h3 className="text-2xl font-black text-brand-black mb-6">أدوات النظام المتقدمة</h3>
+                     <div className="space-y-8">
+                        <div className="p-8 bg-red-50 border-2 border-red-100 rounded-[2rem] space-y-4">
+                           <h4 className="font-black text-brand-red flex items-center gap-2"><Trash2 size={20}/> تصفير الموقع (Data Reset)</h4>
+                           <p className="text-xs text-red-600 font-bold">سيؤدي هذا الإجراء إلى حذف جميع الطلبات والزبائن بشكل نهائي وبدء الموقع ببيانات نظيفة. لا يمكن التراجع عن هذا الفعل.</p>
+                           <button onClick={handleResetSystem} className="bg-brand-red text-white px-8 py-4 rounded-xl font-black text-sm hover:bg-red-700 transition-all shadow-lg active:scale-95">تصفير بالكامل الآن</button>
+                        </div>
+                        
+                        <div className="p-8 bg-gray-50 border border-brand-gray rounded-[2rem] space-y-4 opacity-50">
+                           <h4 className="font-black text-brand-black">تصدير قاعدة البيانات (قريباً)</h4>
+                           <p className="text-xs text-brand-black/40">بإمكانك قريباً تحميل نسخة من بيانات الطلبات بصيغة Excel.</p>
+                        </div>
+                     </div>
+                 </motion.div>
+               )}
           </AnimatePresence>
         </div>
       </div>
@@ -807,15 +809,32 @@ export default function AdminDashboard() {
                 <button onClick={() => setSelectedCustomer(null)} className="p-3 bg-white/10 rounded-2xl text-white hover:bg-white/20 transition-all"><X size={24} /></button>
               </div>
               <div className="flex-1 overflow-y-auto p-8 space-y-8">
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                    <div className="bg-brand-gray/5 p-6 rounded-3xl text-center border border-brand-gray/10">
                       <p className="text-[10px] font-black uppercase text-brand-black/20 mb-1">{language === 'ar' ? 'عدد الطلبات' : 'Total Orders'}</p>
                       <p className="text-3xl font-black text-brand-red">{selectedCustomer.orderCount}</p>
                    </div>
-                   <div className="col-span-2 bg-brand-gray/5 p-6 rounded-3xl border border-brand-gray/10">
-                      <p className="text-[10px] font-black uppercase text-brand-black/20 mb-1">{language === 'ar' ? 'آخر نشاط' : 'Last Activity'}</p>
-                      <p className="text-lg font-black text-brand-black">{new Date(selectedCustomer.lastOrder).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US')}</p>
-                      <p className="text-xs font-bold text-brand-black/40">{selectedCustomer.area || 'Unknown Area'}</p>
+                   <div className="bg-brand-black p-6 rounded-3xl text-center shadow-xl relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 w-12 h-12 bg-white/5 rounded-bl-3xl group-hover:scale-150 transition-transform"/>
+                      <p className="text-[10px] font-black uppercase text-white/30 mb-1">{language === 'ar' ? 'إجمالي المشتريات' : 'Total Spent'}</p>
+                      <p className="text-2xl font-black text-white">{selectedCustomer.totalSpent.toFixed(2)} <small className="text-[10px] font-sans">JD</small></p>
+                   </div>
+                   <div className="bg-brand-gray/5 p-6 rounded-3xl border border-brand-gray/10 flex flex-col justify-center">
+                      <p className="text-[10px] font-black uppercase text-brand-black/20 mb-1">{language === 'ar' ? 'المنطقة' : 'Region'}</p>
+                      <p className="text-sm font-black text-brand-black truncate">{selectedCustomer.area || (language === 'ar' ? 'غير محدد' : 'Unknown')}</p>
+                   </div>
+                </div>
+
+                <div className="bg-brand-cream/10 p-6 rounded-3xl border border-brand-cream/20">
+                   <p className="text-[10px] font-black uppercase text-brand-black/20 mb-3">{language === 'ar' ? 'آخر نشاط ونوع الحساب' : 'Last Activity & Account Type'}</p>
+                   <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                         <Clock size={16} className="text-brand-red"/>
+                         <span className="text-sm font-bold text-brand-black">{new Date(selectedCustomer.lastOrder).toLocaleString(language === 'ar' ? 'ar-EG' : 'en-US')}</span>
+                      </div>
+                      <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${selectedCustomer.email ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+                         {selectedCustomer.email ? (language === 'ar' ? 'حساب مسجل' : 'Registered') : (language === 'ar' ? 'طلب زائر' : 'Guest')}
+                      </div>
                    </div>
                 </div>
 

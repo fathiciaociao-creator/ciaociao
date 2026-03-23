@@ -13,6 +13,7 @@ export async function GET() {
         phoneNumber: true,
         address: true,
         deliveryArea: true,
+        totalPrice: true,
         createdAt: true,
         user: {
           select: {
@@ -34,10 +35,12 @@ export async function GET() {
           isUser: !!order.user,
           email: order.user?.email || null,
           orderCount: 1,
+          totalSpent: order.totalPrice,
         });
       } else {
         const existing = customersMap.get(order.phoneNumber);
         existing.orderCount += 1;
+        existing.totalSpent += order.totalPrice;
         // Keep the latest name/address/email
         if (new Date(order.createdAt) > new Date(existing.lastOrder)) {
           existing.name = order.customerName;
