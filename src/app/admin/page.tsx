@@ -6,7 +6,7 @@ import {
   Bell, Zap, Store,
   Printer, X, Plus, Edit2, Camera, DollarSign, Save, LayoutGrid,
   Layers, Search, ArrowLeft, Folder, ChevronUp, ChevronDown, ListOrdered,
-  CheckSquare, MoveRight, Ticket, Power, Check
+  CheckSquare, MoveRight, Ticket, Power, Check, FileSpreadsheet
 } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -30,6 +30,7 @@ interface Coupon {
   isActive: boolean;
 }
 import toast, { Toaster } from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 import { useLanguage } from '@/store/useLanguage';
 
 interface OrderItem {
@@ -554,6 +555,58 @@ export default function AdminDashboard() {
     finally { setIsBulkUpdating(false); }
   };
 
+  const handleExportOrders = () => {
+    const loadingToast = toast.loading('جاري تحضير ملف الإكسيل...');
+    try {
+      const dataToExport = historyOrders.map(o => ({
+        'رقم الطلب': o.id.slice(-6).toUpperCase(),
+        'التاريخ': new Date(o.createdAt).toLocaleString('ar-JO'),
+        'اسم الزبون': o.customerName,
+        'رقم الهاتف': o.phoneNumber,
+        'العنوان': o.address || (o.deliveryArea ? o.deliveryArea : 'استلام'),
+        'الأصناف': o.items?.map((i: OrderItem) => `${i.quantity}x ${i.name}`).join(' | '),
+        'طريقة الدفع': o.paymentMethod === 'CLIQ' ? 'كليك' : 'كاش',
+        'الإجمالي (د.أ)': o.totalPrice.toFixed(2),
+        'الحالة': o.status,
+        'ملاحظات': o.notes || ''
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(dataToExport);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Orders History");
+      XLSX.writeFile(wb, `Xian_Orders_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.success('تم التصدير بنجاح!', { id: loadingToast });
+    } catch (e) {
+      console.error(e);
+      toast.error('فشل تصدير البيانات', { id: loadingToast });
+    }
+  };
+
+  const handleExportCustomers = () => {
+    const loadingToast = toast.loading('جاري تحضير ملف الزبائن...');
+    try {
+      const dataToExport = customers.map(c => ({
+        'الاسم الكامل': c.name,
+        'رقم الهاتف': c.phone,
+        'الايميل': c.email || 'غير مسجل',
+        'عدد الطلبات': c.orderCount,
+        'إجمالي المشتريات (د.أ)': c.totalSpent.toFixed(2),
+        'المنطقة': c.area || 'غير محدد',
+        'آخر طلب': new Date(c.lastOrder).toLocaleString('ar-JO'),
+        'نوع الحساب': c.email ? 'مسجل' : 'زائر'
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(dataToExport);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Customers Database");
+      XLSX.writeFile(wb, `Xian_Customers_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.success('تم تصدير قائمة الزبائن!', { id: loadingToast });
+    } catch (e) {
+      console.error(e);
+      toast.error('فشل تصدير الزبائن', { id: loadingToast });
+    }
+  };
+
 
   useEffect(() => {
     if (activeTab === 'HISTORY') fetchHistory();
@@ -780,6 +833,16 @@ export default function AdminDashboard() {
 
             {activeTab === 'HISTORY' && (
                 <motion.div key="history" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                   <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-xl font-black text-brand-black">سجل الطلبات</h3>
+                      <button 
+                        onClick={handleExportOrders} 
+                        className="flex items-center gap-3 bg-white border-2 border-brand-gray/50 hover:border-brand-red/30 hover:bg-brand-red/5 px-6 py-3 rounded-2xl font-black text-xs transition-all text-brand-black shadow-sm group"
+                      >
+                        <FileSpreadsheet size={18} className="text-green-600" />
+                        <span className="group-hover:translate-x-1 transition-transform">تصدير إكسيل</span>
+                      </button>
+                   </div>
                    {historyLoading ? (
                      <div className="py-20 text-center font-black">جاري تحميل السجلات...</div>
                    ) : historyOrders.length === 0 ? (
@@ -823,6 +886,16 @@ export default function AdminDashboard() {
 
             {activeTab === 'CUSTOMERS' && (
                 <motion.div key="customers" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                   <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-xl font-black text-brand-black">قاعدة بيانات الزبائن</h3>
+                      <button 
+                        onClick={handleExportCustomers} 
+                        className="flex items-center gap-3 bg-white border-2 border-brand-gray/50 hover:border-brand-red/30 hover:bg-brand-red/5 px-6 py-3 rounded-2xl font-black text-xs transition-all text-brand-black shadow-sm group"
+                      >
+                        <FileSpreadsheet size={18} className="text-green-600" />
+                        <span className="group-hover:translate-x-1 transition-transform">تصدير القائمة</span>
+                      </button>
+                   </div>
                    {customersLoading ? (
                      <div className="py-20 text-center font-black">جاري التحميل...</div>
                    ) : (
@@ -859,16 +932,25 @@ export default function AdminDashboard() {
 
                {activeTab === 'REPORTS' && (
                  <motion.div key="reports" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
-                    <div className="flex flex-wrap gap-4 bg-white p-4 rounded-2xl border border-brand-gray shadow-sm">
-                       {['daily', 'weekly', 'monthly', 'all'].map(t => (
-                         <button 
-                           key={t}
-                           onClick={() => { setReportType(t); fetchReports(t); }}
-                           className={`px-8 py-4 rounded-xl text-xs font-black transition-all ${reportType === t ? 'bg-brand-red text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
-                         >
-                           {t === 'daily' ? 'اليوم لفواتير 24 ساعة' : t === 'weekly' ? 'أسبوعي' : t === 'monthly' ? 'شهري' : 'الكل'}
-                         </button>
-                       ))}
+                    <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-brand-gray shadow-sm">
+                       <div className="flex flex-wrap gap-4">
+                          {['daily', 'weekly', 'monthly', 'all'].map(t => (
+                            <button 
+                              key={t}
+                              onClick={() => { setReportType(t); fetchReports(t); }}
+                              className={`px-8 py-4 rounded-xl text-xs font-black transition-all ${reportType === t ? 'bg-brand-red text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                            >
+                              {t === 'daily' ? 'اليوم لفواتير 24 ساعة' : t === 'weekly' ? 'أسبوعي' : t === 'monthly' ? 'شهري' : 'الكل'}
+                            </button>
+                          ))}
+                       </div>
+                       <button 
+                         onClick={handleExportOrders} 
+                         className="flex items-center gap-3 bg-brand-black text-white px-8 py-4 rounded-xl font-black text-xs transition-all hover:scale-[1.02] active:scale-95 shadow-xl group"
+                       >
+                         <FileSpreadsheet size={18} className="text-green-400" />
+                         <span>تصدير تقرير إكسيل</span>
+                       </button>
                     </div>
 
                     {reportsLoading ? (
@@ -1113,9 +1195,19 @@ export default function AdminDashboard() {
                            <button onClick={handleResetSystem} className="bg-brand-red text-white px-8 py-4 rounded-xl font-black text-sm hover:bg-red-700 transition-all shadow-lg active:scale-95">تصفير بالكامل الآن</button>
                         </div>
                         
-                        <div className="p-8 bg-gray-50 border border-brand-gray rounded-[2rem] space-y-4 opacity-50">
-                           <h4 className="font-black text-brand-black">تصدير قاعدة البيانات (قريباً)</h4>
-                           <p className="text-xs text-brand-black/40">بإمكانك قريباً تحميل نسخة من بيانات الطلبات بصيغة Excel.</p>
+                        <div className="p-8 bg-green-50 border-2 border-green-100 rounded-[2rem] space-y-4">
+                           <h4 className="font-black text-green-700 flex items-center gap-2"><FileSpreadsheet size={20}/> تصدير البيانات الكاملة</h4>
+                           <p className="text-xs text-green-600 font-bold">بإمكانك تصدير كافة بيانات الطلبات والزبائن إلى ملفات Excel للمراجعة المحاسبية أو الأرشفة.</p>
+                           <div className="flex gap-4">
+                              <button onClick={handleExportOrders} className="bg-white border-2 border-green-200 text-green-700 px-6 py-3 rounded-xl font-black text-xs hover:bg-green-100 transition-all shadow-sm group flex items-center gap-2">
+                                <FileSpreadsheet size={14} />
+                                <span>تصدير الطلبات</span>
+                              </button>
+                              <button onClick={handleExportCustomers} className="bg-white border-2 border-green-200 text-green-700 px-6 py-3 rounded-xl font-black text-xs hover:bg-green-100 transition-all shadow-sm group flex items-center gap-2">
+                                <FileSpreadsheet size={14} />
+                                <span>تصدير الزبائن</span>
+                              </button>
+                           </div>
                         </div>
                      </div>
                  </motion.div>
