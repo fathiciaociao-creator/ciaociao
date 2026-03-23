@@ -44,6 +44,7 @@ interface Customer {
   name: string;
   phone: string;
   area: string;
+  email?: string | null;
   orderCount: number;
   lastOrder: string;
 }
@@ -591,6 +592,7 @@ export default function AdminDashboard() {
                               <tr>
                                 <th className="p-6 text-xs font-black text-brand-black/40">الاسم</th>
                                 <th className="p-6 text-xs font-black text-brand-black/40">الهاتف</th>
+                                <th className="p-6 text-xs font-black text-brand-black/40">البريد الإلكتروني</th>
                                 <th className="p-6 text-xs font-black text-brand-black/40">المنطقة</th>
                                 <th className="p-6 text-xs font-black text-brand-black/40">عدد الطلبات</th>
                                 <th className="p-6 text-xs font-black text-brand-black/40">آخر طلب</th>
@@ -601,6 +603,7 @@ export default function AdminDashboard() {
                                 <tr key={i} className="border-b border-brand-gray hover:bg-gray-50 transition-all cursor-pointer group" onClick={() => setSelectedCustomer(c)}>
                                    <td className="p-6 font-black text-xs">{c.name}</td>
                                    <td className="p-6 text-xs font-bold" dir="ltr">{c.phone}</td>
+                                   <td className="p-6 text-[10px] font-bold text-gray-400">{c.email || (language === 'ar' ? 'غير مسجل' : 'Not Registered')}</td>
                                    <td className="p-6 text-[10px] text-gray-500">{c.area || 'غير محدد'}</td>
                                    <td className="p-6"><span className="bg-brand-red/10 text-brand-red px-3 py-1 rounded-full text-[10px] font-black">{c.orderCount}</span></td>
                                    <td className="p-6 text-[10px] text-gray-400">{new Date(c.lastOrder).toLocaleDateString('ar-JO')}</td>
@@ -796,6 +799,9 @@ export default function AdminDashboard() {
                    <div>
                       <h3 className="text-3xl font-black tracking-tight">{selectedCustomer.name}</h3>
                       <p className="text-white/80 font-bold flex items-center gap-2 mt-1"><Phone size={16}/> {selectedCustomer.phone}</p>
+                      {selectedCustomer.email && (
+                        <p className="text-white/60 text-xs font-bold flex items-center gap-2 mt-1 lowercase"><X size={14} className="rotate-45" /> {selectedCustomer.email}</p>
+                      )}
                    </div>
                 </div>
                 <button onClick={() => setSelectedCustomer(null)} className="p-3 bg-white/10 rounded-2xl text-white hover:bg-white/20 transition-all"><X size={24} /></button>

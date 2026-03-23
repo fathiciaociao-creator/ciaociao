@@ -14,7 +14,11 @@ export async function GET() {
         address: true,
         deliveryArea: true,
         createdAt: true,
-        user: true,
+        user: {
+          select: {
+            email: true
+          }
+        },
       }
     });
 
@@ -28,16 +32,18 @@ export async function GET() {
           area: order.deliveryArea,
           lastOrder: order.createdAt,
           isUser: !!order.user,
+          email: order.user?.email || null,
           orderCount: 1,
         });
       } else {
         const existing = customersMap.get(order.phoneNumber);
         existing.orderCount += 1;
-        // Keep the latest name/address
+        // Keep the latest name/address/email
         if (new Date(order.createdAt) > new Date(existing.lastOrder)) {
           existing.name = order.customerName;
           existing.address = order.address;
           existing.lastOrder = order.createdAt;
+          if (order.user?.email) existing.email = order.user.email;
         }
       }
     });
