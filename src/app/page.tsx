@@ -25,9 +25,14 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const products = await prisma.product.findMany({
-    where: { isAvailable: true }
-  });
+  const [products, settings] = await Promise.all([
+    prisma.product.findMany({
+      where: { isAvailable: true }
+    }),
+    prisma.storeSettings.findUnique({
+      where: { id: 1 }
+    })
+  ]);
 
   const menuSchema = {
     "@context": "https://schema.org",
@@ -55,7 +60,7 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(menuSchema) }}
       />
-      <HomeClient initialData={products as any} />
+      <HomeClient initialData={products as any} initialSettings={settings as any} />
     </>
   );
 }

@@ -8,15 +8,60 @@ import MenuItemCard from '@/components/MenuItemCard';
 import CartSidebar from '@/components/CartSidebar';
 import { useLanguage } from '@/store/useLanguage';
 
-export default function HomeClient({ initialData = [] }: { initialData?: any[] }) {
+export default function HomeClient({ 
+  initialData = [], 
+  initialSettings = null 
+}: { 
+  initialData?: any[], 
+  initialSettings?: any 
+}) {
   const { language } = useLanguage();
   const { items, getTotalPrice } = useCart();
   const [products, setProducts] = useState<any[]>(initialData);
-  const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
+  const [categoryOrder, setCategoryOrder] = useState<string[]>(() => {
+    if (initialSettings?.categoryOrder) {
+      try {
+        return JSON.parse(initialSettings.categoryOrder);
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [menuLoading, setMenuLoading] = useState(initialData.length === 0);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  
+  // Predict the initial selected category based on initialData and categoryOrder
+  const [selectedCategory, setSelectedCategory] = useState(() => {
+    if (initialData.length > 0) {
+      const allCats = new Set<string>();
+      initialData.forEach((p: any) => {
+        if (p.category) {
+          p.category.split(',').forEach((c: string) => {
+            const trimmed = c.trim();
+            if (trimmed) allCats.add(trimmed);
+          });
+        }
+      });
+      
+      const currentOrder = initialSettings?.categoryOrder 
+        ? JSON.parse(initialSettings.categoryOrder) 
+        : [];
+        
+      const sorted = Array.from(allCats).sort((a, b) => {
+        const indexA = currentOrder.indexOf(a);
+        const indexB = currentOrder.indexOf(b);
+        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+      });
+      
+      return sorted[0] || '';
+    }
+    return '';
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -97,22 +142,6 @@ export default function HomeClient({ initialData = [] }: { initialData?: any[] }
   const totalPrice = getTotalPrice();
 
   // Effect to set initial category if we have data from server
-  useEffect(() => {
-    if (initialData.length > 0 && !selectedCategory) {
-       const allCats = new Set<string>();
-       initialData.forEach(p => {
-         if (p.category) {
-           p.category.split(',').forEach((c: string) => {
-             const trimmed = c.trim();
-             if (trimmed) allCats.add(trimmed);
-           });
-         }
-       });
-       const sorted = Array.from(allCats);
-       if (sorted[0]) setSelectedCategory(sorted[0]);
-    }
-  }, [initialData]);
-
   if (!mounted) return null;
 
   return (

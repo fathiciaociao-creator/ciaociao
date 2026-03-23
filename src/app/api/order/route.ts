@@ -128,6 +128,24 @@ export async function POST(request: Request) {
        });
     }
 
+    // 🔥 Background Push Notification Trigger
+    try {
+      const subscriptions = await prisma.pushSubscription.findMany();
+      if (subscriptions.length > 0) {
+        // Dynamic import to avoid issues in non-browser environments during build
+        const { sendOrderNotification } = await import('@/lib/push');
+        
+        // Send to all registered devices (iPad, mobiles, etc.)
+        await Promise.allSettled(
+          subscriptions.map((sub: any) => 
+            sendOrderNotification(sub, newOrder.id, newOrder.totalPrice)
+          )
+        );
+      }
+    } catch (pushErr) {
+      console.error("Failed to send push notifications:", pushErr);
+    }
+
     return NextResponse.json({ success: true, orderId: newOrder.id });
   } catch (error) {
     console.error("====== PRISMA CATCH BLOCK ERROR ======");

@@ -42,12 +42,29 @@ interface Order {
   };
 }
 
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isStoreOpen, setIsStoreOpen] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [printingOrder, setPrintingOrder] = useState<Order | null>(null);
   const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
+  const [isPushSubscribed, setIsPushSubscribed] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
   const orderCountRef = useRef<number>(0);
   const audioContextRef = useRef<AudioContext | null>(null);
   const alarmRef = useRef<HTMLAudioElement | null>(null);
@@ -225,7 +242,50 @@ export default function AdminDashboard() {
     }
   };
 
+  const subscribeToPush = async () => {
+    setPushLoading(true);
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      
+      if (!publicKey) throw new Error('VAPID public key not found');
+
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey)
+      });
+
+      const res = await fetch('/api/admin/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(subscription)
+      });
+
+      if (res.ok) {
+        setIsPushSubscribed(true);
+        toast.success('تم تفعيل التنبيهات الفورية بنجاح! 📱');
+      }
+    } catch (error) {
+      console.error('Push subscription failed:', error);
+      toast.error('فشل تفعيل التنبيهات. تأكد من تفعيل أذونات الإشعارات.');
+    } finally {
+      setPushLoading(false);
+    }
+  };
+
   useEffect(() => {
+    // Check if push is supported and subscribed
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(registration => {
+          return registration.pushManager.getSubscription();
+        })
+        .then(subscription => {
+          setIsPushSubscribed(!!subscription);
+        })
+        .catch(err => console.error('SW error:', err));
+    }
+
     fetch('/api/settings').then(res => res.json()).then(data => {
       if (data && typeof data.isStoreOpen === 'boolean') {
         setIsStoreOpen(data.isStoreOpen);
@@ -398,6 +458,28 @@ export default function AdminDashboard() {
                   </button>
               </div>
             </div>
+            
+            {/* New: Push Notification Banner */}
+            {!isPushSubscribed && (
+              <div className="w-full mt-8 bg-brand-red/5 border border-brand-red/20 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4 text-center md:text-right">
+                  <div className="bg-brand-red text-white p-3 rounded-2xl shadow-lg">
+                    <Bell size={24} className="animate-bounce" />
+                  </div>
+                  <div>
+                    <h3 className="text-brand-black font-black text-lg">تفعيل التنبيهات الفورية</h3>
+                    <p className="text-brand-black/40 text-sm font-bold">استقبل إشعارات الطلبات الجديدة حتى لو كان المتصفح في الخلفية.</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={subscribeToPush}
+                  disabled={pushLoading}
+                  className="bg-brand-red text-white px-8 py-4 rounded-2xl font-black text-lg shadow-xl shadow-brand-red/20 active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {pushLoading ? 'جاري التفعيل...' : 'تفعيل الإشعارات الآن 📱'}
+                </button>
+              </div>
+            )}
           </div>
 
           {loading ? (
