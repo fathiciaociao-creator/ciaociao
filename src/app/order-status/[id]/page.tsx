@@ -108,12 +108,12 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
   };
 
   const statusLabels = {
-    PENDING: isAr ? 'بانتظار التأكيد' : 'Awaiting Confirmation',
+    PENDING: isAr ? 'بانتظار التأكيد' : 'Confirmed',
     PREPARING: isAr ? 'يتم التحضير' : 'Preparing',
-    READY_PICKUP: isAr ? 'جاهز للاستلام' : 'Ready for Pickup',
-    READY_DELIVERY: isAr ? 'جاهز للتوصيل' : 'Ready for Delivery',
+    READY_PICKUP: isAr ? 'جاهز للاستلام' : 'Ready',
+    READY_DELIVERY: isAr ? 'جاهز للتوصيل' : 'Ready',
     SHIPPED_PICKUP: isAr ? 'تم الاستلام ✅' : 'Picked Up ✅',
-    SHIPPED_DELIVERY: isAr ? 'جاري التوصيل..' : 'Out for Delivery..',
+    SHIPPED_DELIVERY: isAr ? 'جاري التوصيل..' : 'On the Way..',
   };
 
   if (loading) {
@@ -241,7 +241,7 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
                           'bg-white border border-brand-gray text-brand-black/10'}`}>
                         <Icon size={20} strokeWidth={2} />
                       </div>
-                      <span className={`text-[10px] font-bold text-center transition-colors duration-500 whitespace-nowrap
+                      <span className={`text-[9.5px] font-bold text-center transition-colors duration-500 leading-tight
                         ${isCurrent ? 'text-brand-red' : isPassed ? 'text-brand-black' : 'text-brand-black/20'}`}>
                         {step.label}
                       </span>
