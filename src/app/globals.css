@@ -94,14 +94,17 @@ h1, h2, h3, h4, .luxury-heading {
 /* --- PRINTING STYLES --- */
 @media print {
   @page {
-    margin: 0.5cm;
-    size: auto;
+    margin: 0;
+    size: 80mm auto; /* Longitudinal Tape Format */
   }
   
-  /* Reset background for print */
-  body {
+  html, body {
+    width: 80mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: white !important;
     color: black !important;
+    font-size: 10pt !important;
   }
 
   /* Utility to hide UI elements */
@@ -109,17 +112,46 @@ h1, h2, h3, h4, .luxury-heading {
     display: none !important;
   }
 
+  /* Force every main container to be 80mm and not overflow */
+  main, .container, .flex-1, .grid {
+    width: 80mm !important;
+    max-width: 80mm !important;
+    min-width: 80mm !important;
+    padding: 2mm !important;
+    margin: 0 !important;
+    display: block !important; /* Stack elements longitudinally */
+  }
+
+  /* Tables should be simple and fit the width */
+  table {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+  }
+  
+  th, td {
+    padding: 1mm !important;
+    word-break: break-word !important;
+    font-size: 8pt !important;
+  }
+
+  /* Hide scrollbars in print */
+  ::-webkit-scrollbar {
+    display: none !important;
+  }
+
   /* Handle Receipt Printing (#print-area) */
   #print-area {
     display: block !important;
-    position: relative;
-    width: 80mm; /* Standard Thermal Receipt Width */
-    margin: 0 auto;
-    padding: 10mm;
-    background: white !important;
-    color: black !important;
-    font-family: 'Almarai', sans-serif !important;
+    width: 80mm !important;
+    margin: 0 !important;
+    padding: 5mm !important;
     border: none !important;
+  }
+
+  /* Hide everything else if #print-area is present and shown */
+  #print-area:not(:empty) ~ * {
+    display: none !important;
   }
 
   /* Force colors even in ink-saver mode */
