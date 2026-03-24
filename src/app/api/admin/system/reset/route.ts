@@ -1,7 +1,11 @@
 import { prisma } from "@/db";
 import { NextResponse } from "next/server";
+import { isAdminAuthenticated } from "@/lib/security/auth";
 
 export async function POST(request: Request) {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const { action } = await request.json();
 

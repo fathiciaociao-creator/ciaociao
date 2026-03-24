@@ -1,11 +1,13 @@
-// src/app/api/admin/orders/route.ts
 import { prisma } from "../../../../db"; 
 import { NextResponse } from "next/server";
+import { isAdminAuthenticated } from "@/lib/security/auth";
 
-// هذا السطر يمنع التخزين المؤقت لضمان رؤية الطلبات الجديدة فوراً
 export const dynamic = 'force-dynamic'; 
 
 export async function GET() {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   if (!process.env.DATABASE_URL) {
     return NextResponse.json(
       { error: "قاعدة البيانات غير متصلة (DATABASE_URL مفقود)" }, 

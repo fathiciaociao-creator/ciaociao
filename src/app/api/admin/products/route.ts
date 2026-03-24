@@ -1,10 +1,14 @@
 import { prisma } from "../../../../db"; 
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { isAdminAuthenticated } from "@/lib/security/auth";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const products = await prisma.product.findMany({
       orderBy: { createdAt: 'desc' }
@@ -17,6 +21,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const { nameEn, nameAr, price, category, imageUrl, descriptionAr, descriptionEn } = body;

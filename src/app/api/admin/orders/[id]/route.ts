@@ -1,10 +1,14 @@
 import { prisma } from "@/db";
 import { NextResponse } from "next/server";
+import { isAdminAuthenticated } from "@/lib/security/auth";
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   const { id } = await params;
   const { status, paymentStatus, isArchived } = await request.json();
 
@@ -32,8 +36,11 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> } // Standard Next.js 15+ Promise-based params pattern
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   const { id } = await params;
   
   if (!id) {

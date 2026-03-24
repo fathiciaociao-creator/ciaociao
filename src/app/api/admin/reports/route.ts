@@ -1,9 +1,13 @@
 import { prisma } from "@/db";
 import { NextResponse } from "next/server";
+import { isAdminAuthenticated } from "@/lib/security/auth";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type') || 'daily'; // daily, weekly, monthly, custom, all
   const start = searchParams.get('start');

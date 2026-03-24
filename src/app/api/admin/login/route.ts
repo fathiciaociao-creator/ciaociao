@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
+import { isAllowedRequest, extractIP } from '@/lib/security/rateLimiter';
 
 export async function POST(request: Request) {
+  const clientIp = extractIP(request);
+  
+  // Rate Limit: 5 attempts per 15 minutes
+  if (!isAllowedRequest(clientIp, 5, 15 * 60 * 1000)) {
+    return NextResponse.json({ 
+      success: false, 
+      error: "كثير من المحاولات الفاشلة. يرجى الانتظار 15 دقيقة قبل المحاولة مرة أخرى." 
+    }, { status: 429 });
+  }
+
   try {
     const { password } = await request.json();
     const adminPassword = process.env.ADMIN_PASSWORD;

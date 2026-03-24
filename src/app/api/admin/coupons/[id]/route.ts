@@ -1,7 +1,11 @@
 import { prisma } from "@/db";
 import { NextResponse, NextRequest } from "next/server";
+import { isAdminAuthenticated } from "@/lib/security/auth";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const { id } = await params;
     const { isActive } = await req.json();
@@ -17,6 +21,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const { id } = await params;
     await prisma.coupon.delete({

@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db';
+import { isAdminAuthenticated } from '@/lib/security/auth';
 
 export async function POST(req: Request) {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const subscription = await req.json();
     

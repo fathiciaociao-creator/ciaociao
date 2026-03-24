@@ -1,9 +1,13 @@
 import { prisma } from "@/db";
 import { NextResponse } from "next/server";
+import { isAdminAuthenticated } from "@/lib/security/auth";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const coupons = await prisma.coupon.findMany({
        orderBy: { createdAt: 'desc' }
@@ -16,6 +20,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const { code, discountPercent } = await req.json();
     

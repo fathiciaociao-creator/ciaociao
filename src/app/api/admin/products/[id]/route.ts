@@ -1,11 +1,15 @@
 import { prisma } from "../../../../../db"; 
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { isAdminAuthenticated } from "@/lib/security/auth";
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const { id } = await params;
     const body = await request.json();
@@ -39,6 +43,9 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const { id } = await params;
     await prisma.product.delete({

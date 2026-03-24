@@ -1,6 +1,7 @@
 import { prisma } from "../../../db";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { isAdminAuthenticated } from "@/lib/security/auth";
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +26,9 @@ export async function GET() {
 }
 
 export async function PATCH(req: Request) {
+  if (!await isAdminAuthenticated()) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const { isStoreOpen, categoryOrder } = await req.json();
 
