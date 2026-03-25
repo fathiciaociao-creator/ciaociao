@@ -1,15 +1,16 @@
-// src/app/api/order/route.ts
-import { prisma } from "@/db";
+import { prisma } from "@/db"; 
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { z } from "zod";
 import { isAllowedRequest, extractIP } from "@/lib/security/rateLimiter";
+import { DELIVERY_ZONES } from "@/constants/deliveryZones";
 
 const orderSchema = z.object({
   customerName: z.string().min(2, "Name is too short").max(100),
   phone: z.string().min(8, "Invalid phone number").max(30),
   address: z.string().nullable().optional(),
   deliveryArea: z.string().nullable().optional(),
+  selectedZoneId: z.string().nullable().optional(),
   notes: z.string().max(1000).nullable().optional(),
   orderType: z.enum(['DELIVERY', 'PICKUP']),
   pickupTime: z.string().nullable().optional(),
@@ -20,7 +21,6 @@ const orderSchema = z.object({
     productId: z.string(),
     name: z.string(),
     quantity: z.number().int().min(1, "Invalid quantity"),
-    // price from frontend is explicitly untrusted and ignored here
   })).min(1, "Cart is empty")
 });
 
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     }
 
     const upperCoupon = data.couponCode ? data.couponCode.trim().toUpperCase() : null;
-    let finalTotalPrice = calculatedTotal;
+    let subtotalAfterDiscount = calculatedTotal;
 
     // Server-side validation for coupons
     if (upperCoupon === 'WELCOME30') {
@@ -91,8 +91,8 @@ export async function POST(request: Request) {
        if (!user || user.hasUsedWelcomeDiscount) {
           return NextResponse.json({ success: false, error: "Invalid coupon or already used" }, { status: 400 });
        }
-       // Apply 30% discount
-       finalTotalPrice = calculatedTotal * 0.70;
+       // Apply 30% discount to subtotal
+       subtotalAfterDiscount = calculatedTotal * 0.70;
     } else if (upperCoupon) {
        // Validate Dynamic Custom Coupon
        const dynamicCoupon = await prisma.coupon.findUnique({ where: { code: upperCoupon } });
@@ -100,8 +100,21 @@ export async function POST(request: Request) {
           return NextResponse.json({ success: false, error: "Invalid or deactivated coupon" }, { status: 400 });
        }
        // Apply custom discount percentage
-       finalTotalPrice = calculatedTotal * (1 - (dynamicCoupon.discountPercent / 100));
+       subtotalAfterDiscount = calculatedTotal * (1 - (dynamicCoupon.discountPercent / 100));
     }
+
+    // Add Delivery Fee and Service Fee
+    let deliveryFee = 0;
+    if (data.orderType === 'DELIVERY') {
+      const zone = DELIVERY_ZONES.find(z => z.id === data.selectedZoneId);
+      if (!zone) {
+        return NextResponse.json({ success: false, error: "Invalid delivery zone selected" }, { status: 400 });
+      }
+      deliveryFee = zone.fee;
+    }
+
+    const serviceFee = 0.26;
+    const finalTotalPrice = subtotalAfterDiscount + deliveryFee + serviceFee;
 
     // Prisma: Create the validated deeply nested order 
     const isPaidMethod = ['CLIQ', 'APPLE_PAY', 'CARD'].includes(data.paymentMethod);

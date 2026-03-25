@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useSession, signIn } from 'next-auth/react';
 import { useLanguage } from '@/store/useLanguage';
-import { DELIVERY_ZONES, DeliveryZone } from '@/constants/deliveryZones';
+import { DELIVERY_ZONES } from '@/constants/deliveryZones';
 import { useCheckout } from '@/store/useCheckout';
 import { useRouter } from 'next/navigation';
 
@@ -15,17 +15,14 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
   const { language } = useLanguage();
   const { data: session } = useSession();
   const { items, clearCart, removeItem } = useCart();
-  const [form, setForm] = useState({ name: '', phone: '', address: '', deliveryArea: '', notes: '', pickupTime: '' });
-  const [orderType, setOrderType] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
+  const { form, setForm } = useCheckout();
+  const [orderType, setOrderType] = useState<'DELIVERY' | 'PICKUP'>(form.orderType);
   const [mounted, setMounted] = useState(false);
-  const [selectedZone, setSelectedZone] = useState<DeliveryZone>(DELIVERY_ZONES[0]);
+  const selectedZone = DELIVERY_ZONES.find(z => z.id === form.selectedZoneId) || DELIVERY_ZONES[0];
 
   // Promo Code State
-  const [couponCode] = useState('');
-  const [discountPercent] = useState(0);
   const [isStoreOpen, setIsStoreOpen] = useState<boolean>(true);
   const [isDetecting, setIsDetecting] = useState(false);
-  const { setForm: setCheckoutForm } = useCheckout();
   const router = useRouter();
 
 
@@ -46,11 +43,11 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
   useEffect(() => {
     if (session?.user?.name && !form.name) {
       const timer = setTimeout(() => {
-        setForm(f => ({ ...f, name: session?.user?.name || '' }));
+        setForm({ name: session?.user?.name || '' });
       }, 0);
       return () => clearTimeout(timer);
     }
-  }, [session?.user?.name, form.name]);
+  }, [session?.user?.name, form.name, setForm]);
 
   const handleDetectLocation = () => {
     if (!navigator.geolocation) {
@@ -63,7 +60,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
       async (position) => {
         const { latitude, longitude } = position.coords;
         const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-        setForm(prev => ({ ...prev, address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${mapsUrl})` }));
+        setForm({ address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)} (${mapsUrl})` });
         setIsDetecting(false);
         
         // Optional: Try reverse geocoding
@@ -71,7 +68,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=${language}`);
           const data = await res.json();
           if (data && data.display_name) {
-            setForm(prev => ({ ...prev, address: `${data.display_name} (${mapsUrl})` }));
+            setForm({ address: `${data.display_name} (${mapsUrl})` });
           }
         } catch (e) {
           console.error("Geocoding error:", e);
@@ -248,7 +245,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                       <input 
                                         placeholder={language === 'ar' ? 'الاسم الكامل' : 'Full Name'} 
                                         className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6 text-right' : 'pl-12 pr-6 text-left'} py-4 rounded-xl border border-brand-gray/20 focus:border-brand-red/30 focus:bg-white outline-none transition-all font-bold text-[15px] placeholder:text-brand-black/30`}
-                                        value={form.name} onChange={(e) => setForm({...form, name: e.target.value})}
+                                        value={form.name} onChange={(e) => setForm({ name: e.target.value })}
                                       />
                                     </div>
                                     <div className="relative group">
@@ -256,7 +253,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                       <input 
                                         placeholder={language === 'ar' ? 'رقم الهاتف' : 'Phone Number'} 
                                         className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6' : 'pl-12 pr-6'} py-4 rounded-xl border border-brand-gray/20 focus:border-brand-red/30 focus:bg-white outline-none transition-all font-bold text-[15px] placeholder:text-brand-black/30`}
-                                        dir="ltr" value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value})}
+                                        dir="ltr" value={form.phone} onChange={(e) => setForm({ phone: e.target.value })}
                                       />
                                     </div>
                                   </div>
@@ -271,14 +268,14 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                       <>
                                         <div className="relative group">
                                           <Bike className={`absolute ${language === 'ar' ? 'right-5' : 'left-5'} top-1/2 -translate-y-1/2 text-brand-black/20`} size={18} />
-                                          <select className={`w-full appearance-none bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-10' : 'pl-12 pr-10'} py-4 rounded-xl border border-brand-gray/20 outline-none font-bold text-[15px] cursor-pointer`} value={selectedZone.id} onChange={(e) => {const zone = DELIVERY_ZONES.find(z => z.id === e.target.value); if (zone) setSelectedZone(zone);}}>
+                                          <select className={`w-full appearance-none bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-10' : 'pl-12 pr-10'} py-4 rounded-xl border border-brand-gray/20 outline-none font-bold text-[15px] cursor-pointer`} value={form.selectedZoneId} onChange={(e) => setForm({ selectedZoneId: e.target.value })}>
                                             {DELIVERY_ZONES.map(zone => (<option key={zone.id} value={zone.id}>{language === 'ar' ? zone.nameAr : zone.nameEn} (+{zone.fee.toFixed(2)} JOD)</option>))}
                                           </select>
                                           <ChevronDown className={`absolute ${language === 'ar' ? 'left-5' : 'right-5'} top-1/2 -translate-y-1/2 text-brand-black/20`} size={18} />
                                         </div>
                                         <div className="relative group">
                                           <MapPin className={`absolute ${language === 'ar' ? 'right-5' : 'left-5'} top-1/2 -translate-y-1/2 text-brand-black/20`} size={18} />
-                                          <input placeholder={language === 'ar' ? 'العنوان بالتفصيل' : 'Detailed Address'} className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6' : 'pl-12 pr-6'} py-4 rounded-xl border border-brand-gray/20 focus:bg-white transition-all font-bold text-[15px]`} value={form.address} onChange={(e) => setForm({...form, address: e.target.value})} />
+                                          <input placeholder={language === 'ar' ? 'العنوان بالتفصيل' : 'Detailed Address'} className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6' : 'pl-12 pr-6'} py-4 rounded-xl border border-brand-gray/20 focus:bg-white transition-all font-bold text-[15px]`} value={form.address} onChange={(e) => setForm({ address: e.target.value })} />
                                         </div>
                                         <button 
                                           onClick={handleDetectLocation}
@@ -292,10 +289,10 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                     ) : (
                                       <div className="relative group">
                                         <Clock className={`absolute ${language === 'ar' ? 'right-5' : 'left-5'} top-1/2 -translate-y-1/2 text-brand-black/20`} size={18} />
-                                        <input type="time" className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6' : 'pl-12 pr-6'} py-4 rounded-xl border border-brand-gray/20 font-bold text-[15px]`} value={form.pickupTime} onChange={(e) => setForm({...form, pickupTime: e.target.value})} />
+                                        <input type="time" className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6' : 'pl-12 pr-6'} py-4 rounded-xl border border-brand-gray/20 font-bold text-[15px]`} value={form.pickupTime} onChange={(e) => setForm({ pickupTime: e.target.value })} />
                                       </div>
                                     )}
-                                    <textarea placeholder={language === 'ar' ? 'ملاحظات إضافية...' : 'Additional Notes...'} className={`w-full bg-brand-gray/5 text-brand-black px-6 py-4 rounded-xl border border-brand-gray/20 focus:bg-white outline-none transition-all font-bold text-[15px] min-h-[90px] resize-none ${language === 'ar' ? 'text-right' : 'text-left'}`} value={form.notes} onChange={(e) => setForm({...form, notes: e.target.value})} />
+                                    <textarea placeholder={language === 'ar' ? 'ملاحظات إضافية...' : 'Additional Notes...'} className={`w-full bg-brand-gray/5 text-brand-black px-6 py-4 rounded-xl border border-brand-gray/20 focus:bg-white outline-none transition-all font-bold text-[15px] min-h-[90px] resize-none ${language === 'ar' ? 'text-right' : 'text-left'}`} value={form.notes} onChange={(e) => setForm({ notes: e.target.value })} />
                                   </div>
                                 </div>
 
@@ -320,13 +317,6 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                   alert(language === 'ar' ? 'يرجى إكمال البيانات' : 'Please complete fields'); 
                                   return;
                                 }
-                                setCheckoutForm({
-                                  ...form,
-                                  orderType,
-                                  selectedZoneId: selectedZone.id,
-                                  couponCode,
-                                  discountPercent
-                                });
                                 onClose();
                                 router.push('/checkout/payment');
                               }} className="w-full bg-brand-black text-white py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 shadow-xl hover:bg-brand-red transition-all group">

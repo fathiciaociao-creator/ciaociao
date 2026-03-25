@@ -108,6 +108,9 @@ model Product {
   isAvailable  Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  @@index([isAvailable])
+  @@index([category])
 }
 
 model StoreSettings {

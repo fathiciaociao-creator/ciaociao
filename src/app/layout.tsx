@@ -66,8 +66,23 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className="h-full antialiased scroll-smooth">
+    <html lang="ar" className="h-full antialiased scroll-smooth">
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const storage = localStorage.getItem('xian-language-storage');
+                if (storage) {
+                  const { state } = JSON.parse(storage);
+                  if (state && state.language) {
+                    document.documentElement.lang = state.language;
+                  }
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

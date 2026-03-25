@@ -17,8 +17,8 @@ export default function HomeClient({
 }) {
   const { language } = useLanguage();
   const { items, getTotalPrice } = useCart();
-  const [products, setProducts] = useState<Product[]>(initialData);
-  const [categoryOrder, setCategoryOrder] = useState<string[]>(() => {
+  const products = initialData;
+  const categoryOrder = (() => {
     if (initialSettings?.categoryOrder) {
       try {
         const parsed = JSON.parse(initialSettings.categoryOrder);
@@ -28,11 +28,11 @@ export default function HomeClient({
       }
     }
     return [];
-  });
+  })();
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [menuLoading, setMenuLoading] = useState(false); // Default to false if we have initialData
+  const menuLoading = false; 
   
   // Calculate categories from CURRENT products and categoryOrder
   const allCategoriesSet = new Set<string>();
@@ -54,57 +54,17 @@ export default function HomeClient({
     return indexA - indexB;
   });
 
-  // Predict the initial selected category
-  const [selectedCategory, setSelectedCategory] = useState(() => {
-    // If we have categories based on initial data/settings, use the first one
-    if (categories.length > 0) return categories[0];
-    return '';
-  });
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const activeCategory = selectedCategory || categories[0] || '';
 
   useEffect(() => {
-    setMounted(true);
-    
-    // Only fetch if initialData is empty, otherwise we trust SSR
-    if (initialData.length === 0) {
-      const fetchMenu = async () => {
-        setMenuLoading(true);
-        try {
-          const [menuRes, settingsRes] = await Promise.all([
-            fetch('/api/products'),
-            fetch('/api/settings')
-          ]);
-          const data = await menuRes.json();
-          const settings = await settingsRes.json();
-          
-          if (settings.categoryOrder) {
-            const order = JSON.parse(settings.categoryOrder);
-            setCategoryOrder(order);
-          }
-
-          if (Array.isArray(data)) {
-            setProducts(data);
-          }
-        } catch (e) {
-          console.error("Failed to fetch menu", e);
-        } finally {
-          setMenuLoading(false);
-        }
-      };
-      fetchMenu();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
-  // Update selectedCategory if it's empty but categories are now available
-  useEffect(() => {
-    if (!selectedCategory && categories.length > 0) {
-      setSelectedCategory(categories[0]);
-    }
-  }, [categories, selectedCategory]);
-
   const filteredData = products.filter((item) => {
-    return (item.category && selectedCategory)
-      ? item.category.split(',').map((c: string) => c.trim()).includes(selectedCategory)
+    return (item.category && activeCategory)
+      ? item.category.split(',').map((c: string) => c.trim()).includes(activeCategory)
       : false;
   });
 
@@ -131,10 +91,10 @@ export default function HomeClient({
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
                     className={`text-sm font-bold uppercase whitespace-nowrap relative py-2 transition-all
-                      ${selectedCategory === cat ? 'text-black' : 'text-gray-400 hover:text-black'}`}
+                      ${activeCategory === cat ? 'text-black' : 'text-gray-400 hover:text-black'}`}
                   >
                     {cat}
-                    {selectedCategory === cat && (
+                    {activeCategory === cat && (
                       <motion.div 
                         layoutId="activeUnderline"
                         className="absolute -bottom-[2px] left-0 right-0 h-1 bg-black rounded-full"
@@ -147,7 +107,7 @@ export default function HomeClient({
         </div>
 
         <div className="max-w-7xl mx-auto px-6 mb-10 text-center">
-           <h2 className="text-3xl font-bold text-black luxury-heading mb-2">{selectedCategory}</h2>
+           <h2 className="text-3xl font-bold text-black luxury-heading mb-2">{activeCategory}</h2>
            <p className="text-gray-500 text-sm font-medium">
              {language === 'ar' ? 'أطباق مختارة بعناية خصيصاً لك' : 'Carefully selected premium dishes just for you'}
            </p>

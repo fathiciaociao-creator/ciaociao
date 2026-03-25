@@ -4,8 +4,7 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "*.supabase.co" },
-      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "**" }, // Reverted to wildcard to fix loading issues with Supabase & Placeholders
     ],
   },
   async headers() {

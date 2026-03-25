@@ -81,13 +81,12 @@ export default function PaymentPage() {
           orderType: form.orderType,
           paymentMethod: method,
           notes: form.notes,
-          totalPrice: finalTotal,
+          selectedZoneId: form.selectedZoneId,
           userId: null, 
           couponCode: form.discountPercent > 0 ? form.couponCode : null,
           items: items.map(item => ({
             productId: item.id.toString(),
             name: item.name,
-            price: item.price,
             quantity: item.quantity
           }))
         }),
