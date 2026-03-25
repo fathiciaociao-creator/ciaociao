@@ -6,5 +6,8 @@ export async function isAdminAuthenticated() {
   const adminPassword = process.env.ADMIN_PASSWORD;
 
   if (!adminAuth || !adminPassword) return false;
-  return adminAuth === adminPassword;
+
+  const expectedToken = Buffer.from(`${adminPassword}:${process.env.AUTH_SECRET || 'fallback-secret'}`).toString('base64');
+  
+  return adminAuth === expectedToken;
 }

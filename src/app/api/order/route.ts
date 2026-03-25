@@ -1,6 +1,7 @@
 // src/app/api/order/route.ts
 import { prisma } from "@/db";
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
 import { z } from "zod";
 import { isAllowedRequest, extractIP } from "@/lib/security/rateLimiter";
 
@@ -24,6 +25,9 @@ const orderSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const session = await auth();
+  const verifiedUserId = session?.user?.id;
+
   const clientIp = extractIP(request);
   if (!isAllowedRequest(clientIp, 10, 15 * 60 * 1000)) {
      return NextResponse.json({ success: false, error: "Request limit exceeded. Please wait a moment!" }, { status: 429 });
@@ -51,7 +55,7 @@ export async function POST(request: Request) {
     }
 
     // Zero-Trust Cost Recalculation
-    const productIds = data.items.map(item => item.productId);
+    const productIds = data.items.map((item: { productId: string }) => item.productId);
     const dbProducts = await prisma.product.findMany({
       where: { id: { in: productIds } }
     });
@@ -80,10 +84,10 @@ export async function POST(request: Request) {
 
     // Server-side validation for coupons
     if (upperCoupon === 'WELCOME30') {
-       if (!data.userId) {
+       if (!verifiedUserId) {
           return NextResponse.json({ success: false, error: "You must sign in to use the welcome coupon" }, { status: 401 });
        }
-       const user = await prisma.user.findUnique({ where: { id: data.userId } });
+       const user = await prisma.user.findUnique({ where: { id: verifiedUserId } });
        if (!user || user.hasUsedWelcomeDiscount) {
           return NextResponse.json({ success: false, error: "Invalid coupon or already used" }, { status: 400 });
        }
@@ -111,7 +115,7 @@ export async function POST(request: Request) {
         orderType: data.orderType,
         notes: data.notes || null,
         totalPrice: parseFloat(finalTotalPrice.toFixed(2)),
-        userId: data.userId || null,
+        userId: verifiedUserId || null,
         couponCode: data.couponCode || null,
         paymentMethod: data.paymentMethod,
         paymentStatus: isPaidMethod ? 'PENDING' : 'COMPLETED',
@@ -122,9 +126,9 @@ export async function POST(request: Request) {
     });
 
     // Mark discount as used securely
-    if (data.userId && upperCoupon === 'WELCOME30') {
+    if (verifiedUserId && upperCoupon === 'WELCOME30') {
        await prisma.user.update({
-         where: { id: data.userId },
+         where: { id: verifiedUserId },
          data: { hasUsedWelcomeDiscount: true }
        });
     }

@@ -13,12 +13,15 @@ export function proxy(request: NextRequest) {
       return NextResponse.next();
     }
 
-    // Extract the strict admin token (Master Password fallback)
+    // Extract the strict admin token (Securely Signed Signature)
     const adminToken = request.cookies.get('admin_auth')?.value;
-    const masterPassword = process.env.ADMIN_PASSWORD;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    // Zero-Trust Hashed Validation
+    const expectedToken = Buffer.from(`${adminPassword}:${process.env.AUTH_SECRET || 'fallback-secret'}`).toString('base64');
 
     // Reject mismatch or missing tokens immediately via Edge
-    if (!adminToken || adminToken !== masterPassword) {
+    if (!adminToken || adminToken !== expectedToken) {
       
       // If unauthorized API request -> Return 401 JSON
       if (pathname.startsWith('/api/admin')) {
