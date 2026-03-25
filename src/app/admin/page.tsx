@@ -171,10 +171,10 @@ export default function AdminDashboard() {
 
   const handleUpdateStatus = async (id: string, status: string) => {
     try {
-      const res = await fetch('/api/admin/orders', {
+      const res = await fetch(`/api/admin/orders/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status })
+        body: JSON.stringify({ status })
       });
       if (res.ok) {
         toast.success('تم تحديث الحالة');
@@ -188,10 +188,10 @@ export default function AdminDashboard() {
 
   const handleArchive = async (id: string) => {
     try {
-      const res = await fetch('/api/admin/orders', {
-        method: 'DELETE',
+      const res = await fetch(`/api/admin/orders/${id}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
+        body: JSON.stringify({ isArchived: true })
       });
       if (res.ok) {
         toast.success('تمت الأرشفة');
@@ -205,10 +205,10 @@ export default function AdminDashboard() {
   const handlePaymentReceived = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      const res = await fetch('/api/admin/orders', {
+      const res = await fetch(`/api/admin/orders/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, paymentStatus: 'COMPLETED' })
+        body: JSON.stringify({ paymentStatus: 'COMPLETED' })
       });
       if (res.ok) {
         toast.success('تم تأكيد الدفع');
@@ -482,7 +482,7 @@ export default function AdminDashboard() {
     setIsAudioUnlocked(true);
     const Win = window as unknown as Window & { webkitAudioContext?: typeof AudioContext };
     audioContextRef.current = new (window.AudioContext || Win.webkitAudioContext)();
-    alarmRef.current = new Audio('/alarm.mp3');
+    alarmRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     alarmRef.current.loop = true;
     audioContextRef.current.resume();
   };
