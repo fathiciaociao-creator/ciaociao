@@ -7,8 +7,8 @@ import { useLanguage } from '@/store/useLanguage';
 import { AnimatePresence } from 'framer-motion';
 
 // Types
-import { 
-  Order, Product, DeliveryZone, Coupon, Customer, ReportSummary, AdminTab 
+import {
+  Order, Product, DeliveryZone, Coupon, Customer, ReportSummary, AdminTab
 } from '@/types/admin';
 
 // Components
@@ -123,8 +123,8 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="flex border-r border-gray-200">
-              <button 
-                onClick={() => { toast.dismiss(t.id); stopAlarm(); setActiveTab('ORDERS'); }} 
+              <button
+                onClick={() => { toast.dismiss(t.id); stopAlarm(); setActiveTab('ORDERS'); }}
                 className="w-full border border-transparent rounded-none rounded-r-lg p-6 flex items-center justify-center text-sm font-black text-brand-red hover:bg-brand-red/5 active:bg-brand-red/10 transition-all uppercase tracking-widest"
               >
                 فتح الطلبات
@@ -475,7 +475,7 @@ export default function AdminDashboard() {
     exportToExcel(data, `Xian_Customers_${new Date().toLocaleDateString()}`);
   };
 
-  // --- Audio ---
+  // --- Audio ------
   const unlockAudio = () => {
     setIsAudioUnlocked(true);
     const Win = window as unknown as Window & { webkitAudioContext?: typeof AudioContext };
@@ -515,7 +515,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-brand-cream flex flex-col lg:flex-row font-sans overflow-x-hidden" dir="rtl">
       <Toaster position="top-right" />
-      
+
       {!isAudioUnlocked && <AudioUnlockOverlay onUnlock={unlockAudio} />}
 
       <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} pendingCount={orders.filter(o => o.status === 'PENDING').length} onLogout={handleLogout} />
@@ -529,7 +529,7 @@ export default function AdminDashboard() {
               </h2>
               <p className="text-brand-black/40 font-bold mt-2 text-sm lg:text-base">تتم الآن إدارة مطعم شيان بشكل آلي وآمن بالكامل.</p>
             </div>
-            
+
             <div className="flex items-center gap-4 bg-white p-4 lg:p-6 rounded-[2.5rem] border border-brand-gray shadow-sm">
               <div className="flex flex-col text-left mr-4">
                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/20">حالة المطعم</span>
@@ -537,7 +537,7 @@ export default function AdminDashboard() {
                   {isStoreOpen ? 'المطعم مفتوح ويستقبل الطلبات' : 'المطعم مغلق حالياً'}
                 </span>
               </div>
-              <button 
+              <button
                 onClick={toggleStoreStatus}
                 className={`w-16 h-16 lg:w-20 lg:h-20 rounded-3xl flex items-center justify-center transition-all duration-500 shadow-xl
                   ${isStoreOpen ? 'bg-green-600 text-white hover:bg-green-700 hover:rotate-12' : 'bg-brand-red text-white animate-pulse'}`}
@@ -550,7 +550,7 @@ export default function AdminDashboard() {
           <div className="space-y-12">
             <AnimatePresence mode="wait">
               {activeTab === 'ORDERS' && (
-                <OrdersTab 
+                <OrdersTab
                   orders={orders} loading={loading} orderStatusFilter={orderStatusFilter} setOrderStatusFilter={setOrderStatusFilter}
                   handleUpdateStatus={handleUpdateStatus} handleArchive={handleArchive} handlePaymentReceived={handlePaymentReceived} language={language}
                 />
@@ -569,7 +569,7 @@ export default function AdminDashboard() {
               )}
 
               {activeTab === 'PRODUCTS' && (
-                <ProductsTab 
+                <ProductsTab
                   products={products} loading={loading} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}
                   productSearchQuery={productSearchQuery} setProductSearchQuery={setProductSearchQuery} selectedIds={selectedIds} setSelectedIds={setSelectedIds}
                   onAddProduct={() => { setEditingProduct(null); setProductFormData({ nameEn: '', nameAr: '', price: '', category: products[0]?.category || '', imageUrl: '', descriptionAr: '', descriptionEn: '' }); setIsProductModalOpen(true); }}
