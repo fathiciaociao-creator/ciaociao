@@ -29,7 +29,7 @@ const initialForm: CheckoutForm = {
   notes: '',
   pickupTime: '',
   orderType: 'DELIVERY',
-  selectedZoneId: 'lweibdeh',
+  selectedZoneId: '',
   couponCode: '',
   discountPercent: 0,
 };

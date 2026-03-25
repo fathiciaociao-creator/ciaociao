@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { z } from "zod";
 import { isAllowedRequest, extractIP } from "@/lib/security/rateLimiter";
-import { DELIVERY_ZONES } from "@/constants/deliveryZones";
 
 const orderSchema = z.object({
   customerName: z.string().min(2, "Name is too short").max(100),
@@ -106,7 +105,10 @@ export async function POST(request: Request) {
     // Add Delivery Fee and Service Fee
     let deliveryFee = 0;
     if (data.orderType === 'DELIVERY') {
-      const zone = DELIVERY_ZONES.find(z => z.id === data.selectedZoneId);
+      if (!data.selectedZoneId) {
+        return NextResponse.json({ success: false, error: "Please select a delivery zone" }, { status: 400 });
+      }
+      const zone = await prisma.deliveryZone.findUnique({ where: { id: data.selectedZoneId } });
       if (!zone) {
         return NextResponse.json({ success: false, error: "Invalid delivery zone selected" }, { status: 400 });
       }

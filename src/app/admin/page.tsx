@@ -24,6 +24,12 @@ interface Product {
   isAvailable: boolean;
 }
 
+interface DeliveryZone {
+  id: string;
+  nameEn: string;
+  nameAr: string;
+  fee: number;
+}
 interface Coupon {
   id: string;
   code: string;
@@ -93,7 +99,7 @@ export default function AdminDashboard() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const alarmRef = useRef<HTMLAudioElement | null>(null);
 
-  type Tab = 'ORDERS' | 'HISTORY' | 'CUSTOMERS' | 'REPORTS' | 'SYSTEM' | 'PRODUCTS' | 'COUPONS';
+  type Tab = 'ORDERS' | 'HISTORY' | 'CUSTOMERS' | 'REPORTS' | 'SYSTEM' | 'PRODUCTS' | 'COUPONS' | 'ZONES';
   const [activeTab, setActiveTab] = useState<Tab>('ORDERS');
 
   // PRODUCTS STATE
@@ -119,6 +125,10 @@ export default function AdminDashboard() {
   const [couponsLoading, setCouponsLoading] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [couponDiscount, setCouponDiscount] = useState('');
+
+  // ZONES STATE
+  const [zones, setZones] = useState<DeliveryZone[]>([]);
+  const [zoneForm, setZoneForm] = useState({ nameEn: '', nameAr: '', fee: '' });
   
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -311,6 +321,56 @@ export default function AdminDashboard() {
     } catch {
       toast.error('فشل التحديث', { id: loadingToast });
       setIsStoreOpen(!newState); // revert
+    }
+  };
+
+  const fetchZones = useCallback(async () => {
+    setZonesLoading(true);
+    try {
+      const res = await fetch('/api/admin/delivery-zones');
+      const data = await res.json();
+      if (res.ok) setZones(data);
+    } catch (e) {
+      console.error(e);
+      toast.error('فشل تحميل المناطق');
+    } finally {
+      // Done
+    }
+  }, []);
+
+  const handleAddZone = async () => {
+    if (!zoneForm.nameEn || !zoneForm.nameAr || !zoneForm.fee) {
+      toast.error('يرجى تعبئة جميع الحقول');
+      return;
+    }
+    const loadingToast = toast.loading('جاري إضافة المنطقة...');
+    try {
+      const res = await fetch('/api/admin/delivery-zones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(zoneForm)
+      });
+      if (res.ok) {
+        const newZone = await res.json();
+        setZones([newZone, ...zones]);
+        setZoneForm({ nameEn: '', nameAr: '', fee: '' });
+        toast.success('تمت إضافة المنطقة بنجاح', { id: loadingToast });
+      }
+    } catch {
+      toast.error('فشل إضافة المنطقة', { id: loadingToast });
+    }
+  };
+
+  const handleDeleteZone = async (id: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذه المنطقة؟')) return;
+    try {
+      const res = await fetch(`/api/admin/delivery-zones?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setZones(zones.filter(z => z.id !== id));
+        toast.success('تم حذف المنطقة');
+      }
+    } catch {
+      toast.error('فشل الحذف');
     }
   };
 
@@ -646,9 +706,16 @@ export default function AdminDashboard() {
     });
 
     fetchOrders(true);
-    const interval = setInterval(() => fetchOrders(false), 8000); // Aggressive 8s refresh
+    const interval = setInterval(() => fetchOrders(false), 8000); 
     return () => clearInterval(interval);
   }, [isAudioUnlocked, fetchOrders]);
+
+  useEffect(() => {
+    if (activeTab === 'ZONES') fetchZones();
+    if (activeTab === 'HISTORY') fetchHistory();
+    if (activeTab === 'CUSTOMERS') fetchCustomers();
+    if (activeTab === 'COUPONS') fetchCoupons();
+  }, [activeTab, fetchZones]);
 
   // Helper to get sorted categories based on categoryOrder
   const allUniqueCats = Array.from(new Set(products.flatMap(p => p.category ? p.category.split(',').map((c: string) => c.trim()).filter(Boolean) : [])));
@@ -732,6 +799,7 @@ export default function AdminDashboard() {
             { id: 'PRODUCTS', label: 'إدارة القائمة', icon: LayoutGrid, color: 'text-brand-red' },
             { id: 'HISTORY', label: 'أرشيف الطلبات', icon: Package, color: 'text-blue-400' },
             { id: 'CUSTOMERS', label: 'الزبائن', icon: User, color: 'text-green-400' },
+            { id: 'ZONES', label: 'مناطق التوصيل', icon: MapPin, color: 'text-yellow-400' },
             { id: 'COUPONS', label: 'الكوبونات', icon: Ticket, color: 'text-purple-400' },
             { id: 'REPORTS', label: 'التقارير', icon: Printer, color: 'text-purple-400' },
             { id: 'SYSTEM', label: 'النظام', icon: Store, color: 'text-orange-400' },
@@ -1189,6 +1257,50 @@ export default function AdminDashboard() {
                         ))}
                       </div>
                     )}
+                  </motion.div>
+                )}
+
+                {activeTab === 'ZONES' && (
+                  <motion.div key="zones" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="space-y-10">
+                    <div className="bg-white p-10 rounded-[3rem] border border-brand-gray shadow-sm">
+                       <h3 className="text-2xl font-black text-brand-black mb-10 flex items-center gap-4">
+                         <div className="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-2xl flex items-center justify-center"><MapPin size={24}/></div>
+                         {language === 'ar' ? 'إضافة منطقة توصيل' : 'Add Delivery Zone'}
+                       </h3>
+                       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                          <input type="text" placeholder="الاسم بالعربي (مثال: اللويبدة)" className="bg-brand-gray/10 p-5 rounded-3xl outline-none font-bold placeholder:text-gray-400" value={zoneForm.nameAr} onChange={e => setZoneForm({...zoneForm, nameAr: e.target.value})} />
+                          <input type="text" placeholder="Name in English" className="bg-brand-gray/10 p-5 rounded-3xl outline-none font-bold placeholder:text-gray-400" value={zoneForm.nameEn} onChange={e => setZoneForm({...zoneForm, nameEn: e.target.value})} />
+                          <input type="number" step="0.1" placeholder="سعر التوصيل" className="bg-brand-gray/10 p-5 rounded-3xl outline-none font-bold placeholder:text-gray-400" value={zoneForm.fee} onChange={e => setZoneForm({...zoneForm, fee: e.target.value})} />
+                          <button onClick={handleAddZone} className="bg-brand-black text-white p-5 rounded-3xl font-black shadow-xl hover:bg-brand-red transition-all">حفظ المنطقة</button>
+                       </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-[3rem] border border-brand-gray shadow-sm overflow-hidden">
+                       <table className="w-full text-right" dir="rtl">
+                          <thead className="bg-brand-gray/10 text-brand-black/40 text-[10px] font-black uppercase tracking-widest">
+                             <tr>
+                                <th className="px-10 py-6">المنطقة</th>
+                                <th className="px-10 py-6">الاسم الدولي</th>
+                                <th className="px-10 py-6 text-center">السعر</th>
+                                <th className="px-10 py-6 text-center">الإجراءات</th>
+                             </tr>
+                          </thead>
+                          <tbody className="divide-y divide-brand-gray/40">
+                             {zones.length === 0 ? (
+                               <tr><td colSpan={4} className="p-10 text-center text-gray-300 font-bold">لا توجد مناطق مضافة حالياً</td></tr>
+                             ) : zones.map(z => (
+                               <tr key={z.id} className="hover:bg-brand-cream/5 transition-colors">
+                                  <td className="px-10 py-8 font-black text-xl">{z.nameAr}</td>
+                                  <td className="px-10 py-8 font-bold text-brand-black/30">{z.nameEn}</td>
+                                  <td className="px-10 py-8 text-center font-black text-brand-red">{z.fee.toFixed(2)} د.أ</td>
+                                  <td className="px-10 py-8 text-center">
+                                     <button onClick={() => handleDeleteZone(z.id)} className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"><Trash2 size={20}/></button>
+                                  </td>
+                               </tr>
+                             ))}
+                          </tbody>
+                       </table>
+                    </div>
                   </motion.div>
                 )}
 

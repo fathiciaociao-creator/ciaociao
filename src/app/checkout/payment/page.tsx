@@ -3,12 +3,18 @@
 import { useCart } from '@/store/useCart';
 import { useCheckout } from '@/store/useCheckout';
 import { useLanguage } from '@/store/useLanguage';
-import { DELIVERY_ZONES } from '@/constants/deliveryZones';
 import { ChevronRight, ChevronLeft, HelpCircle, CheckCircle2, AlertCircle, Loader2, Banknote, X, Info, ClipboardCheck, RefreshCcw, ShieldCheck, ArrowRight } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+
+interface DeliveryZone {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  fee: number;
+}
 
 export default function PaymentPage() {
   const { language } = useLanguage();
@@ -23,10 +29,15 @@ export default function PaymentPage() {
   const [showCliQModal, setShowCliQModal] = useState(false);
   const [isPaymentVerified, setIsPaymentVerified] = useState(false);
   const [verificationPolling, setVerificationPolling] = useState(false);
+  const [deliveryZones, setDeliveryZones] = useState<DeliveryZone[]>([]);
 
-  const selectedZone = DELIVERY_ZONES.find(z => z.id === form.selectedZoneId) || DELIVERY_ZONES[0];
+  useEffect(() => {
+    fetch('/api/delivery-zones').then(res => res.json()).then(data => setDeliveryZones(data)).catch(() => {});
+  }, []);
+
+  const selectedZone = deliveryZones.find(z => z.id === form.selectedZoneId);
   const subTotal = getSubTotal();
-  const deliveryFee = form.orderType === 'DELIVERY' ? selectedZone.fee : 0;
+  const deliveryFee = (form.orderType === 'DELIVERY' && selectedZone) ? selectedZone.fee : 0;
   const serviceFee = 0.26; 
   const discountAmount = subTotal * form.discountPercent;
   const finalTotal = subTotal + deliveryFee + serviceFee - discountAmount;
@@ -76,7 +87,7 @@ export default function PaymentPage() {
           customerName: form.name,
           phone: form.phone,
           address: form.orderType === 'DELIVERY' ? form.address : 'Store Pickup',
-          deliveryArea: form.orderType === 'DELIVERY' ? selectedZone.nameEn : '',
+          deliveryArea: form.orderType === 'DELIVERY' ? (selectedZone?.nameEn || 'Unknown') : '',
           pickupTime: form.orderType === 'PICKUP' ? form.pickupTime : '',
           orderType: form.orderType,
           paymentMethod: method,

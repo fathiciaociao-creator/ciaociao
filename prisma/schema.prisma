@@ -135,3 +135,12 @@ model PushSubscription {
   auth      String
   createdAt DateTime @default(now())
 }
+
+model DeliveryZone {
+  id      String @id @default(cuid())
+  nameEn  String
+  nameAr  String
+  fee     Float  @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

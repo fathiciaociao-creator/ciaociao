@@ -6,9 +6,15 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useSession, signIn } from 'next-auth/react';
 import { useLanguage } from '@/store/useLanguage';
-import { DELIVERY_ZONES } from '@/constants/deliveryZones';
 import { useCheckout } from '@/store/useCheckout';
 import { useRouter } from 'next/navigation';
+
+interface DeliveryZone {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  fee: number;
+}
 
 
 export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
@@ -16,9 +22,18 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
   const { data: session } = useSession();
   const { items, clearCart, removeItem } = useCart();
   const { form, setForm } = useCheckout();
-  const [orderType, setOrderType] = useState<'DELIVERY' | 'PICKUP'>(form.orderType);
+  const [orderType, setOrderType] = useState<'DELIVERY' | 'PICKUP'>(form.orderType || 'DELIVERY');
   const [mounted, setMounted] = useState(false);
-  const selectedZone = DELIVERY_ZONES.find(z => z.id === form.selectedZoneId) || DELIVERY_ZONES[0];
+  const [deliveryZones, setDeliveryZones] = useState<DeliveryZone[]>([]);
+
+  useEffect(() => {
+    fetch('/api/delivery-zones')
+      .then(res => res.json())
+      .then(data => setDeliveryZones(data))
+      .catch(() => {});
+  }, []);
+
+  const selectedZone = deliveryZones.find(z => z.id === form.selectedZoneId);
 
   // Promo Code State
   const [isStoreOpen, setIsStoreOpen] = useState<boolean>(true);
@@ -38,6 +53,11 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
       }
     }).catch(() => {});
   }, []);
+
+  // Sync orderType changes back to store
+  useEffect(() => {
+    setForm({ orderType });
+  }, [orderType, setForm]);
 
   // Auto-fill name from session
   useEffect(() => {
@@ -84,9 +104,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
   };
 
   const currentTotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const getDeliveryFee = () => orderType === 'DELIVERY' ? selectedZone.fee : 0;
-
-  // Functions removed as they are now handled in /checkout/payment
+  const getDeliveryFee = () => (orderType === 'DELIVERY' && selectedZone) ? selectedZone.fee : 0;
 
   if (!mounted) return null;
 
@@ -152,7 +170,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                   <button onClick={onClose} className="bg-brand-black text-white px-8 py-4 rounded-xl font-black">{language === 'ar' ? 'تصفح المنيو الآن' : 'Browse Menu Now'}</button>
                 </div>
               ) : (
-                // ACTIVE CART FLOW - EVERYTHING IN ONE BODY
+                // ACTIVE CART FLOW
                 <div className="flex flex-col">
                   {/* ITEMS SUMMARY */}
                   <div className="p-4 md:p-8 space-y-6">
@@ -196,7 +214,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                     </div>
                   </div>
 
-                  {/* CHECKOUT WIZARD - NO INTERNAL SCROLL */}
+                  {/* CHECKOUT SECTION */}
                   <div className="p-4 md:p-8 bg-white border-t border-brand-gray/30 shadow-[0_-8px_40px_-15px_rgba(0,0,0,0.08)]">
                     {!isStoreOpen ? (
                       <div className="flex flex-col items-center justify-center py-6 space-y-6 text-center bg-red-50 rounded-3xl border-2 border-dashed border-red-200 p-6">
@@ -221,12 +239,6 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                       </div>
                     ) : (
                       <div className="space-y-6">
-                        {/* WIZARD INDICATORS */}
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                           <div className="h-1.5 rounded-full transition-all duration-300 w-12 bg-brand-red" />
-                           <div className="h-1.5 rounded-full transition-all duration-300 w-4 bg-brand-gray/30" />
-                        </div>
-
                         <AnimatePresence mode="wait">
                             <motion.div 
                               key="step1" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 15 }} transition={{ duration: 0.2 }}
@@ -268,8 +280,17 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                       <>
                                         <div className="relative group">
                                           <Bike className={`absolute ${language === 'ar' ? 'right-5' : 'left-5'} top-1/2 -translate-y-1/2 text-brand-black/20`} size={18} />
-                                          <select className={`w-full appearance-none bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-10' : 'pl-12 pr-10'} py-4 rounded-xl border border-brand-gray/20 outline-none font-bold text-[15px] cursor-pointer`} value={form.selectedZoneId} onChange={(e) => setForm({ selectedZoneId: e.target.value })}>
-                                            {DELIVERY_ZONES.map(zone => (<option key={zone.id} value={zone.id}>{language === 'ar' ? zone.nameAr : zone.nameEn} (+{zone.fee.toFixed(2)} JOD)</option>))}
+                                          <select 
+                                            className={`w-full appearance-none bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-10' : 'pl-12 pr-10'} py-4 rounded-xl border border-brand-gray/20 outline-none font-bold text-[15px] cursor-pointer`} 
+                                            value={form.selectedZoneId} 
+                                            onChange={(e) => setForm({ selectedZoneId: e.target.value })}
+                                          >
+                                            <option value="" disabled>{language === 'ar' ? '--- يرجى تحديد المنطقة ---' : '--- Please select region ---'}</option>
+                                            {deliveryZones.map((zone: DeliveryZone) => (
+                                              <option key={zone.id} value={zone.id}>
+                                                {language === 'ar' ? zone.nameAr : zone.nameEn} (+{zone.fee.toFixed(2)} JOD)
+                                              </option>
+                                            ))}
                                           </select>
                                           <ChevronDown className={`absolute ${language === 'ar' ? 'left-5' : 'right-5'} top-1/2 -translate-y-1/2 text-brand-black/20`} size={18} />
                                         </div>
@@ -312,19 +333,30 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                   </div>
                                 </div>
                               </div>
-                              <button onClick={() => {
-                                if(!form.name.trim() || !form.phone.trim() || (orderType === 'DELIVERY' && !form.address.trim())) {
-                                  alert(language === 'ar' ? 'يرجى إكمال البيانات' : 'Please complete fields'); 
-                                  return;
-                                }
-                                onClose();
-                                router.push('/checkout/payment');
-                              }} className="w-full bg-brand-black text-white py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 shadow-xl hover:bg-brand-red transition-all group">
-                                {language === 'ar' ? 'التالي' : 'Next'} <ArrowRight className={language === 'ar' ? 'rotate-180 group-hover:-translate-x-2' : 'group-hover:translate-x-2'} />
+                              
+                              <button 
+                                onClick={() => {
+                                  if(!form.name.trim() || !form.phone.trim()) {
+                                    alert(language === 'ar' ? 'يرجى إكمال البيانات' : 'Please complete fields'); 
+                                    return;
+                                  }
+                                  if(orderType === 'DELIVERY' && !form.selectedZoneId) {
+                                    alert(language === 'ar' ? 'يرجى تحديد منطقة التوصيل' : 'Please select a delivery zone'); 
+                                    return;
+                                  }
+                                  if(orderType === 'DELIVERY' && !form.address.trim()) {
+                                    alert(language === 'ar' ? 'يرجى كتابة العنوان بالتفصيل' : 'Please provide detailed address'); 
+                                    return;
+                                  }
+                                  onClose();
+                                  router.push('/checkout/payment');
+                                }} 
+                                className="w-full bg-brand-black text-white py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 shadow-xl hover:bg-brand-red transition-all group"
+                              >
+                                {language === 'ar' ? 'التالي' : 'Next'} <ArrowRight size={20} className={language === 'ar' ? 'rotate-180 group-hover:-translate-x-2' : 'group-hover:translate-x-2'} />
                               </button>
                             </motion.div>
                         </AnimatePresence>
-
                       </div>
                     )}
                   </div>
