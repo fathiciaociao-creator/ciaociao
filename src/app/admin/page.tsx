@@ -94,6 +94,7 @@ export default function AdminDashboard() {
   const [isStoreOpen, setIsStoreOpen] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [printingOrder, setPrintingOrder] = useState<Order | null>(null);
+  const [printingReportData, setPrintingReportData] = useState<ReportSummary | null>(null);
   const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
   const orderCountRef = useRef<number>(0);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -217,6 +218,15 @@ export default function AdminDashboard() {
     setTimeout(() => {
       window.print();
       setPrintingOrder(null);
+    }, 100);
+  };
+
+  const handlePrintReport = () => {
+    if (!reportData) return;
+    setPrintingReportData(reportData);
+    setTimeout(() => {
+      window.print();
+      setPrintingReportData(null);
     }, 100);
   };
 
@@ -731,37 +741,152 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#F1F3F6] flex flex-col md:flex-row font-body" dir="rtl">
       <Toaster position="bottom-center" />
 
-      {/* HIDDEN PRINT AREA */}
+      {/* HIDDEN PRINT AREA (Premium Thermal-Optimized English Invoice) */}
       {printingOrder && (
-        <div id="print-area" className="hidden print:block">
-           <div className="text-center border-b-2 border-black pb-4 mb-4">
-            <h1 className="text-2xl font-black uppercase">Xian Restaurant</h1>
-            <p className="text-xs font-bold">مطعم شيان</p>
-            <p className="text-[10px] mt-1">عمان، الأردن</p>
-            <p className="text-[10px]">+962 77 999 0504</p>
+        <div id="print-area" className="hidden print:block font-sans text-black bg-white" style={{ width: '80mm' }}>
+           <div className="text-center mb-6 space-y-1">
+            <Image src="/logo.png" alt="Logo" width={150} height={150} className="mx-auto grayscale" />
+            <h1 className="text-2xl font-black uppercase tracking-tighter mt-2">Xian Restaurant</h1>
+            <p className="text-[10px] font-bold text-gray-600 uppercase">Premium Asian Cuisine</p>
+            <p className="text-[10px] text-gray-400">Amman, Jordan • +962 77 999 0504</p>
           </div>
-          <div className="space-y-2 mb-4 text-xs">
-            <div className="flex justify-between"><span>رقم الطلب:</span><span className="font-black">#{printingOrder.id.slice(-6).toUpperCase()}</span></div>
-            <div className="flex justify-between"><span>التاريخ:</span><span>{new Date(printingOrder.createdAt).toLocaleString('ar-JO')}</span></div>
-            <div className="flex justify-between"><span>النوع:</span><span className="font-black">{printingOrder.orderType === 'DELIVERY' ? 'توصيل' : 'استلام'}</span></div>
+
+          <div className="border-t border-b border-black border-dashed py-4 mb-4 grid grid-cols-2 gap-y-2 text-[9px]">
+            <div>
+              <span className="block text-gray-500 font-black uppercase text-[7px]">Order Number</span>
+              <span className="font-black text-xs">#{printingOrder.id.slice(-6).toUpperCase()}</span>
+            </div>
+            <div className="text-right">
+              <span className="block text-gray-500 font-black uppercase text-[7px]">Date & Time</span>
+              <span className="font-bold">{new Date(printingOrder.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+            </div>
+            <div>
+              <span className="block text-gray-500 font-black uppercase text-[7px]">Order Type</span>
+              <span className="font-black">{printingOrder.orderType === 'DELIVERY' ? 'Delivery' : 'Pickup'}</span>
+            </div>
+            <div className="text-right">
+              <span className="block text-gray-500 font-black uppercase text-[7px]">Payment Status</span>
+              <span className="font-black">{printingOrder.paymentStatus === 'COMPLETED' ? 'PAID' : 'PAY ON ARRIVAL'}</span>
+            </div>
           </div>
-          <div className="border-b-2 border-black mb-4"></div>
-          <div className="space-y-3 mb-6">
-            {printingOrder.items.map((item, idx) => (
-              <div key={idx} className="flex justify-between items-start text-xs">
-                <div className="flex gap-2"><span className="font-black">{item.quantity}x</span><span>{item.name}</span></div>
-                <span className="font-bold">{(item.price * item.quantity).toFixed(2)}</span>
+
+          <table className="w-full mb-6 text-[9px]">
+            <thead>
+              <tr className="border-b border-black border-solid">
+                <th className="text-left py-2 font-black uppercase text-[8px]">Item</th>
+                <th className="text-center py-2 font-black uppercase text-[8px]">Qty</th>
+                <th className="text-right py-2 font-black uppercase text-[8px]">Total</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {printingOrder.items.map((item, idx) => (
+                <tr key={idx}>
+                  <td className="py-2.5 font-bold leading-tight">{item.name}</td>
+                  <td className="py-2.5 text-center font-black">x{item.quantity}</td>
+                  <td className="py-2.5 text-right font-black">{(item.price * item.quantity).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="border-t border-black border-dashed pt-4 space-y-1.5 text-[10px]">
+            <div className="flex justify-between text-gray-500">
+               <span>Items Subtotal:</span>
+               <span>{printingOrder.items.reduce((acc, item) => acc + (item.price * item.quantity), 0).toFixed(2)} JOD</span>
+            </div>
+            <div className="flex justify-between text-gray-500">
+               <span>Service & Delivery:</span>
+               <span>{(printingOrder.totalPrice - printingOrder.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)).toFixed(2)} JOD</span>
+            </div>
+            <div className="flex justify-between items-center pt-2 mt-1 border-t border-black font-black text-lg">
+               <span className="uppercase tracking-tight">Grand Total:</span>
+               <span>{printingOrder.totalPrice.toFixed(2)} JOD</span>
+            </div>
+            <div className="flex justify-between items-center text-[8px] pt-1 text-gray-500 font-black uppercase">
+               <span>Payment Method:</span>
+               <span>{printingOrder.paymentMethod === 'CLIQ' ? 'CliQ (Digital)' : 'Cash on Delivery'}</span>
+            </div>
+          </div>
+
+          <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-100 space-y-3 text-[9px]">
+            <div>
+              <span className="block text-gray-400 font-black uppercase text-[7px]">Customer Details</span>
+              <p className="font-black text-xs text-black">{printingOrder.customerName}</p>
+              <p className="font-bold text-gray-600">{printingOrder.phoneNumber}</p>
+            </div>
+            {printingOrder.orderType === 'DELIVERY' && (
+              <div>
+                <span className="block text-gray-400 font-black uppercase text-[7px]">Delivery Address</span>
+                <p className="font-bold leading-relaxed">{printingOrder.deliveryArea || 'N/A'}</p>
+                <p className="text-gray-500 text-[8px] leading-tight mt-1">{printingOrder.address?.replace(/\(https:\/\/www\.google\.com\/maps\?q=[-0-9.,]+\)/, '').trim() || 'No detailed address provided'}</p>
               </div>
-            ))}
+            )}
+            {printingOrder.notes && (
+              <div className="border-t border-gray-200 pt-3">
+                <span className="block text-gray-400 font-black uppercase text-[7px]">Kitchen Notes</span>
+                <p className="font-bold italic mt-1">&quot;{printingOrder.notes}&quot;</p>
+              </div>
+            )}
           </div>
-          <div className="border-t-2 border-black pt-4 space-y-1 text-sm">
-            <div className="flex justify-between font-black"><span>الإجمالي:</span><span>{printingOrder.totalPrice.toFixed(2)} د.أ</span></div>
-            <div className="flex justify-between text-[10px]"><span>طريقة الدفع:</span><span>{printingOrder.paymentMethod === 'CLIQ' ? 'كليك' : 'كاش'}</span></div>
+
+          <div className="mt-10 text-center border-t border-gray-200 pt-6">
+            <p className="text-xl font-black uppercase italic tracking-tighter">THANK YOU!</p>
+            <p className="text-[8px] text-gray-400 font-bold mt-1 uppercase">Hope you enjoy your meal • xiansushi.site</p>
           </div>
-          <div className="mt-8 pt-4 border-t border-dashed border-gray-300 text-[10px] space-y-2">
-            <p className="font-black">العميل: {printingOrder.customerName}</p>
-            <p>الهاتف: {printingOrder.phoneNumber}</p>
-            {printingOrder.orderType === 'DELIVERY' && <p className="leading-tight">العنوان: {printingOrder.deliveryArea} - {printingOrder.address}</p>}
+        </div>
+      )}
+
+      {/* HIDDEN PRINT AREA (Report Summary) */}
+      {printingReportData && (
+        <div id="print-area" className="hidden print:block font-sans text-black bg-white" style={{ width: '80mm' }}>
+           <div className="text-center mb-6 space-y-1">
+            <Image src="/logo.png" alt="Logo" width={100} height={100} className="mx-auto grayscale" />
+            <h1 className="text-xl font-black uppercase tracking-tighter mt-2">Xian Restaurant</h1>
+            <p className="text-[9px] font-bold text-gray-500 uppercase">Sales Summary Report</p>
+          </div>
+
+          <div className="border-t border-b border-black border-dashed py-4 mb-4 text-[9px]">
+            <div className="flex justify-between">
+              <span className="text-gray-500 font-black uppercase text-[7px]">Report Type</span>
+              <span className="font-black uppercase">{reportType}</span>
+            </div>
+            <div className="flex justify-between mt-1">
+              <span className="text-gray-500 font-black uppercase text-[7px]">Date Generated</span>
+              <span className="font-bold">{new Date().toLocaleString('en-US')}</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
+              <span className="block text-[7px] font-black text-gray-400 uppercase">Total Revenue</span>
+              <span className="text-lg font-black">{printingReportData.totalRevenue.toFixed(2)} JOD</span>
+            </div>
+            <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
+              <span className="block text-[7px] font-black text-gray-400 uppercase">Orders</span>
+              <span className="text-lg font-black">{printingReportData.totalOrders}</span>
+            </div>
+          </div>
+
+          <table className="w-full mb-6 text-[9px]">
+            <thead>
+              <tr className="border-b border-black border-solid text-[7px] font-black uppercase">
+                <th className="text-left py-2">Item Name</th>
+                <th className="text-right py-2">Qty</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {printingReportData.itemBreakdown?.map((item, idx: number) => (
+                <tr key={idx}>
+                  <td className="py-2.5 font-bold leading-tight">{item.name}</td>
+                  <td className="py-2.5 text-right font-black">{item.quantity}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="mt-8 text-center border-t border-gray-200 pt-6">
+            <p className="text-xs font-black uppercase italic text-gray-400 font-sans tracking-widest leading-none">Management Official Report</p>
+            <p className="text-[7px] text-gray-300 font-bold mt-1 uppercase">xian-restaurant-internal-documentation</p>
           </div>
         </div>
       )}
@@ -1018,13 +1143,23 @@ export default function AdminDashboard() {
                             </button>
                           ))}
                        </div>
-                       <button 
-                         onClick={handleExportOrders} 
-                         className="flex items-center gap-3 bg-brand-black text-white px-8 py-4 rounded-xl font-black text-xs transition-all hover:scale-[1.02] active:scale-95 shadow-xl group"
-                       >
-                         <FileSpreadsheet size={18} className="text-green-400" />
-                         <span>تصدير تقرير إكسيل</span>
-                       </button>
+                       <div className="flex gap-4">
+                          <button 
+                            onClick={handlePrintReport} 
+                            disabled={!reportData}
+                            className="flex items-center gap-3 bg-white border-2 border-brand-gray/50 hover:border-brand-red/30 hover:bg-brand-red/5 px-8 py-4 rounded-xl font-black text-xs transition-all text-brand-black shadow-sm group disabled:opacity-50"
+                          >
+                            <Printer size={18} className="text-blue-600" />
+                            <span>طباعة التقرير</span>
+                          </button>
+                          <button 
+                            onClick={handleExportOrders} 
+                            className="flex items-center gap-3 bg-brand-black text-white px-8 py-4 rounded-xl font-black text-xs transition-all hover:scale-[1.02] active:scale-95 shadow-xl group"
+                          >
+                            <FileSpreadsheet size={18} className="text-green-400" />
+                            <span>تصدير تقرير إكسيل</span>
+                          </button>
+                       </div>
                     </div>
 
                     {reportsLoading ? (
