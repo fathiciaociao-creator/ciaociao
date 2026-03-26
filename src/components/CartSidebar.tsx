@@ -92,7 +92,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
           couponCode: couponInput.toUpperCase().trim(), 
           discountPercent: data.discountPercent 
         });
-        alert(data.message);
+        // Success message is shown inline in the UI
       } else {
         setCouponError(data.error);
         setForm({ couponCode: '', discountPercent: 0 });
@@ -256,7 +256,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                       <div className="flex gap-2">
                         <input 
                           placeholder={language === 'ar' ? 'أدخل الكود هنا' : 'Enter code'} 
-                          className={`flex-1 bg-white text-brand-black px-5 py-3 rounded-xl border border-brand-gray/20 outline-none font-bold text-sm ${form.couponCode ? 'border-green-500/30 bg-green-50/10' : ''}`}
+                          className={`flex-1 bg-white text-brand-black px-5 py-3 rounded-xl border border-brand-gray/20 outline-none font-bold text-[16px] ${form.couponCode ? 'border-green-500/30 bg-green-50/10' : ''}`}
                           value={couponInput}
                           onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                           disabled={couponLoading || !!form.couponCode}
@@ -279,7 +279,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                         )}
                       </div>
                       {couponError && <p className="text-[10px] font-bold text-brand-red">{couponError}</p>}
-                      {form.couponCode && <p className="text-[10px] font-bold text-green-600 italic">✓ {language === 'ar' ? 'تم تطبيق الخصم بنجاح' : 'Promo code applied!'}</p>}
+                      {form.couponCode && <p className="text-[12px] font-bold text-green-600 italic">✓ {language === 'ar' ? 'تم إضافة كود الخصم بنجاح' : 'Promo code applied successfully!'}</p>}
                     </div>
                   </div>
 
@@ -325,7 +325,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                       <User className={`absolute ${language === 'ar' ? 'right-5' : 'left-5'} top-1/2 -translate-y-1/2 text-brand-black/20 group-focus-within:text-brand-red transition-colors`} size={18} />
                                       <input 
                                         placeholder={language === 'ar' ? 'الاسم الكامل' : 'Full Name'} 
-                                        className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6 text-right' : 'pl-12 pr-6 text-left'} py-4 rounded-xl border border-brand-gray/20 focus:border-brand-red/30 focus:bg-white outline-none transition-all font-bold text-[15px] placeholder:text-brand-black/30`}
+                                        className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6 text-right' : 'pl-12 pr-6 text-left'} py-4 rounded-xl border border-brand-gray/20 focus:border-brand-red/30 focus:bg-white outline-none transition-all font-bold text-[16px] placeholder:text-brand-black/30`}
                                         value={form.name} onChange={(e) => setForm({ name: e.target.value })}
                                       />
                                     </div>
@@ -333,7 +333,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                       <Phone className={`absolute ${language === 'ar' ? 'right-5' : 'left-5'} top-1/2 -translate-y-1/2 text-brand-black/20 group-focus-within:text-brand-red transition-colors`} size={18} />
                                       <input 
                                         placeholder={language === 'ar' ? 'رقم الهاتف' : 'Phone Number'} 
-                                        className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6' : 'pl-12 pr-6'} py-4 rounded-xl border border-brand-gray/20 focus:border-brand-red/30 focus:bg-white outline-none transition-all font-bold text-[15px] placeholder:text-brand-black/30`}
+                                        className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6' : 'pl-12 pr-6'} py-4 rounded-xl border border-brand-gray/20 focus:border-brand-red/30 focus:bg-white outline-none transition-all font-bold text-[16px] placeholder:text-brand-black/30`}
                                         dir="ltr" value={form.phone} onChange={(e) => setForm({ phone: e.target.value })}
                                       />
                                     </div>
@@ -350,7 +350,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                         <div className="relative group">
                                           <Bike className={`absolute ${language === 'ar' ? 'right-5' : 'left-5'} top-1/2 -translate-y-1/2 text-brand-black/20`} size={18} />
                                           <select 
-                                            className={`w-full appearance-none bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-10' : 'pl-12 pr-10'} py-4 rounded-xl border border-brand-gray/20 outline-none font-bold text-[15px] cursor-pointer`} 
+                                            className={`w-full appearance-none bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-10' : 'pl-12 pr-10'} py-4 rounded-xl border border-brand-gray/20 outline-none font-bold text-[16px] cursor-pointer`} 
                                             value={form.selectedZoneId} 
                                             onChange={(e) => setForm({ selectedZoneId: e.target.value })}
                                           >
@@ -365,7 +365,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                         </div>
                                         <div className="relative group">
                                           <MapPin className={`absolute ${language === 'ar' ? 'right-5' : 'left-5'} top-1/2 -translate-y-1/2 text-brand-black/20`} size={18} />
-                                          <input placeholder={language === 'ar' ? 'العنوان بالتفصيل' : 'Detailed Address'} className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6' : 'pl-12 pr-6'} py-4 rounded-xl border border-brand-gray/20 focus:bg-white transition-all font-bold text-[15px]`} value={form.address} onChange={(e) => setForm({ address: e.target.value })} />
+                                          <input placeholder={language === 'ar' ? 'العنوان بالتفصيل' : 'Detailed Address'} className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6' : 'pl-12 pr-6'} py-4 rounded-xl border border-brand-gray/20 focus:bg-white transition-all font-bold text-[16px]`} value={form.address} onChange={(e) => setForm({ address: e.target.value })} />
                                         </div>
                                         <button 
                                           onClick={handleDetectLocation}
@@ -382,7 +382,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                         <input type="time" className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6' : 'pl-12 pr-6'} py-4 rounded-xl border border-brand-gray/20 font-bold text-[15px]`} value={form.pickupTime} onChange={(e) => setForm({ pickupTime: e.target.value })} />
                                       </div>
                                     )}
-                                    <textarea placeholder={language === 'ar' ? 'ملاحظات إضافية...' : 'Additional Notes...'} className={`w-full bg-brand-gray/5 text-brand-black px-6 py-4 rounded-xl border border-brand-gray/20 focus:bg-white outline-none transition-all font-bold text-[15px] min-h-[90px] resize-none ${language === 'ar' ? 'text-right' : 'text-left'}`} value={form.notes} onChange={(e) => setForm({ notes: e.target.value })} />
+                                    <textarea placeholder={language === 'ar' ? 'ملاحظات إضافية...' : 'Additional Notes...'} className={`w-full bg-brand-gray/5 text-brand-black px-6 py-4 rounded-xl border border-brand-gray/20 focus:bg-white outline-none transition-all font-bold text-[16px] min-h-[90px] resize-none ${language === 'ar' ? 'text-right' : 'text-left'}`} value={form.notes} onChange={(e) => setForm({ notes: e.target.value })} />
                                   </div>
                                 </div>
 

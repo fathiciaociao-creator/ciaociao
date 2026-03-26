@@ -65,7 +65,7 @@ export default function ProductFormModal({
             </div>
             <div className="space-y-4">
               <label className="text-[10px] font-black uppercase tracking-widest text-brand-black/30 px-2">القسم</label>
-              <select value={productFormData.category} onChange={e => setProductFormData({ ...productFormData, category: e.target.value })} className="w-full bg-brand-gray/10 border-2 border-transparent focus:border-brand-red/20 focus:bg-white rounded-3xl p-5 outline-none font-black text-sm appearance-none cursor-pointer transition-all">
+              <select value={productFormData.category} onChange={e => setProductFormData({ ...productFormData, category: e.target.value })} className="w-full bg-brand-gray/10 border-2 border-transparent focus:border-brand-red/20 focus:bg-white rounded-3xl p-5 outline-none font-black text-[16px] appearance-none cursor-pointer transition-all">
                 {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                 <option value="NEW">+ إضافة قسم جديد...</option>
               </select>
@@ -79,13 +79,13 @@ export default function ProductFormModal({
           )}
           <div className="space-y-4">
             <label className="text-[10px] font-black uppercase tracking-widest text-brand-black/30 px-2">وصف المنتج (اختياري)</label>
-            <textarea value={productFormData.descriptionAr} onChange={e => setProductFormData({ ...productFormData, descriptionAr: e.target.value })} className="w-full bg-brand-gray/10 border-2 border-transparent focus:border-brand-red/20 focus:bg-white rounded-3xl p-5 outline-none font-bold text-sm min-h-[120px] resize-none transition-all" />
+            <textarea value={productFormData.descriptionAr} onChange={e => setProductFormData({ ...productFormData, descriptionAr: e.target.value })} className="w-full bg-brand-gray/10 border-2 border-transparent focus:border-brand-red/20 focus:bg-white rounded-3xl p-5 outline-none font-bold text-[16px] min-h-[120px] resize-none transition-all" />
           </div>
           <div className="space-y-4">
             <label className="text-[10px] font-black uppercase tracking-widest text-brand-black/30 px-2">رابط الصورة (URL)</label>
             <div className="relative">
               <Camera size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-brand-black/20" />
-              <input type="text" value={productFormData.imageUrl} onChange={e => setProductFormData({ ...productFormData, imageUrl: e.target.value })} className="w-full bg-brand-gray/10 border-2 border-transparent focus:border-brand-red/20 focus:bg-white rounded-3xl p-5 pr-12 outline-none font-bold text-sm transition-all" />
+              <input type="text" value={productFormData.imageUrl} onChange={e => setProductFormData({ ...productFormData, imageUrl: e.target.value })} className="w-full bg-brand-gray/10 border-2 border-transparent focus:border-brand-red/20 focus:bg-white rounded-3xl p-5 pr-12 outline-none font-bold text-[16px] transition-all" />
             </div>
           </div>
         </form>

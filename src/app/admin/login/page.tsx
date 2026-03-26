@@ -68,7 +68,7 @@ export default function AdminLogin() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoFocus
-                className="w-full bg-brand-cream/50 text-brand-black pr-12 pl-4 py-4 rounded-2xl border border-brand-gray/30 focus:outline-none focus:border-brand-red focus:bg-white font-bold transition-all text-left"
+                className="w-full bg-brand-cream/50 text-brand-black pr-12 pl-4 py-4 rounded-2xl border border-brand-gray/30 focus:outline-none focus:border-brand-red focus:bg-white font-bold transition-all text-left text-[16px]"
                 placeholder="••••••••••••••"
                 dir="ltr"
               />
