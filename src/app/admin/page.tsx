@@ -150,14 +150,24 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [isAudioUnlocked, playAlarm, stopAlarm]);
+  }, [isAudioUnlocked, playAlarm]);
 
   const fetchStoreStatus = useCallback(async () => {
     try {
       const res = await fetch('/api/settings');
       const data = await res.json();
-      if (data && typeof data.isStoreOpen === 'boolean') {
-        setIsStoreOpen(data.isStoreOpen);
+      if (data) {
+        if (typeof data.isStoreOpen === 'boolean') {
+          setIsStoreOpen(data.isStoreOpen);
+        }
+        if (data.categoryOrder) {
+          try {
+            const parsed = JSON.parse(data.categoryOrder);
+            if (Array.isArray(parsed)) setCategoryOrder(parsed);
+          } catch {
+            console.error("Error parsing category order");
+          }
+        }
       }
     } catch (_error) {
       console.error('Fetch store status error:', _error);
@@ -279,11 +289,25 @@ export default function AdminDashboard() {
       const res = await fetch('/api/products');
       const data = await res.json();
       setProducts(data);
-      const uniqueCats = Array.from(new Set(data.flatMap((p: Product) => p.category ? p.category.split(',').map(c => c.trim()).filter(Boolean) : []))) as string[];
-      setCategoryOrder(uniqueCats);
+      
+      const uniqueCats = Array.from(new Set(data.flatMap((p: Product) => 
+        p.category ? p.category.split(',').map(c => c.trim()).filter(Boolean) : []
+      ))) as string[];
+      
+      // Sort these unique categories based on our existing categoryOrder state
+      const sorted = [...uniqueCats].sort((a, b) => {
+        const indexA = categoryOrder.indexOf(a);
+        const indexB = categoryOrder.indexOf(b);
+        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+      });
+      
+      setCategoryOrder(sorted);
     } catch (error) { console.error(error); }
     finally { setLoading(false); }
-  }, []);
+  }, [categoryOrder]);
 
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -363,17 +387,21 @@ export default function AdminDashboard() {
   const saveCategoryOrder = async () => {
     setIsSavingOrder(true);
     try {
-      const res = await fetch('/api/admin/categories/reorder', {
-        method: 'POST',
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order: categoryOrder })
+        body: JSON.stringify({ 
+          categoryOrder: JSON.stringify(categoryOrder) 
+        })
       });
       if (res.ok) {
         toast.success('تم حفظ الترتيب');
         setIsReorderModalOpen(false);
         fetchProducts();
+      } else {
+        toast.error('فشل حفظ الترتيب');
       }
-    } catch { toast.error('خطأ'); }
+    } catch { toast.error('خطأ في الاتصال'); }
     finally { setIsSavingOrder(false); }
   };
 

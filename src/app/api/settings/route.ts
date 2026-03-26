@@ -30,16 +30,22 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
   }
   try {
-    const { isStoreOpen, categoryOrder } = await req.json();
+    const body = await req.json();
+    const updateData: { isStoreOpen?: boolean; categoryOrder?: string } = {};
+    if (body.isStoreOpen !== undefined) updateData.isStoreOpen = body.isStoreOpen;
+    if (body.categoryOrder !== undefined) updateData.categoryOrder = body.categoryOrder;
 
     const settings = await prisma.storeSettings.upsert({
       where: { id: 1 },
-      update: { isStoreOpen, categoryOrder },
-      create: { id: 1, isStoreOpen, categoryOrder },
+      update: updateData,
+      create: { 
+        id: 1, 
+        isStoreOpen: body.isStoreOpen ?? true, 
+        categoryOrder: body.categoryOrder ?? null 
+      },
     });
 
     revalidatePath("/");
-
     return NextResponse.json(settings);
   } catch (error) {
     console.error("Store Settings PATCH Error:", error);
