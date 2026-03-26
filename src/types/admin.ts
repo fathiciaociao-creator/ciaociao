@@ -72,7 +72,7 @@ export interface Customer {
 export interface ReportSummary {
   totalOrders: number;
   totalRevenue: number;
-  itemBreakdown: { name: string; quantity: number }[];
+  itemBreakdown: { name: string; quantity: number; revenue: number }[];
   orders: Order[];
 }
 

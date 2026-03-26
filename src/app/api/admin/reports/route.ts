@@ -17,16 +17,19 @@ export async function GET(request: Request) {
     let startDate = new Date();
     const endDate = new Date();
 
-    const calculateItemBreakdown = (orders: { items: { name: string; quantity: number }[] }[]) => {
-      const breakdown = new Map<string, number>();
+    const calculateItemBreakdown = (orders: { items: { name: string; quantity: number; price: number }[] }[]) => {
+      const breakdown = new Map<string, { quantity: number; revenue: number }>();
       orders.forEach(order => {
-        order.items.forEach((item: { name: string, quantity: number }) => {
-          const current = breakdown.get(item.name) || 0;
-          breakdown.set(item.name, current + item.quantity);
+        order.items.forEach((item) => {
+          const current = breakdown.get(item.name) || { quantity: 0, revenue: 0 };
+          breakdown.set(item.name, {
+            quantity: current.quantity + item.quantity,
+            revenue: current.revenue + (item.price * item.quantity)
+          });
         });
       });
       return Array.from(breakdown.entries())
-        .map(([name, quantity]) => ({ name, quantity }))
+        .map(([name, data]) => ({ name, ...data }))
         .sort((a, b) => b.quantity - a.quantity);
     };
 
