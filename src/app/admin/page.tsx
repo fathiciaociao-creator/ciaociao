@@ -28,12 +28,14 @@ import CategoryReorderModal from '@/components/admin/CategoryReorderModal';
 import BulkActionsBar from '@/components/admin/BulkActionsBar';
 import BulkMoveModal from '@/components/admin/BulkMoveModal';
 import AudioUnlockOverlay from '@/components/admin/AudioUnlockOverlay';
+import OrderInvoice from '@/components/admin/OrderInvoice';
 
 export default function AdminDashboard() {
   const { language } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isStoreOpen, setIsStoreOpen] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [printingOrder, setPrintingOrder] = useState<Order | null>(null);
   const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
   const orderCountRef = useRef<number>(0);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -477,6 +479,44 @@ export default function AdminDashboard() {
     } catch (_error) { console.error(_error); }
   };
 
+  const handlePrint = (order: Order) => {
+    setPrintingOrder(order);
+    setTimeout(() => {
+      const content = document.getElementById('global-printable-invoice');
+      if (!content) return;
+
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = 'none';
+      document.body.appendChild(iframe);
+
+      const doc = iframe.contentWindow?.document;
+      if (!doc) return;
+
+      doc.open();
+      doc.write('<html><head><title>Order Invoice</title>');
+      const styles = document.querySelectorAll('style, link[rel="stylesheet"]');
+      styles.forEach(s => doc.write(s.outerHTML));
+      doc.write('</head><body>');
+      doc.write(content.innerHTML);
+      doc.write('</body></html>');
+      doc.close();
+
+      setTimeout(() => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+          setPrintingOrder(null);
+        }, 1000);
+      }, 500);
+    }, 100);
+  };
+
   const handleSystemReset = async () => {
     if (!confirm('تحذير: هذا سيحذف كل شيء!')) return;
     try {
@@ -599,10 +639,11 @@ export default function AdminDashboard() {
 
           <div className="space-y-12">
             <AnimatePresence mode="wait">
-              {activeTab === 'ORDERS' && (
+               {activeTab === 'ORDERS' && (
                 <OrdersTab
                   orders={orders} loading={loading} orderStatusFilter={orderStatusFilter} setOrderStatusFilter={setOrderStatusFilter}
-                  handleUpdateStatus={handleUpdateStatus} handleArchive={handleArchive} handlePaymentReceived={handlePaymentReceived} language={language}
+                  handleUpdateStatus={handleUpdateStatus} handleArchive={handleArchive} handlePaymentReceived={handlePaymentReceived} 
+                  handlePrint={handlePrint} language={language}
                 />
               )}
 
@@ -646,13 +687,18 @@ export default function AdminDashboard() {
       </main>
 
       <AnimatePresence>
-        <OrderDetailsModal order={selectedOrder} onClose={() => setSelectedOrder(null)} onUpdateStatus={handleUpdateStatus} onArchive={handleArchive} onPaymentReceived={handlePaymentReceived} language={language} />
+        <OrderDetailsModal order={selectedOrder} onClose={() => setSelectedOrder(null)} onUpdateStatus={handleUpdateStatus} onArchive={handleArchive} onPaymentReceived={handlePaymentReceived} onPrint={handlePrint} language={language} />
         <CustomerDetailsModal customer={selectedCustomer} onClose={() => setSelectedCustomer(null)} onSelectOrder={setSelectedOrder} orderHistory={historyOrders} />
         <ProductFormModal isOpen={isProductModalOpen} onClose={() => setIsProductModalOpen(false)} editingProduct={editingProduct} productFormData={productFormData} setProductFormData={(data: Partial<Record<string, string>>) => setProductFormData(prev => ({ ...prev, ...data }))} onSubmit={handleSaveProduct} products={products} />
         <CategoryReorderModal isOpen={isReorderModalOpen} onClose={() => setIsReorderModalOpen(false)} categoryOrder={sortedCategories} setCategoryOrder={setCategoryOrder} onSave={saveCategoryOrder} isSaving={isSavingOrder} />
         <BulkActionsBar selectedCount={selectedIds.length} onClear={() => setSelectedIds([])} onToggleAvailability={handleBulkToggle} onMoveToCategory={() => setIsBulkMoveOpen(true)} onDelete={handleBulkDelete} />
         <BulkMoveModal isOpen={isBulkMoveOpen} onClose={() => setIsBulkMoveOpen(false)} categories={sortedCategories} onMove={handleBulkMove} />
       </AnimatePresence>
+
+      {/* Hidden Invoice for Global Printing (Card level) */}
+      <div id="global-printable-invoice" className="hidden">
+        {printingOrder && <OrderInvoice order={printingOrder} />}
+      </div>
     </div>
   );
 }

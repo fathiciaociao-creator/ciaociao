@@ -1,7 +1,7 @@
 'use client';
 import { 
   CheckCircle, User, Phone, MapPin, Trash2, Clock, 
-  ExternalLink, Copy, Zap, X 
+  ExternalLink, Copy, Zap, X, Printer
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Order, OrderItem } from '@/types/admin';
@@ -11,17 +11,29 @@ interface OrderCardProps {
   onUpdateStatus: (id: string, status: string) => void;
   onArchive: (id: string) => void;
   onPaymentReceived: (id: string, e: React.MouseEvent) => void;
+  onPrint?: (order: Order) => void;
   language: string;
 }
 
-export default function OrderCard({ order, onUpdateStatus, onArchive, onPaymentReceived, language }: OrderCardProps) {
+export default function OrderCard({ order, onUpdateStatus, onArchive, onPaymentReceived, onPrint, language }: OrderCardProps) {
   return (
     <div className={`bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-brand-gray flex flex-col group relative
       ${order.status === 'PENDING' ? 'ring-2 ring-brand-red ring-inset' : ''}`}>
 
       <div className="p-6 pb-3 flex justify-between items-center bg-brand-cream/5 border-b border-brand-gray/30">
         <div className="flex flex-col">
-          <span className="text-[9px] font-black text-brand-black/20">المعرف: #{order.id.slice(-6).toUpperCase()}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] font-black text-brand-black/20">المعرف: #{order.id.slice(-6).toUpperCase()}</span>
+            {onPrint && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); onPrint(order); }}
+                className="p-1 bg-white hover:bg-brand-gray/10 text-brand-black/40 hover:text-brand-red rounded transition-all border border-brand-gray/20 shadow-sm"
+                title="طباعة الفاتورة"
+              >
+                <Printer size={10} />
+              </button>
+            )}
+          </div>
           <span className="font-black text-brand-black text-sm flex items-center gap-2">
             <Clock size={14} className="text-brand-red" />
             {new Date(order.createdAt).toLocaleTimeString('ar-JO', { hour: '2-digit', minute: '2-digit' })}
