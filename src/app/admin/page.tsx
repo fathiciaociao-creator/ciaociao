@@ -458,7 +458,7 @@ export default function AdminDashboard() {
 
   const handleAddZone = async () => {
     try {
-      const res = await fetch('/api/admin/zones', {
+      const res = await fetch('/api/admin/delivery-zones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...zoneForm, fee: parseFloat(zoneForm.fee) })
@@ -472,7 +472,7 @@ export default function AdminDashboard() {
 
   const handleDeleteZone = async (id: string) => {
     try {
-      await fetch(`/api/admin/zones?id=${id}`, { method: 'DELETE' });
+      await fetch(`/api/admin/delivery-zones?id=${id}`, { method: 'DELETE' });
       fetchZones();
     } catch (_error) { console.error(_error); }
   };
@@ -480,8 +480,15 @@ export default function AdminDashboard() {
   const handleSystemReset = async () => {
     if (!confirm('تحذير: هذا سيحذف كل شيء!')) return;
     try {
-      const res = await fetch('/api/admin/reset', { method: 'POST' });
-      if (res.ok) window.location.reload();
+      const res = await fetch('/api/admin/system/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'RESET_ALL_DATA' })
+      });
+      if (res.ok) {
+        toast.success('تم تصفير النظام بنجاح');
+        window.location.reload();
+      }
     } catch { toast.error('خطأ'); }
   };
 
@@ -568,7 +575,7 @@ export default function AdminDashboard() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
             <div>
               <h2 className="text-4xl lg:text-5xl font-black text-brand-black font-serif tracking-tighter">
-                أهلاً بك يا مدير شيان 👋
+                لوحة تحكم XIAN
               </h2>
               <p className="text-brand-black/40 font-bold mt-2 text-sm lg:text-base">تتم الآن إدارة مطعم شيان بشكل آلي وآمن بالكامل.</p>
             </div>

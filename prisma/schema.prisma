@@ -20,6 +20,10 @@ model Order {
   orderType    String      @default("DELIVERY") // DELIVERY or PICKUP
   notes        String?
   totalPrice   Float
+  subtotal     Float      @default(0)
+  deliveryFee  Float      @default(0)
+  serviceFee   Float      @default(0)
+  discountAmount Float    @default(0)
   status       String      @default("PENDING") // PENDING, PREPARING, READY, SHIPPED, CANCELLED
   couponCode   String?     // Null if no coupon applied
   paymentMethod String     @default("CASH")    // CASH, CLIQ, APPLE_PAY, or CARD

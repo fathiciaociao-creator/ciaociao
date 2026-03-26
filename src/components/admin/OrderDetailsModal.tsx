@@ -1,8 +1,9 @@
 'use client';
 import { motion } from 'framer-motion';
-import { X, User, Phone, MapPin, ExternalLink, Copy, Clock, Store, CheckCircle, Zap, Trash2 } from 'lucide-react';
+import { X, User, Phone, MapPin, ExternalLink, Copy, Clock, Store, CheckCircle, Zap, Trash2, Printer } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Order, OrderItem } from '@/types/admin';
+import OrderInvoice from './OrderInvoice';
 
 interface OrderDetailsModalProps {
   order: Order | null;
@@ -23,14 +24,62 @@ export default function OrderDetailsModal({
 }: OrderDetailsModalProps) {
   if (!order) return null;
 
+  const handlePrint = () => {
+    const content = document.getElementById('printable-invoice');
+    if (!content) return;
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) return;
+
+    doc.open();
+    doc.write('<html><head><title>Order Invoice</title>');
+    // Copy styles
+    const styles = document.querySelectorAll('style, link[rel="stylesheet"]');
+    styles.forEach(s => doc.write(s.outerHTML));
+    doc.write('</head><body>');
+    doc.write(content.innerHTML);
+    doc.write('</body></html>');
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+    }, 500);
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* Hidden Invoice for Printing */}
+      <div id="printable-invoice" className="hidden">
+        <OrderInvoice order={order} />
+      </div>
+
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-brand-black/60 backdrop-blur-sm" />
       <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="p-8 border-b border-brand-gray/20 flex items-center justify-between bg-brand-cream/30">
           <div>
             <h3 className="text-2xl font-black text-brand-black tracking-tight">تفاصيل الطلب</h3>
-            <p className="text-brand-red font-bold">#{order.id.slice(-6).toUpperCase()}</p>
+            <div className="flex items-center gap-3">
+              <p className="text-brand-red font-bold">#{order.id.slice(-6).toUpperCase()}</p>
+              <button 
+                onClick={handlePrint}
+                className="flex items-center gap-2 bg-white px-3 py-1 rounded-lg border border-brand-gray/20 text-brand-black/60 hover:text-brand-red transition-all text-[10px] font-black"
+              >
+                <Printer size={12} /> طباعة الفاتورة
+              </button>
+            </div>
           </div>
           <button onClick={onClose} className="p-3 bg-white rounded-2xl shadow-sm border border-brand-gray/20 text-brand-black/40 hover:text-brand-red transition-all"><X size={24} /></button>
         </div>
@@ -172,14 +221,16 @@ export default function OrderDetailsModal({
               )}
             </div>
 
-            <div className="flex flex-col gap-4">
-              <button
-                onClick={() => onArchive(order.id)}
-                className="p-4 bg-brand-gray/20 text-brand-black/40 rounded-2xl flex items-center justify-center gap-3 font-black text-xs hover:text-brand-red hover:bg-red-50 transition-all border border-brand-gray/10"
-              >
-                <Trash2 size={18} /> أرشفة الطلب نهائياً
-              </button>
-            </div>
+            {!order.isArchived && (
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={() => onArchive(order.id)}
+                  className="p-4 bg-brand-gray/20 text-brand-black/40 rounded-2xl flex items-center justify-center gap-3 font-black text-xs hover:text-brand-red hover:bg-red-50 transition-all border border-brand-gray/10"
+                >
+                  <Trash2 size={18} /> أرشفة الطلب نهائياً
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </motion.div>

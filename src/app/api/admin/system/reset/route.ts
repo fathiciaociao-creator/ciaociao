@@ -10,13 +10,14 @@ export async function POST(request: Request) {
     const { action } = await request.json();
 
     if (action === 'RESET_ALL_DATA') {
-      // DANGER: Wipes all orders, items, and sessions/accounts (but keep products and settings)
+      // DANGER: Wipes all orders, items, and users (clients), sessions/accounts (but keeps products and settings)
       await prisma.$transaction([
         prisma.orderItem.deleteMany(),
         prisma.order.deleteMany(),
-        // We could delete users too, but maybe just orders and order-related data is enough for a "reset"
+        prisma.user.deleteMany(),
+        prisma.pushSubscription.deleteMany(),
       ]);
-      return NextResponse.json({ success: true, message: "All order data has been wiped successfully." });
+      return NextResponse.json({ success: true, message: "All order data and user records have been wiped successfully." });
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });

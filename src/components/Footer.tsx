@@ -2,12 +2,16 @@
 import Link from 'next/link';
 import { Instagram, Facebook, Phone, MapPin } from 'lucide-react';
 import { useCart } from '@/store/useCart';
-
+import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/store/useLanguage';
 
 export default function Footer() {
+  const pathname = usePathname();
   const { language } = useLanguage();
   const { items } = useCart();
+
+  if (pathname?.startsWith('/admin')) return null;
+
   const hasItems = items.length > 0;
   const currentYear = new Date().getFullYear();
 

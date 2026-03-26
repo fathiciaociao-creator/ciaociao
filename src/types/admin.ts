@@ -46,6 +46,11 @@ export interface Order {
   couponCode?: string | null;
   paymentMethod?: string;
   paymentStatus?: string;
+  isArchived: boolean;
+  subtotal: number;
+  deliveryFee: number;
+  serviceFee: number;
+  discountAmount: number;
   items: OrderItem[];
   user?: {
     name?: string;
