@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Bell, Store } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import * as XLSX from 'xlsx';
@@ -68,6 +68,22 @@ export default function AdminDashboard() {
   const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
   const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
+
+  // Derive sorted categories from products and the custom categoryOrder
+  const sortedCategories = useMemo(() => {
+    const uniqueCats = Array.from(new Set(products.flatMap((p: Product) => 
+      p.category ? p.category.split(',').map(c => c.trim()).filter(Boolean) : []
+    ))) as string[];
+    
+    return [...uniqueCats].sort((a, b) => {
+      const indexA = categoryOrder.indexOf(a);
+      const indexB = categoryOrder.indexOf(b);
+      if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
+    });
+  }, [products, categoryOrder]);
 
   // Coupons State
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -289,25 +305,9 @@ export default function AdminDashboard() {
       const res = await fetch('/api/products');
       const data = await res.json();
       setProducts(data);
-      
-      const uniqueCats = Array.from(new Set(data.flatMap((p: Product) => 
-        p.category ? p.category.split(',').map(c => c.trim()).filter(Boolean) : []
-      ))) as string[];
-      
-      // Sort these unique categories based on our existing categoryOrder state
-      const sorted = [...uniqueCats].sort((a, b) => {
-        const indexA = categoryOrder.indexOf(a);
-        const indexB = categoryOrder.indexOf(b);
-        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
-        if (indexA === -1) return 1;
-        if (indexB === -1) return -1;
-        return indexA - indexB;
-      });
-      
-      setCategoryOrder(sorted);
     } catch (error) { console.error(error); }
     finally { setLoading(false); }
-  }, [categoryOrder]);
+  }, []);
 
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -618,7 +618,7 @@ export default function AdminDashboard() {
                   onAddProduct={() => { setEditingProduct(null); setProductFormData({ nameEn: '', nameAr: '', price: '', category: products[0]?.category || '', imageUrl: '', descriptionAr: '', descriptionEn: '' }); setIsProductModalOpen(true); }}
                   onEditProduct={(p) => { setEditingProduct(p); setProductFormData({ nameAr: p.nameAr, nameEn: p.nameEn, price: p.price.toString(), category: p.category, imageUrl: p.imageUrl || '', descriptionAr: p.descriptionAr || '', descriptionEn: p.descriptionEn || '' }); setIsProductModalOpen(true); }}
                   onDeleteProduct={handleDeleteProduct} onToggleProduct={handleToggleProduct} onReorder={() => setIsReorderModalOpen(true)}
-                  sortedCategories={categoryOrder}
+                  sortedCategories={sortedCategories}
                 />
               )}
 
@@ -642,9 +642,9 @@ export default function AdminDashboard() {
         <OrderDetailsModal order={selectedOrder} onClose={() => setSelectedOrder(null)} onUpdateStatus={handleUpdateStatus} onArchive={handleArchive} onPaymentReceived={handlePaymentReceived} language={language} />
         <CustomerDetailsModal customer={selectedCustomer} onClose={() => setSelectedCustomer(null)} onSelectOrder={setSelectedOrder} orderHistory={historyOrders} />
         <ProductFormModal isOpen={isProductModalOpen} onClose={() => setIsProductModalOpen(false)} editingProduct={editingProduct} productFormData={productFormData} setProductFormData={(data: Partial<Record<string, string>>) => setProductFormData(prev => ({ ...prev, ...data }))} onSubmit={handleSaveProduct} products={products} />
-        <CategoryReorderModal isOpen={isReorderModalOpen} onClose={() => setIsReorderModalOpen(false)} categoryOrder={categoryOrder} setCategoryOrder={setCategoryOrder} onSave={saveCategoryOrder} isSaving={isSavingOrder} />
+        <CategoryReorderModal isOpen={isReorderModalOpen} onClose={() => setIsReorderModalOpen(false)} categoryOrder={sortedCategories} setCategoryOrder={setCategoryOrder} onSave={saveCategoryOrder} isSaving={isSavingOrder} />
         <BulkActionsBar selectedCount={selectedIds.length} onClear={() => setSelectedIds([])} onToggleAvailability={handleBulkToggle} onMoveToCategory={() => setIsBulkMoveOpen(true)} onDelete={handleBulkDelete} />
-        <BulkMoveModal isOpen={isBulkMoveOpen} onClose={() => setIsBulkMoveOpen(false)} categories={categoryOrder} onMove={handleBulkMove} />
+        <BulkMoveModal isOpen={isBulkMoveOpen} onClose={() => setIsBulkMoveOpen(false)} categories={sortedCategories} onMove={handleBulkMove} />
       </AnimatePresence>
     </div>
   );
