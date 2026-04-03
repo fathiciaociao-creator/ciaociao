@@ -50,15 +50,13 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
       {/* IMAGE CONTAINER */}
       <div className="relative w-full aspect-[4/3] rounded-[2rem] overflow-hidden bg-white border border-gray-100/50 shadow-sm transition-all duration-500 group-hover:shadow-xl group-hover:border-brand-red/10 flex items-center justify-center">
         <Image 
-          src={item.imageUrl || `https://placehold.co/800x600/FFFFFF/1A1A1A.png?text=${item.nameAr}`} 
+          src={item.imageUrl || '/hero-food.png'} 
           alt={`${item.nameEn || ''} ${item.nameAr || ''} - Xian Restaurant, Amman Chinese Food & Sushi`.trim()}
           fill 
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-contain transition-all duration-1000 group-hover:scale-105"
           priority={priority}
           quality={60}
-          placeholder="blur"
-          blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
         />
         
         {/* CIRCULAR ADD BUTTON - ELEVATED DESIGN */}
