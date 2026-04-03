@@ -86,7 +86,7 @@ export default function ProductsTab({
           const json = XLSX.utils.sheet_to_json<Record<string, string | number | boolean | undefined>>(worksheet);
 
           const importedProducts = json.map(row => {
-            const availFallback = row['Available'] ?? row['متوفر'] ?? row['isAvailable'];
+            const availFallback = row['Available'] ?? row['متوفر'] ?? row['isAvailable'] ?? 'Yes';
             return {
               nameAr: String(row['Name (AR)'] ?? row['الاسم بالعربي'] ?? row['nameAr'] ?? ''),
               nameEn: String(row['Name (EN)'] ?? row['الاسم بالانجليزي'] ?? row['nameEn'] ?? ''),

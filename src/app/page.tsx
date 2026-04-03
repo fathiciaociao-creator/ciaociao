@@ -3,6 +3,8 @@ import HomeClient from '@/components/HomeClient';
 import { Product } from '@/components/MenuItemCard';
 import { prisma } from "@/db";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Xian Restaurant (مطعم شيان) | Best Asian Food in Jordan",
   description: "Experience the finest Asian cuisine in Amman at Xian Restaurant. Sushi, Noodles, and Gourmet Chinese dishes. Discover our menu and order online today!",
