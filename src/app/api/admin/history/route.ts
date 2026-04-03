@@ -11,7 +11,12 @@ export async function GET() {
 
   try {
     const archivedOrders = await prisma.order.findMany({
-      where: { isArchived: true },
+      where: {
+        OR: [
+          { isArchived: true },
+          { status: { in: ['SHIPPED', 'COMPLETED', 'REJECTED', 'CANCELLED'] } }
+        ]
+      },
       include: {
         items: true,
       },
