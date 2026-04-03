@@ -154,11 +154,11 @@ const OrderInvoice: React.FC<OrderInvoiceProps> = ({ order }) => {
           <span>Type:</span>
           <span>{order.orderType}</span>
         </div>
-        {order.address && (
-           <div className="info-row" style={{ display: 'block', marginTop: '1mm' }}>
-             <div style={{ fontWeight: 'bold' }}>Address:</div>
-             <div style={{ wordBreak: 'break-all' }}>{order.address}</div>
-           </div>
+        {order.deliveryArea && (
+          <div className="info-row">
+            <span>Area:</span>
+            <span>{order.deliveryArea}</span>
+          </div>
         )}
 
         <div className="receipt-divider"></div>

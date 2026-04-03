@@ -1,8 +1,11 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Plus, ListOrdered, Search, Folder, CheckSquare, Check, Edit2, Trash2, ArrowLeft } from 'lucide-react';
+import { Plus, ListOrdered, Search, Folder, CheckSquare, Check, Edit2, Trash2, ArrowLeft, Download, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { Product } from '@/types/admin';
+import * as XLSX from 'xlsx';
+import { useRef } from 'react';
+import { toast } from 'react-hot-toast';
 
 interface ProductsTabProps {
   products: Product[];
@@ -42,6 +45,87 @@ export default function ProductsTab({
     (!selectedCategory || selectedCategory === 'الكل' || p.category.includes(selectedCategory))
   );
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExport = () => {
+    try {
+      const dataToExport = products.map(p => ({
+        'Name (AR)': p.nameAr,
+        'Name (EN)': p.nameEn,
+        'Price': p.price,
+        'Category': p.category,
+        'Description (AR)': p.descriptionAr || '',
+        'Description (EN)': p.descriptionEn || '',
+        'Image URL': p.imageUrl || '',
+        'Available': p.isAvailable ? 'Yes' : 'No'
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
+      XLSX.writeFile(workbook, 'Xian_Products.xlsx');
+      toast.success('تم تصدير المنتجات بنجاح');
+    } catch (error) {
+      console.error(error);
+      toast.error('حدث خطأ أثناء التصدير');
+    }
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const data = event.target?.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json<Record<string, string | number | boolean | undefined>>(worksheet);
+
+        const importedProducts = json.map(row => {
+          const availFallback = row['Available'] || row['متوفر'] || row['isAvailable'];
+          return {
+            nameAr: String(row['Name (AR)'] || row['الاسم بالعربي'] || row['nameAr'] || ''),
+            nameEn: String(row['Name (EN)'] || row['الاسم بالانجليزي'] || row['nameEn'] || ''),
+            price: parseFloat(String(row['Price'] || row['السعر'] || row['price'] || 0)),
+            category: String(row['Category'] || row['القسم'] || row['category'] || ''),
+            descriptionAr: String(row['Description (AR)'] || row['الوصف بالعربي'] || row['descriptionAr'] || ''),
+            descriptionEn: String(row['Description (EN)'] || row['الوصف بالانجليزي'] || row['descriptionEn'] || ''),
+            imageUrl: String(row['Image URL'] || row['رابط الصورة'] || row['imageUrl'] || ''),
+            isAvailable: availFallback === 'Yes' || availFallback === 'نعم' || availFallback === true || String(availFallback).toLowerCase() === 'true' ? true : false,
+          };
+        }).filter(p => p.nameAr && p.price > 0 && p.category);
+
+        if (importedProducts.length === 0) {
+          toast.error('لم يتم العثور على منتجات صالحة في الملف');
+          toast.error('تأكد من وجود الأعمدة: Name (AR), Category, Price');
+          return;
+        }
+
+        const res = await fetch('/api/admin/products/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(importedProducts),
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to import');
+        }
+        
+        toast.success(`تم استيراد ${importedProducts.length} منتجات بنجاح`);
+        setTimeout(() => window.location.reload(), 1000);
+      };
+      reader.readAsBinaryString(file);
+    } catch (error) {
+      console.error(error);
+      toast.error('حدث خطأ أثناء الاستيراد تأكد من تنسيق الملف');
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleSelectAll = () => {
     const ids = filteredProducts.map(p => p.id);
     if (selectedIds.length === ids.length) setSelectedIds([]);
@@ -73,12 +157,33 @@ export default function ProductsTab({
               <ListOrdered size={20} />
               <span className="text-xs">ترتيب الأقسام</span>
             </button>
+            <input 
+              type="file" 
+              accept=".xlsx,.xls" 
+              ref={fileInputRef} 
+              onChange={handleImport} 
+              className="hidden" 
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex-1 md:flex-none bg-white border-2 border-brand-gray text-brand-black px-6 py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-brand-gray transition-all shadow-sm group"
+            >
+              <Upload size={18} className="group-hover:-translate-y-1 transition-transform" />
+              <span className="text-xs">استيراد</span>
+            </button>
+            <button
+              onClick={handleExport}
+              className="flex-1 md:flex-none bg-white border-2 border-brand-gray text-brand-black px-6 py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-brand-gray transition-all shadow-sm group"
+            >
+              <Download size={18} className="group-hover:translate-y-1 transition-transform" />
+              <span className="text-xs">تصدير</span>
+            </button>
             <button
               onClick={onAddProduct}
-              className="flex-1 md:flex-none bg-brand-black text-white px-10 py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] active:scale-95 transition-all group"
+              className="flex-1 md:flex-none bg-brand-black text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-2 shadow-xl hover:scale-[1.02] active:scale-95 transition-all group"
             >
               <Plus size={20} className="group-hover:rotate-90 transition-transform" />
-              <span className="text-xs">إضافة منتج</span>
+              <span className="text-xs">إضافة</span>
             </button>
           </div>
         </div>
