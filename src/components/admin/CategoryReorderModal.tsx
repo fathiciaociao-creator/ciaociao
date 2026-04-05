@@ -40,7 +40,7 @@ export default function CategoryReorderModal({
                 <div className="w-10 h-10 rounded-xl bg-brand-cream flex items-center justify-center text-brand-red font-black text-xs shadow-inner">{idx + 1}</div>
                 <span className="font-black text-xl text-brand-black">{cat}</span>
               </div>
-              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex gap-2 transition-all">
                 <button 
                   onClick={() => { 
                     const newOrder = [...categoryOrder]; 
