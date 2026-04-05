@@ -27,7 +27,7 @@ export default function AdminSidebar({
   ];
 
   return (
-    <div className="w-full lg:w-80 bg-white border-b lg:border-b-0 lg:border-l border-brand-gray flex flex-col h-auto lg:h-screen sticky top-0 z-50">
+    <div className="w-full lg:w-72 xl:w-80 shrink-0 bg-white border-b lg:border-b-0 lg:border-l border-brand-gray flex flex-col h-auto lg:h-screen sticky top-0 z-50">
       <div className="p-8 lg:p-12">
         <div className="flex items-center gap-4 mb-12 group">
           <div className="w-14 h-14 bg-brand-red rounded-2xl flex items-center justify-center text-white shadow-xl shadow-brand-red/20 group-hover:rotate-12 transition-transform duration-500">
