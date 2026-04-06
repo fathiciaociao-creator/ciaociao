@@ -21,7 +21,6 @@ import ProductsTab from '@/components/admin/ProductsTab';
 import CouponsTab from '@/components/admin/CouponsTab';
 import ZonesTab from '@/components/admin/ZonesTab';
 import SupportTab from '@/components/admin/SupportTab';
-import ReviewsTab from '@/components/admin/ReviewsTab';
 import OrderDetailsModal from '@/components/admin/OrderDetailsModal';
 import CustomerDetailsModal from '@/components/admin/CustomerDetailsModal';
 import ProductFormModal from '@/components/admin/ProductFormModal';
@@ -771,10 +770,6 @@ export default function AdminDashboard() {
 
               {activeTab === 'SUPPORT' && (
                 <SupportTab onResetData={handleSystemReset} onResetMenu={handleMenuReset} />
-              )}
-
-              {activeTab === 'REVIEWS' && (
-                <ReviewsTab />
               )}
             </AnimatePresence>
           </div>

@@ -39,20 +39,9 @@ model Order {
 
   // Relation to the items inside the cart for this order
   items        OrderItem[]
-  review       Review?
 }
 
-model Review {
-  id           String   @id @default(cuid())
-  orderId      String   @unique
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  rating       Int
-  comment      String?  @db.Text
-  customerName String
-  isPublic     Boolean  @default(false)
-  createdAt    DateTime @default(now())
-}
-
+// NextAuth Models
 model Account {
   id                 String  @id @default(cuid())
   userId             String
