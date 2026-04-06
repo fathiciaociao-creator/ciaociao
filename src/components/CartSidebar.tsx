@@ -1,7 +1,7 @@
 'use client';
 import { useCart } from '@/store/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Phone, MapPin, User, Trash2, ArrowRight, AlertCircle, ShoppingCart, Clock, Store, Locate, ChevronDown, Bike, Loader2 } from 'lucide-react';
+import { X, Phone, MapPin, User, Trash2, ArrowRight, AlertCircle, ShoppingCart, Clock, Store, Locate, ChevronDown, Bike, Loader2, Users2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useSession, signIn } from 'next-auth/react';
@@ -23,7 +23,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
   const { data: session } = useSession();
   const { items, clearCart, removeItem } = useCart();
   const { form, setForm } = useCheckout();
-  const [orderType, setOrderType] = useState<'DELIVERY' | 'PICKUP'>(form.orderType || 'DELIVERY');
+  const [orderType, setOrderType] = useState<'DELIVERY' | 'PICKUP' | 'TABLE'>(form.orderType || 'DELIVERY');
   const [mounted, setMounted] = useState(false);
   const [deliveryZones, setDeliveryZones] = useState<DeliveryZone[]>([]);
 
@@ -347,6 +347,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                   <div className="flex bg-brand-gray/5 p-1 rounded-2xl border border-brand-gray/10">
                                      <button onClick={() => setOrderType('DELIVERY')} className={`flex-1 py-3 rounded-xl text-[12px] font-black transition-all ${orderType === 'DELIVERY' ? 'bg-white text-brand-red shadow-sm border border-brand-gray/10' : 'text-brand-black/30'}`}>{language === 'ar' ? 'توصيل' : 'Delivery'}</button>
                                      <button onClick={() => setOrderType('PICKUP')} className={`flex-1 py-3 rounded-xl text-[12px] font-black transition-all ${orderType === 'PICKUP' ? 'bg-white text-brand-red shadow-sm border border-brand-gray/10' : 'text-brand-black/30'}`}>{language === 'ar' ? 'استلام' : 'Pickup'}</button>
+                                     <button onClick={() => setOrderType('TABLE')} className={`flex-1 py-3 rounded-xl text-[12px] font-black transition-all ${orderType === 'TABLE' ? 'bg-white text-brand-red shadow-sm border border-brand-gray/10' : 'text-brand-black/30'}`}>{language === 'ar' ? 'طاولة' : 'Table'}</button>
                                   </div>
 
                                   <div className="space-y-3">
@@ -381,6 +382,25 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                           <span>{isDetecting ? (language === 'ar' ? 'جاري التحديد...' : 'Detecting...') : (language === 'ar' ? 'تحديد موقعي التلقائي' : 'Auto-detect Location')}</span>
                                         </button>
                                       </>
+                                    ) : orderType === 'TABLE' ? (
+                                      <div className="grid grid-cols-2 gap-3">
+                                        <div className="relative group">
+                                          <Users2 className={`absolute ${language === 'ar' ? 'right-5' : 'left-5'} top-1/2 -translate-y-1/2 text-brand-black/20`} size={18} />
+                                          <select 
+                                            className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6' : 'pl-12 pr-6'} py-4 rounded-xl border border-brand-gray/20 font-bold text-[15px] appearance-none cursor-pointer`}
+                                            value={form.reservationPeople}
+                                            onChange={(e) => setForm({ reservationPeople: parseInt(e.target.value) })}
+                                          >
+                                            {[1,2,3,4,5,6,7,8,9,10,12,15].map(n => (
+                                              <option key={n} value={n}>{n} {language === 'ar' ? 'أشخاص' : 'People'}</option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                        <div className="relative group">
+                                          <Clock className={`absolute ${language === 'ar' ? 'right-5' : 'left-5'} top-1/2 -translate-y-1/2 text-brand-black/20`} size={18} />
+                                          <input type="time" className={`w-full bg-brand-gray/5 text-brand-black ${language === 'ar' ? 'pr-12 pl-6' : 'pl-12 pr-6'} py-4 rounded-xl border border-brand-gray/20 font-bold text-[15px]`} value={form.reservationTime} onChange={(e) => setForm({ reservationTime: e.target.value })} />
+                                        </div>
+                                      </div>
                                     ) : (
                                       <div className="relative group">
                                         <Clock className={`absolute ${language === 'ar' ? 'right-5' : 'left-5'} top-1/2 -translate-y-1/2 text-brand-black/20`} size={18} />
@@ -422,6 +442,10 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                                   }
                                   if(orderType === 'DELIVERY' && !form.address.trim()) {
                                     alert(language === 'ar' ? 'يرجى كتابة العنوان بالتفصيل' : 'Please provide detailed address'); 
+                                    return;
+                                  }
+                                  if(orderType === 'TABLE' && !form.reservationTime) {
+                                    alert(language === 'ar' ? 'يرجى تحديد وقت الوصول المتوقع' : 'Please provide estimated arrival time'); 
                                     return;
                                   }
                                   onClose();

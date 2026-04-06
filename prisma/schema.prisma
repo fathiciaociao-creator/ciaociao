@@ -17,7 +17,9 @@ model Order {
   address      String?     // Optional for Pickup
   deliveryArea String?
   pickupTime   String?     // For Pickup orders
-  orderType    String      @default("DELIVERY") // DELIVERY or PICKUP
+  reservationPeople Int?   // For Table Reservation orders
+  reservationTime   String? // For Table Reservation orders
+  orderType    String      @default("DELIVERY") // DELIVERY, PICKUP, or TABLE
   notes        String?
   totalPrice   Float
   subtotal     Float      @default(0)

@@ -10,7 +10,9 @@ interface CheckoutForm {
   deliveryArea: string;
   notes: string;
   pickupTime: string;
-  orderType: 'DELIVERY' | 'PICKUP';
+  reservationPeople: number;
+  reservationTime: string;
+  orderType: 'DELIVERY' | 'PICKUP' | 'TABLE';
   selectedZoneId: string;
   couponCode: string;
   discountPercent: number;
@@ -29,6 +31,8 @@ const initialForm: CheckoutForm = {
   deliveryArea: '',
   notes: '',
   pickupTime: '',
+  reservationPeople: 2,
+  reservationTime: '',
   orderType: 'DELIVERY',
   selectedZoneId: '',
   couponCode: '',

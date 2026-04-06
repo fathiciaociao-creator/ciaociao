@@ -1,7 +1,7 @@
 'use client';
 import { 
   CheckCircle, User, Phone, MapPin, Trash2, Clock, 
-  ExternalLink, Copy, Zap, X, Printer
+  ExternalLink, Copy, Zap, X, Printer, Users2 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Order, OrderItem } from '@/types/admin';
@@ -40,8 +40,10 @@ export default function OrderCard({ order, onUpdateStatus, onArchive, onPaymentR
           </span>
         </div>
         <div className={`px-3 py-1.5 rounded-full font-black text-[9px] uppercase tracking-widest flex items-center gap-2 border shadow-sm
-          ${order.orderType === 'PICKUP' ? 'bg-orange-500 text-white' : 'bg-blue-500 text-white'}`}>
-          {order.orderType === 'PICKUP' ? 'استلام' : 'توصيل'}
+          ${order.orderType === 'PICKUP' ? 'bg-orange-500 text-white' : 
+            order.orderType === 'TABLE' ? 'bg-emerald-600 text-white' : 'bg-blue-500 text-white'}`}>
+          {order.orderType === 'PICKUP' ? 'استلام' : 
+           order.orderType === 'TABLE' ? 'حجز طاولة' : 'توصيل'}
         </div>
       </div>
 
@@ -88,6 +90,21 @@ export default function OrderCard({ order, onUpdateStatus, onArchive, onPaymentR
                     >
                       <Copy size={10} /> نسخ الرابط
                     </button>
+                  </div>
+                )}
+
+                {order.orderType === 'TABLE' && (
+                  <div className="flex items-center gap-4 mt-2">
+                    <div className="flex items-center gap-2 text-[10px] font-black text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+                      <Users2 size={12} />
+                      {order.reservationPeople} {language === 'ar' ? 'أشخاص' : 'People'}
+                    </div>
+                    {order.reservationTime && (
+                      <div className="flex items-center gap-2 text-[10px] font-black text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+                        <Clock size={12} />
+                        {order.reservationTime}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

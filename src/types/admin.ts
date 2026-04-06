@@ -39,7 +39,9 @@ export interface Order {
   address?: string;
   deliveryArea?: string;
   pickupTime?: string;
-  orderType?: 'DELIVERY' | 'PICKUP';
+  reservationPeople?: number | null;
+  reservationTime?: string | null;
+  orderType?: 'DELIVERY' | 'PICKUP' | 'TABLE';
   notes?: string;
   totalPrice: number;
   status: string;
