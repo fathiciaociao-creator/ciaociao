@@ -7,9 +7,9 @@ export const BRANDING = {
   shortNameAr: "شيان",
   sloganEn: "Asian Fusion Excellence",
   sloganAr: "التميز في الاندماج الآسيوي",
-  
+
   logo: {
-    url: "/favicon.ico", // Base favicon or logo path
+    url: "/logo.png", // Base favicon or logo path
     width: 60,
     height: 60,
   },
