@@ -20,7 +20,6 @@ import ReportsTab from '@/components/admin/ReportsTab';
 import ProductsTab from '@/components/admin/ProductsTab';
 import CouponsTab from '@/components/admin/CouponsTab';
 import ZonesTab from '@/components/admin/ZonesTab';
-import SystemTab from '@/components/admin/SystemTab';
 import SupportTab from '@/components/admin/SupportTab';
 import OrderDetailsModal from '@/components/admin/OrderDetailsModal';
 import CustomerDetailsModal from '@/components/admin/CustomerDetailsModal';
@@ -767,10 +766,6 @@ export default function AdminDashboard() {
 
               {activeTab === 'ZONES' && (
                 <ZonesTab zones={zones} zoneForm={zoneForm} setZoneForm={setZoneForm} onAdd={handleAddZone} onDelete={handleDeleteZone} />
-              )}
-
-              {activeTab === 'SYSTEM' && (
-                <SystemTab onExportOrders={handleExportOrders} onExportCustomers={handleExportCustomers} />
               )}
 
               {activeTab === 'SUPPORT' && (

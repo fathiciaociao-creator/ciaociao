@@ -13,14 +13,22 @@ export default function SupportTab({ onResetData, onResetMenu }: SupportTabProps
   const [password, setPassword] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
 
-  const handleUnlock = (e: React.FormEvent) => {
+  const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Default support password
-    if (password === 'support99') {
-      setIsUnlocked(true);
-      toast.success('تم فتح صلاحيات الدعم');
-    } else {
-      toast.error('كلمة مرور الدعم غير صحيحة');
+    try {
+      const res = await fetch('/api/admin/system/support-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      if (res.ok) {
+        setIsUnlocked(true);
+        toast.success('تم فتح صلاحيات الدعم');
+      } else {
+        toast.error('كلمة مرور الدعم غير صحيحة');
+      }
+    } catch {
+      toast.error('فشل في الاتصال بنظام الحماية');
     }
   };
 
