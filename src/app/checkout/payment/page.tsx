@@ -90,6 +90,8 @@ export default function PaymentPage() {
           address: form.orderType === 'DELIVERY' ? form.address : 'Store Pickup',
           deliveryArea: form.orderType === 'DELIVERY' ? (selectedZone?.nameEn || 'Unknown') : '',
           pickupTime: form.orderType === 'PICKUP' ? form.pickupTime : '',
+          reservationPeople: form.orderType === 'TABLE' ? form.reservationPeople : null,
+          reservationTime: form.orderType === 'TABLE' ? form.reservationTime : null,
           orderType: form.orderType,
           paymentMethod: method,
           notes: form.notes,
@@ -212,15 +214,19 @@ export default function PaymentPage() {
         </div>
 
         <div className="space-y-3">
-          <PaymentOption 
-            label={language === 'ar' ? 'كليك' : 'CliQ'}
-            icon={<div className="bg-white border border-gray-200 rounded-lg p-1 px-3 font-black text-sm italic">CliQ</div>}
-            onClick={() => handleOrder('CLIQ')}
-            loading={loading && paymentMethod === 'CLIQ'}
-          />
+          {form.orderType !== 'TABLE' && (
+            <PaymentOption 
+              label={language === 'ar' ? 'كليك' : 'CliQ'}
+              icon={<div className="bg-white border border-gray-200 rounded-lg p-1 px-3 font-black text-sm italic">CliQ</div>}
+              onClick={() => handleOrder('CLIQ')}
+              loading={loading && paymentMethod === 'CLIQ'}
+            />
+          )}
 
           <PaymentOption 
-            label={language === 'ar' ? 'كاش عند الوصول' : 'Cash on Delivery'}
+            label={form.orderType === 'TABLE' 
+              ? (language === 'ar' ? 'كاش عند الوصول' : 'Cash on Arrival') 
+              : (language === 'ar' ? 'كاش عند الاستلام' : 'Cash on Delivery')}
             icon={<div className="bg-white border border-gray-200 rounded-lg p-1 px-2"><Banknote size={20} className="text-green-600" /></div>}
             onClick={() => handleOrder('CASH')}
             loading={loading && paymentMethod === 'CASH'}
