@@ -57,7 +57,7 @@ export default function SupportTab({ onResetData, onResetMenu }: SupportTabProps
             onChange={(e) => setPassword(e.target.value)}
           />
           <button className="w-full bg-brand-black text-white py-4 rounded-2xl font-black hover:bg-brand-red transition-all shadow-lg active:scale-95">
-            دخول للمنطقة المحظورة
+            الدخول للدعم
           </button>
         </form>
       </motion.div>

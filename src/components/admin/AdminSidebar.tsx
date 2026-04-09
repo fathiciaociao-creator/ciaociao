@@ -31,7 +31,7 @@ export default function AdminSidebar({
     <aside className="fixed bottom-0 left-0 right-0 lg:relative lg:w-80 bg-brand-black/95 backdrop-blur-xl border-t lg:border-t-0 lg:border-r border-white/5 z-50 flex flex-col shadow-2xl">
       {/* Brand Header - Desktop Only */}
       <div className="hidden lg:flex flex-col p-10 border-b border-white/5">
-        <h1 className="text-3xl font-black text-white font-serif tracking-tighter leading-none">
+        <h1 className="text-4xl font-black text-white tracking-tighter leading-none">
           {BRANDING.nameEn}
         </h1>
         <span className="mt-2 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 animate-pulse">ADMIN CONTROL</span>

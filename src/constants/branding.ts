@@ -16,7 +16,7 @@ export const BRANDING = {
 
   admin: {
     titleEn: "Ciao Ciao Admin Console",
-    titleAr: "لوحة تحكم تشاو تشاو",
+    titleAr: "لوحة تحكم Ciao Ciao",
     version: "2.0",
   },
 
