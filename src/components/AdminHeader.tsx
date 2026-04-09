@@ -38,9 +38,9 @@ export default function AdminHeader({ title, subtitle, icon, actions }: AdminHea
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 justify-between items-start lg:items-center mb-16 bg-white p-10 lg:p-12 rounded-[3.5rem] border-2 border-brand-gray shadow-sm relative overflow-hidden transition-all">
+    <div className="flex flex-col lg:flex-row gap-8 justify-between items-start lg:items-center mb-16 bg-brand-cream/40 p-10 lg:p-12 rounded-[3.5rem] border-2 border-brand-red/10 shadow-sm relative overflow-hidden transition-all">
       <div className="flex items-center gap-6">
-        <div className="bg-brand-red p-5 rounded-3xl text-white shadow-xl shadow-brand-red/10 animate-pulse-slow">
+        <div className="bg-brand-red p-5 rounded-3xl text-brand-cream shadow-xl shadow-brand-red/10 animate-pulse-slow">
           {icon || <ShieldCheck size={40} strokeWidth={1.5} />}
         </div>
         <div>
@@ -56,7 +56,7 @@ export default function AdminHeader({ title, subtitle, icon, actions }: AdminHea
           className={`w-full lg:w-auto px-10 py-6 rounded-full font-black text-sm uppercase tracking-widest flex items-center justify-center gap-4 transition-all shadow-xl active:scale-95
             ${isAudioEnabled 
               ? 'bg-green-600 text-white shadow-green-200' 
-              : 'bg-brand-black text-white hover:bg-brand-red shadow-brand-black/10'}`}
+              : 'bg-brand-red/10 text-brand-red hover:bg-brand-red hover:text-white shadow-brand-black/5'}`}
         >
           {isAudioEnabled ? <Volume2 size={22} className="animate-bounce" /> : <VolumeX size={22} />}
           <span>{isAudioEnabled ? 'جرس التنبيه: نشط ✅' : 'تفعيل جرس التنبيه 🔔'}</span>

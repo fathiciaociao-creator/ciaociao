@@ -710,7 +710,7 @@ export default function AdminDashboard() {
               <p className="text-brand-black/40 font-bold mt-2 text-sm lg:text-base">تتم الآن إدارة مطعم {BRANDING.shortNameAr} بشكل آلي وآمن بالكامل.</p>
             </div>
 
-            <div className="flex items-center gap-4 bg-white p-4 lg:p-5 xl:p-6 rounded-[2.5rem] border border-brand-gray shadow-sm">
+            <div className="flex items-center gap-4 bg-brand-cream/40 p-4 lg:p-5 xl:p-6 rounded-[2.5rem] border border-brand-red/10 shadow-sm transition-all">
               <div className="flex flex-col text-left mr-4">
                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/20">حالة المطعم</span>
                 <span className={`text-sm font-black ${isStoreOpen ? 'text-green-600' : 'text-brand-red'}`}>
@@ -720,7 +720,7 @@ export default function AdminDashboard() {
               <button
                 onClick={toggleStoreStatus}
                 className={`w-16 h-16 lg:w-18 xl:w-20 rounded-3xl flex items-center justify-center transition-all duration-500 shadow-xl
-                  ${isStoreOpen ? 'bg-green-600 text-white hover:bg-green-700 hover:rotate-12' : 'bg-brand-red text-white animate-pulse'}`}
+                  ${isStoreOpen ? 'bg-green-600 text-white hover:bg-green-700 hover:rotate-12' : 'bg-brand-red text-white animate-pulse shadow-brand-red/20'}`}
               >
                 <Store size={32} />
               </button>

@@ -162,11 +162,11 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
             animate={{ x: 0 }}
             exit={{ x: language === 'ar' ? '-100%' : '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 1 }}
-            className={`fixed inset-0 md:inset-y-0 ${language === 'ar' ? 'md:left-0 md:right-auto' : 'md:right-0 md:left-auto'} w-full md:w-[500px] bg-white z-[200] shadow-2xl flex flex-col h-[100dvh] md:h-screen`}
+            className={`fixed inset-0 md:inset-y-0 ${language === 'ar' ? 'md:left-0 md:right-auto' : 'md:right-0 md:left-auto'} w-full md:w-[500px] bg-brand-cream z-[200] shadow-2xl flex flex-col h-[100dvh] md:h-screen`}
             dir={language === 'ar' ? 'rtl' : 'ltr'}
           >
             {/* HEADER - STICKY TOP */}
-            <div className="p-6 md:p-8 flex items-center justify-between border-b border-brand-gray/20 bg-white sticky top-0 z-40">
+            <div className="p-6 md:p-8 flex items-center justify-between border-b border-brand-red/10 bg-brand-cream sticky top-0 z-40">
               <div className="flex items-center gap-4">
                 <button 
                   onClick={onClose}

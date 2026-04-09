@@ -34,7 +34,7 @@ export default function AdminSidebar({
         <h1 className="text-3xl font-black text-white font-serif tracking-tighter leading-none">
           {BRANDING.nameEn}
         </h1>
-        <span className="mt-2 text-[10px] font-black uppercase tracking-[0.3em] text-brand-red animate-pulse">ADMIN CONTROL</span>
+        <span className="mt-2 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 animate-pulse">ADMIN CONTROL</span>
       </div>
 
       {/* Navigation Items */}
@@ -49,13 +49,13 @@ export default function AdminSidebar({
                 onClick={() => setActiveTab(item.id)}
                 className={`relative group flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-500 whitespace-nowrap
                   ${isActive 
-                    ? 'bg-brand-red text-white shadow-xl shadow-brand-red/20 scale-[1.02]' 
+                    ? 'bg-brand-cream text-brand-red shadow-xl shadow-black/20 scale-[1.02]' 
                     : 'text-white/40 hover:text-white hover:bg-white/5'}`}
               >
                 <div className={`relative ${isActive ? 'animate-tada' : 'group-hover:scale-110 transition-transform'}`}>
                   <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
                   {item.badge && (
-                    <span className="absolute -top-2 -right-2 bg-white text-brand-red text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-bounce shadow-md">
+                    <span className="absolute -top-2 -right-2 bg-brand-red text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-bounce shadow-md">
                       {item.badge}
                     </span>
                   )}
@@ -66,7 +66,7 @@ export default function AdminSidebar({
                 
                 {/* Active Indicator Bar - Desktop Only */}
                 {isActive && (
-                  <div className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-white rounded-l-full shadow-[0_0_15px_rgba(255,255,255,1)]" />
+                  <div className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-brand-red rounded-l-full shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
                 )}
               </button>
             )
@@ -78,7 +78,7 @@ export default function AdminSidebar({
       <div className="hidden lg:flex flex-col p-6 border-t border-white/5 bg-black/20">
         <button
           onClick={onLogout}
-          className="group flex items-center gap-4 px-6 py-4 rounded-2xl text-white/40 hover:text-brand-red hover:bg-brand-red/5 transition-all duration-500 w-full"
+          className="group flex items-center gap-4 px-6 py-4 rounded-2xl text-white/40 hover:text-white hover:bg-white/5 transition-all duration-500 w-full"
         >
           <div className="group-hover:rotate-12 transition-transform">
             <LogOut size={20} />

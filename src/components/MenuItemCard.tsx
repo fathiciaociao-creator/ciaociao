@@ -49,13 +49,13 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
       className="flex flex-col gap-4 group h-full"
     >
       {/* IMAGE CONTAINER */}
-      <div className="relative w-full aspect-[4/3] rounded-[2rem] overflow-hidden bg-white border border-gray-100/50 shadow-sm transition-all duration-500 group-hover:shadow-xl group-hover:border-brand-red/10 flex items-center justify-center">
+      <div className="relative w-full aspect-[4/3] rounded-[2rem] overflow-hidden bg-brand-cream border border-brand-red/10 shadow-sm transition-all duration-500 group-hover:shadow-xl group-hover:border-brand-red/20 flex items-center justify-center">
         <Image 
           src={(item.imageUrl && item.imageUrl !== 'no') ? item.imageUrl : '/hero-food.png'} 
           alt={`${item.nameEn || ''} ${item.nameAr || ''} - ${BRANDING.nameEn}, Amman Chinese Food & Sushi`.trim()}
           fill 
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-contain transition-all duration-1000 group-hover:scale-105"
+          className="object-contain transition-all duration-1000 group-hover:scale-110"
           priority={priority}
           quality={60}
         />
@@ -73,8 +73,8 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
         </button>
 
         {!isAvailable && (
-          <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] flex items-center justify-center z-20">
-            <span className="bg-brand-black text-white px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
+          <div className="absolute inset-0 bg-brand-cream/70 backdrop-blur-[2px] flex items-center justify-center z-20">
+            <span className="bg-brand-red text-white px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
               {language === 'ar' ? 'نفذت الكمية' : 'Sold Out'}
             </span>
           </div>
@@ -84,12 +84,12 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
       {/* TEXT SECTION - FIXED ALIGNMENT */}
       <div className={`flex flex-col gap-2 flex-1 px-1 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
         <div className="min-h-[2.5rem] flex flex-col justify-center">
-            <h3 className="text-sm md:text-base font-black !text-black line-clamp-2 leading-tight uppercase tracking-tight">
+            <h3 className="text-sm md:text-base font-black text-brand-black line-clamp-2 leading-tight uppercase tracking-tight">
               {language === 'ar' ? item.nameAr : (item.nameEn || item.nameAr)}
             </h3>
         </div>
         <div className="flex items-center gap-2 mt-auto pt-1">
-          <span className="text-[10px] font-black text-brand-black/20 uppercase tracking-widest">{language === 'ar' ? 'د.أ' : 'JOD'}</span>
+          <span className="text-[10px] font-black text-brand-red/20 uppercase tracking-widest">{language === 'ar' ? 'د.أ' : 'JOD'}</span>
           <span className="text-lg font-black text-brand-red font-serif">{item.price.toFixed(2)}</span>
         </div>
       </div>

@@ -29,7 +29,7 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-md h-20 md:h-24 flex items-center justify-between px-4 md:px-12 border-b border-gray-100"
+      className="fixed top-0 left-0 right-0 z-[100] bg-brand-cream/80 backdrop-blur-xl h-20 md:h-24 flex items-center justify-between px-4 md:px-12 border-b border-brand-red/10 shadow-sm"
       dir={language === 'ar' ? 'rtl' : 'ltr'}
     >
       {/* LEFT SECTION */}
@@ -88,7 +88,7 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
          {/* Language Toggle */}
          <button 
            onClick={toggleLanguage}
-           className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all active:scale-95 bg-brand-cream/30"
+           className="flex items-center gap-2 px-3 py-2 rounded-xl border border-brand-red/20 text-[10px] font-black uppercase tracking-widest hover:bg-brand-red hover:text-white transition-all active:scale-95 bg-brand-cream shadow-sm"
            title={language === 'ar' ? 'Change to English' : 'تغيير للغة العربية'}
          >
            <Globe size={14} className="text-brand-red" />
@@ -135,11 +135,11 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
          </div>
 
          {/* CART BUTTON (Hidden on Mobile/Tablet due to redundancy with bottom bar) */}
-         <button onClick={onCartOpen} className="hidden lg:flex relative p-2.5 md:p-3 bg-black text-white rounded-full transition-all hover:bg-[#C40012] shadow-sm active:scale-90 flex-shrink-0">
+         <button onClick={onCartOpen} className="hidden lg:flex relative p-2.5 md:p-3 bg-brand-red text-white rounded-full transition-all hover:scale-105 shadow-xl shadow-brand-red/20 active:scale-90 flex-shrink-0">
            <ShoppingCart size={18} className="md:w-5 md:h-5" strokeWidth={2} />
            <AnimatePresence>
               {cartCount > 0 && (
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="absolute -top-1 -right-1 bg-[#C40012] text-white text-[8px] md:text-[9px] font-black w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center border-2 border-white">
+                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="absolute -top-1 -right-1 bg-white text-brand-red text-[8px] md:text-[9px] font-black w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center border-2 border-brand-red">
                   {cartCount}
                 </motion.span>
               )}

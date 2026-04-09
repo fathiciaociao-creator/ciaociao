@@ -75,11 +75,11 @@ export default function HomeClient({
   if (!mounted) return null;
 
   return (
-    <div className="bg-white min-h-screen font-body" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="bg-brand-cream min-h-screen font-body" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Header onCartOpen={() => setIsSidebarOpen(true)} />
       
       <main className="pt-24 pb-32">
-        <div className="sticky top-20 z-40 bg-white border-b border-gray-100 mb-8">
+        <div className="sticky top-20 z-40 bg-brand-cream/80 backdrop-blur-md border-b border-brand-red/10 mb-8">
           <div className="max-w-7xl mx-auto px-6 flex items-center gap-6">
              <button className="flex-shrink-0 text-black p-2">
                 <Menu size={24} strokeWidth={2.5} />
@@ -97,7 +97,7 @@ export default function HomeClient({
                     {activeCategory === cat && (
                       <motion.div 
                         layoutId="activeUnderline"
-                        className="absolute -bottom-[2px] left-0 right-0 h-1 bg-black rounded-full"
+                        className="absolute -bottom-[2px] left-0 right-0 h-1 bg-brand-red rounded-full"
                       />
                     )}
                   </button>
@@ -142,7 +142,7 @@ export default function HomeClient({
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
-            className="fixed bottom-0 left-0 right-0 z-[110] bg-white border-t border-gray-100 p-6 flex items-center justify-between"
+            className="fixed bottom-0 left-0 right-0 z-[110] bg-brand-cream border-t border-brand-red/10 p-6 flex items-center justify-between shadow-[0_-8px_30px_rgba(0,0,0,0.05)]"
           >
             <div className={`flex-1 flex flex-col ${language === 'ar' ? 'text-right' : 'text-left'}`}>
                <span className="text-xs font-bold text-gray-400">
@@ -152,7 +152,7 @@ export default function HomeClient({
             </div>
             <button 
               onClick={() => setIsSidebarOpen(true)}
-              className="bg-black text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 active:scale-95 transition-all shadow-lg"
+              className="bg-brand-red text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 active:scale-95 transition-all shadow-xl shadow-brand-red/20"
             >
               <ShoppingCart size={20} />
               <span>{language === 'ar' ? `عرض السلة (${cartCount})` : `View Cart (${cartCount})`}</span>

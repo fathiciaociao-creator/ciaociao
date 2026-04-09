@@ -45,9 +45,9 @@ export default function Footer() {
           <div className="space-y-8">
             <h4 className="text-xl font-black luxury-heading text-brand-offwhite">{t.quickLinks}</h4>
             <nav className="flex flex-col gap-4">
-              <Link href="/" className="text-brand-offwhite/60 hover:text-brand-red transition-all">{t.home}</Link>
-              <Link href="/#menu-anchor" className="text-brand-offwhite/60 hover:text-brand-red transition-all">{t.menu}</Link>
-              <Link href="/track" className="text-brand-offwhite/60 hover:text-brand-red transition-all">{t.track}</Link>
+              <Link href="/" className="text-brand-offwhite/60 hover:text-white transition-all">{t.home}</Link>
+              <Link href="/#menu-anchor" className="text-brand-offwhite/60 hover:text-white transition-all">{t.menu}</Link>
+              <Link href="/track" className="text-brand-offwhite/60 hover:text-white transition-all">{t.track}</Link>
             </nav>
           </div>
 
@@ -56,21 +56,21 @@ export default function Footer() {
             <h4 className="text-xl font-black luxury-heading text-brand-offwhite">{t.contact}</h4>
             <div className="flex flex-col items-center gap-6 text-brand-offwhite/60">
               <div className="flex items-center gap-4">
-                <Phone size={20} className="text-brand-red" />
+                <Phone size={20} className="text-brand-cream" />
                 <span dir="ltr">+962 7 7999 0504</span>
               </div>
               <div className="flex items-center gap-4">
-                <MapPin size={20} className="text-brand-red" />
+                <MapPin size={20} className="text-brand-cream" />
                 <span>{language === 'ar' ? 'عمان، الأردن' : 'Amman, Jordan'}</span>
               </div>
               <div className="flex items-center gap-6 text-brand-black/20">
                 {BRANDING.socials.instagram && (
-                  <Link href={BRANDING.socials.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-brand-red transition-all">
+                  <Link href={BRANDING.socials.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-brand-cream transition-all">
                     <Instagram size={24} />
                   </Link>
                 )}
                 {BRANDING.socials.facebook && (
-                  <Link href={BRANDING.socials.facebook} target="_blank" rel="noopener noreferrer" className="hover:text-brand-red transition-all">
+                  <Link href={BRANDING.socials.facebook} target="_blank" rel="noopener noreferrer" className="hover:text-brand-cream transition-all">
                     <Facebook size={24} />
                   </Link>
                 )}
