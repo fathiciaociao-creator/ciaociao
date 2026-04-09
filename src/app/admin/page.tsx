@@ -133,11 +133,10 @@ export default function AdminDashboard() {
       if (pendingOrders > orderCountRef.current && isAudioUnlocked) {
         playAlarm();
         toast.custom((t) => (
-          <div className={`${t.visible ? 'animate-in fade-in zoom-in slide-in-from-top-4' : 'animate-out fade-out zoom-out shadow-none'} max-w-md w-full bg-brand-black/95 backdrop-blur-xl shadow-[0_30px_60px_-15px_rgba(146,39,36,0.6)] rounded-[2.5rem] pointer-events-auto flex flex-col border-2 border-brand-red/30 overflow-hidden`}>
+          <div className={`${t.visible ? 'animate-in fade-in zoom-in slide-in-from-top-4' : 'animate-out fade-out zoom-out shadow-none'} max-w-md w-full bg-brand-black/95 backdrop-blur-xl shadow-2xl rounded-[2.5rem] pointer-events-auto flex flex-col border-2 border-white/10 overflow-hidden`}>
             <div className="p-8">
               <div className="flex items-center gap-6">
                 <div className="relative flex-shrink-0">
-                  <div className="absolute inset-0 bg-brand-red rounded-full blur-xl opacity-40 animate-pulse"></div>
                   <div className="relative bg-brand-red p-4 rounded-2xl text-white shadow-lg">
                     <Bell className="h-8 w-8 animate-tada" />
                   </div>

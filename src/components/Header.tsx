@@ -41,9 +41,9 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
              className="flex items-center gap-2 px-4 py-2 rounded-full border border-brand-red/10 text-[10px] font-black uppercase tracking-widest bg-white shadow-sm active:scale-95 transition-all"
            >
              {language === 'ar' ? (
-               <> <Globe size={14} className="text-brand-red" /> <span>عربي</span> </>
-             ) : (
                <> <span>ENGLISH</span> <Globe size={14} className="text-brand-red" /> </>
+             ) : (
+               <> <Globe size={14} className="text-brand-red" /> <span>عربي</span> </>
              )}
            </button>
         </div>
@@ -121,7 +121,7 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
            </Link>
 
            <button onClick={toggleLanguage} className="flex items-center gap-2 px-5 py-3 rounded-full border border-brand-red/10 text-[11px] font-black uppercase tracking-widest hover:bg-white transition-all active:scale-95 bg-brand-red/5 shadow-sm">
-             <span className="text-brand-black/80">{language === 'ar' ? 'ENGLISH' : 'عربي'}</span>
+             <span className="text-brand-black/80">{language === 'ar' ? 'English' : 'عربي'}</span>
              <Globe size={16} className="text-brand-red" />
            </button>
         </div>
