@@ -28,10 +28,10 @@ export const BRANDING = {
   },
 
   colors: {
-    primary: "#496C52", // Forest Green
-    secondary: "#496C52", // Sidebar/Footer Green
-    accent: "#F0EAD6", // Luxurious Cream
-    success: "#496C52", 
+    primary: "#3D5A44", // Darker Forest Green
+    secondary: "#3D5A44", // Sidebar/Footer Green
+    accent: "#FAF7F2", // Lighter Elegant Cream
+    success: "#3D5A44", 
   },
 
   contact: {

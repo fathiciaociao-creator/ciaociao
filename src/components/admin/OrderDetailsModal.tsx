@@ -180,7 +180,7 @@ export default function OrderDetailsModal({
                   </button>
                   <button
                     onClick={() => onUpdateStatus(order.id, 'REJECTED')}
-                    className="w-full bg-gray-100 text-gray-500 py-4 rounded-2xl font-black hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-brand-gray/10 text-brand-black/40 py-4 rounded-2xl font-black hover:bg-brand-red/10 hover:text-brand-red transition-all flex items-center justify-center gap-2"
                   >
                     <X size={18} /> رفض الطلب وإلغاؤه
                   </button>
@@ -210,7 +210,7 @@ export default function OrderDetailsModal({
               <div className="flex flex-col gap-4">
                 <button
                   onClick={() => onArchive(order.id)}
-                  className="p-4 bg-brand-gray/20 text-brand-black/40 rounded-2xl flex items-center justify-center gap-3 font-black text-xs hover:text-brand-red hover:bg-red-50 transition-all border border-brand-gray/10"
+                  className="p-4 bg-brand-gray/20 text-brand-black/40 rounded-2xl flex items-center justify-center gap-3 font-black text-xs hover:text-brand-red hover:bg-brand-red/5 transition-all border border-brand-gray/10"
                 >
                   <Trash2 size={18} /> أرشفة الطلب نهائياً
                 </button>

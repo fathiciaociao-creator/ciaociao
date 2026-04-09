@@ -52,7 +52,7 @@ export default function ZonesTab({
                 <td className="px-10 py-8 font-bold text-brand-black/30">{z.nameEn}</td>
                 <td className="px-10 py-8 text-center font-black text-brand-red">{z.fee.toFixed(2)} د.أ</td>
                 <td className="px-10 py-8 text-center">
-                  <button onClick={() => onDelete(z.id)} className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"><Trash2 size={20} /></button>
+                  <button onClick={() => onDelete(z.id)} className="p-4 bg-brand-gray/20 text-brand-black/40 rounded-2xl hover:bg-brand-red hover:text-white transition-all"><Trash2 size={20} /></button>
                 </td>
               </tr>
             ))}

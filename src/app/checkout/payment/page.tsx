@@ -127,8 +127,8 @@ export default function PaymentPage() {
     return (
       <div className="min-h-screen bg-brand-cream/20 flex flex-col items-center justify-center p-6 text-center" dir={language === 'ar' ? 'rtl' : 'ltr'}>
         <div className="bg-white p-12 rounded-[3.5rem] shadow-2xl border border-brand-gray/20 max-w-md w-full space-y-8">
-          <div className="bg-green-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto text-green-500 shadow-inner">
-            <CheckCircle2 size={56} strokeWidth={1.5} />
+          <div className="bg-brand-red/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto text-brand-red shadow-inner">
+            <CheckCircle2 size={56} strokeWidth={1} />
           </div>
           <div className="space-y-3">
             <h1 className="text-3xl font-black text-brand-black">
@@ -160,11 +160,11 @@ export default function PaymentPage() {
       <div className="min-h-screen bg-brand-cream/20 flex flex-col items-center justify-center p-6 text-center" dir={language === 'ar' ? 'rtl' : 'ltr'}>
         <div className="bg-white p-12 rounded-[3.5rem] shadow-2xl border border-brand-gray/20 max-w-md w-full space-y-10">
           <div className="relative">
-            <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto text-blue-600">
-               <Loader2 size={48} className="animate-spin" strokeWidth={1.5} />
+            <div className="w-24 h-24 bg-brand-red/10 rounded-full flex items-center justify-center mx-auto text-brand-red">
+               <Loader2 size={48} className="animate-spin" strokeWidth={1} />
             </div>
-            <div className="absolute -bottom-2 -right-2 bg-white p-2 rounded-full shadow-lg border border-blue-100">
-               <ShieldCheck size={24} className="text-blue-600" />
+            <div className="absolute -bottom-2 -right-2 bg-white p-2 rounded-full shadow-lg border border-brand-red/10">
+               <ShieldCheck size={24} className="text-brand-red" />
             </div>
           </div>
           
@@ -178,7 +178,7 @@ export default function PaymentPage() {
           </div>
 
           <div className="flex flex-col gap-4">
-             <div className="flex items-center justify-center gap-2 text-blue-600 bg-blue-50 py-3 rounded-xl font-black text-xs animate-pulse">
+             <div className="flex items-center justify-center gap-2 text-brand-red bg-brand-red/10 py-3 rounded-xl font-black text-xs animate-pulse">
                 <RefreshCcw size={14} className="animate-spin" />
                 <span>{language === 'ar' ? 'يتم التحديث تلقائياً' : 'Updating Automatically'}</span>
              </div>
@@ -234,7 +234,7 @@ export default function PaymentPage() {
         </div>
 
         {errorMsg && (
-          <div className="bg-red-50 text-red-500 p-4 rounded-xl flex items-center gap-3 text-sm font-bold border border-red-100">
+          <div className="bg-brand-red/10 text-brand-red p-4 rounded-xl flex items-center gap-3 text-sm font-bold border border-brand-red/20 shadow-sm">
             <AlertCircle size={18} />
             <span>{errorMsg}</span>
           </div>

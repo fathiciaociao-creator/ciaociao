@@ -159,8 +159,8 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
         <Header />
         <main className="max-w-4xl mx-auto p-6 md:p-12 pt-32 animate-fade-in text-center">
           <div className="bg-white rounded-[2rem] shadow-sm border border-brand-red/20 overflow-hidden p-12 md:p-20">
-            <div className="inline-flex items-center justify-center p-8 rounded-full mb-8 bg-red-50 text-brand-red border-4 border-red-100">
-              <XCircle size={64} strokeWidth={2} />
+            <div className="inline-flex items-center justify-center p-8 rounded-full mb-8 bg-brand-red/10 text-brand-red border-4 border-brand-red/20 shadow-inner">
+              <XCircle size={64} strokeWidth={1.5} />
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-brand-black luxury-heading mb-4">
               {t.rejected}
@@ -219,11 +219,11 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
                  {t.orderNum} #{order.id.slice(-6).toUpperCase()}
                </span>
                {isPickup && order.pickupTime && (
-                 <span className="text-orange-600 font-bold text-sm">{t.pickupAssigned} {order.pickupTime}</span>
+                 <span className="text-brand-red font-bold text-sm">{t.pickupAssigned} {order.pickupTime}</span>
                )}
                {order.paymentMethod === 'CLIQ' && (
-                 <div className={`mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${order.paymentStatus === 'COMPLETED' ? 'bg-green-100 text-green-700 shadow-sm' : 'bg-purple-100 text-purple-700 animate-pulse border border-purple-200'}`}>
-                   <Zap size={14} className={order.paymentStatus === 'COMPLETED' ? 'text-green-600' : 'text-purple-600'} />
+                 <div className={`mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${order.paymentStatus === 'COMPLETED' ? 'bg-brand-red text-white shadow-sm' : 'bg-brand-red/10 text-brand-red animate-pulse border border-brand-red/20'}`}>
+                   <Zap size={14} className={order.paymentStatus === 'COMPLETED' ? 'text-white' : 'text-brand-red'} />
                    {order.paymentStatus === 'COMPLETED' ? t.cliqVerified : t.cliqVerifying}
                  </div>
                )}

@@ -171,7 +171,7 @@ export default function OrderCard({ order, onUpdateStatus, onArchive, onPaymentR
                 <button onClick={() => onUpdateStatus(order.id, 'PREPARING')} className="w-full bg-brand-red text-white py-4 rounded-xl font-black shadow-lg shadow-brand-red/20 active:scale-95 transition-all flex items-center justify-center gap-2">
                   <Zap size={16} /> قبول الطلب
                 </button>
-                <button onClick={() => onUpdateStatus(order.id, 'REJECTED')} className="w-full bg-gray-50 text-brand-black/40 py-4 rounded-xl font-black hover:bg-red-50 hover:text-brand-red border border-brand-gray/10 transition-all flex items-center justify-center gap-2 text-xs">
+                <button onClick={() => onUpdateStatus(order.id, 'REJECTED')} className="w-full bg-brand-gray/5 text-brand-black/40 py-4 rounded-xl font-black hover:bg-brand-red/10 hover:text-brand-red border border-brand-gray/10 transition-all flex items-center justify-center gap-2 text-xs">
                   <X size={16} /> رفض وإلغاء الطلب
                 </button>
               </div>

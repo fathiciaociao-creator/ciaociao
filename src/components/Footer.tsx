@@ -30,7 +30,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className={`bg-brand-black text-brand-offwhite pt-24 ${hasItems ? 'pb-56 md:pb-32' : 'pb-24'} px-6 md:px-16 transition-all duration-300`} dir={language === 'ar' ? 'rtl' : 'ltr'}>
+    <footer className={`bg-brand-black text-white pt-24 ${hasItems ? 'pb-56 md:pb-32' : 'pb-24'} px-6 md:px-16 transition-all duration-300`} dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="max-w-7xl mx-auto flex flex-col items-center">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-24 w-full text-center">
           

@@ -50,7 +50,7 @@ export default function AdminSidebar({
                 className={`relative group flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-500 whitespace-nowrap
                   ${isActive 
                     ? 'bg-brand-cream text-brand-red shadow-xl shadow-black/20 scale-[1.02]' 
-                    : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                    : 'text-white/60 hover:text-white hover:bg-white/5'}`}
               >
                 <div className={`relative ${isActive ? 'animate-tada' : 'group-hover:scale-110 transition-transform'}`}>
                   <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />

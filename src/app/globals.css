@@ -2,11 +2,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-red: #496C52;
-  --color-brand-black: #496C52;
-  --color-brand-cream: #F0EAD6;
-  --color-brand-offwhite: #F0EAD6;
-  --color-brand-gray: #EBE7E0;
+  --color-brand-red: #3D5A44;
+  --color-brand-black: #3D5A44;
+  --color-brand-cream: #FAF7F2;
+  --color-brand-offwhite: #FAF7F2;
+  --color-brand-gray: #F0EDE8;
   
   --font-heading: "Almarai", sans-serif;
   --font-body: "Cairo", sans-serif;
@@ -65,7 +65,7 @@ h1, h2, h3, h4, .luxury-heading {
 
 .floating-header-minimal {
   backdrop-filter: blur(12px);
-  background-color: rgba(249, 247, 242, 0.85);
+  background-color: rgba(250, 247, 242, 0.85);
   border-bottom: 1px solid rgba(235, 231, 224, 0.4);
 }
 

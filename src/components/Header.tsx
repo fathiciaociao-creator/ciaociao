@@ -74,8 +74,8 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
       <div className="flex-1 flex items-center justify-end gap-3 md:gap-6">
          {/* Store Status Badge */}
          {!isStoreOpen && (
-           <div className="flex items-center gap-1.5 md:gap-2 bg-red-50 text-brand-red px-2 py-1 md:px-4 md:py-2 rounded-full border border-red-200 shadow-sm animate-pulse">
-             <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-brand-red shadow-[0_0_5px_rgba(146,39,36,0.6)]" />
+           <div className="flex items-center gap-1.5 md:gap-2 bg-brand-red/5 text-brand-red px-2 py-1 md:px-4 md:py-2 rounded-full border border-brand-red/20 shadow-sm animate-pulse">
+             <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-brand-red shadow-[0_0_5px_rgba(61,90,68,0.6)]" />
              <span className="text-[8px] md:text-xs font-black tracking-widest uppercase hidden sm:block">
                {language === 'ar' ? 'المطعم مغلق' : 'Store Closed'}
              </span>

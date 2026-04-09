@@ -197,12 +197,12 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
             <div className="flex-1 overflow-y-auto scroll-smooth">
               {items.length === 0 ? (
                 // EMPTY STATE
-                <div className="flex flex-col items-center justify-center text-brand-black/10 py-20 space-y-6 min-h-full">
+                <div className="flex flex-col items-center justify-center text-brand-black/40 py-20 space-y-6 min-h-full">
                   <ShoppingCart size={48} strokeWidth={1} />
-                  <p className="text-lg font-bold">
+                  <p className="text-lg font-black">
                     {language === 'ar' ? 'سلة المشتريات فارغة..' : 'Your cart is empty..'}
                   </p>
-                  <button onClick={onClose} className="bg-brand-black text-white px-8 py-4 rounded-xl font-black">{language === 'ar' ? 'تصفح المنيو الآن' : 'Browse Menu Now'}</button>
+                  <button onClick={onClose} className="bg-brand-red text-white px-8 py-4 rounded-xl font-black shadow-lg shadow-brand-red/10 hover:scale-105 transition-all">{language === 'ar' ? 'تصفح المنيو الآن' : 'Browse Menu Now'}</button>
                 </div>
               ) : (
                 // ACTIVE CART FLOW
@@ -291,7 +291,7 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean, onCl
                   {/* CHECKOUT SECTION */}
                   <div className="p-4 md:p-8 bg-white border-t border-brand-gray/30 shadow-[0_-8px_40px_-15px_rgba(0,0,0,0.08)]">
                     {!isStoreOpen ? (
-                      <div className="flex flex-col items-center justify-center py-6 space-y-6 text-center bg-red-50 rounded-3xl border-2 border-dashed border-red-200 p-6">
+                      <div className="flex flex-col items-center justify-center py-6 space-y-6 text-center bg-brand-red/5 rounded-3xl border-2 border-dashed border-brand-red/20 p-6">
                         <Store size={40} className="text-brand-red" />
                         <div className="space-y-2">
                            <h3 className="text-xl font-black text-brand-red">{language === 'ar' ? 'المطعم مغلق حالياً 🛑' : 'Store Currently Closed 🛑'}</h3>

@@ -56,7 +56,7 @@ export default function TrackSearchPage() {
             />
             <button 
               type="submit" 
-              className="bg-brand-red text-white p-4 sm:px-8 rounded-2xl font-black text-lg hover:bg-red-700 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(211,26,26,0.2)]"
+              className="bg-brand-red text-white p-4 sm:px-8 rounded-2xl font-black text-lg hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(61,90,68,0.2)]"
             >
               <Search size={22} /> {t.button}
             </button>

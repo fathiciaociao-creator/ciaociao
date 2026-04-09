@@ -69,7 +69,7 @@ export default function HistoryTab({
                       </button>
                       <button 
                         onClick={(e) => { e.stopPropagation(); onDeletePermanent(order.id); }} 
-                        className="p-2 text-gray-300 hover:text-red-600 transition-all"
+                        className="p-2 text-gray-300 hover:text-brand-red transition-all"
                         title="حذف نهائي"
                       >
                         <Trash2 size={16} />
