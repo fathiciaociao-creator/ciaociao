@@ -1,11 +1,11 @@
 {
-  "name": "Xian Restaurant | Asian Cuisine Amman",
-  "short_name": "Xian Restaurant",
-  "description": "Premium Asian & Chinese cuisine in Amman. Dumplings, Noodles, Sushi and more.",
+  "name": "Ciao Ciao | Authentic Italian Cuisine Amman",
+  "short_name": "Ciao Ciao",
+  "description": "Premium Italian & Pizza cuisine in Amman. Pasta, Pizza, and more.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FCF8F5",
-  "theme_color": "#922724",
+  "theme_color": "#E31837",
   "icons": [
     {
       "src": "/logo.png",
