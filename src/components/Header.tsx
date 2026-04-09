@@ -29,60 +29,56 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-[100] bg-brand-cream/90 backdrop-blur-xl h-20 md:h-24 flex items-center justify-between px-4 md:px-8 lg:px-12 border-b border-brand-red/5 shadow-sm"
+      className="fixed top-0 left-0 right-0 z-[100] bg-brand-cream/90 backdrop-blur-xl h-20 md:h-24 flex items-center justify-between px-4 md:px-8 lg:px-12 border-b border-brand-red/5 shadow-sm transition-all duration-500"
       dir={language === 'ar' ? 'rtl' : 'ltr'}
     >
       {/* MOBILE CONTENT (md:hidden) - Centered Logo Layout */}
       <div className="md:hidden w-full h-full grid grid-cols-3 items-center">
-        {/* Left Side (Mobile): Auth & Orders in Arabic; Language in English */}
-        <div className="flex items-center justify-start gap-3">
-           {language === 'ar' ? (
-             <>
-               <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-brand-red ring-2 ring-white">
-                 <Image src={session?.user?.image || 'https://placehold.co/100x100/F9F7F2/1A1A1A.png?text=U'} alt="User" fill className="object-cover" />
-               </div>
-               <Link href="/my-orders" className="w-10 h-10 flex items-center justify-center bg-white border border-brand-red/10 rounded-full shadow-sm active:scale-95 transition-all">
-                 <ShoppingBag size={18} className="text-brand-black/60" />
-               </Link>
-             </>
-           ) : (
-             <button onClick={toggleLanguage} className="flex items-center gap-2 px-4 py-2 rounded-full border border-brand-red/10 text-[10px] font-black uppercase tracking-widest bg-white shadow-sm active:scale-95 transition-all">
-               <span>ENGLISH</span>
-               <Globe size={14} className="text-brand-red" />
-             </button>
-           )}
+        {/* START COLUMN (Right in AR, Left in EN): Language Pill */}
+        <div className="flex items-center justify-start">
+           <button 
+             onClick={toggleLanguage} 
+             className="flex items-center gap-2 px-4 py-2 rounded-full border border-brand-red/10 text-[10px] font-black uppercase tracking-widest bg-white shadow-sm active:scale-95 transition-all"
+           >
+             {language === 'ar' ? (
+               <> <Globe size={14} className="text-brand-red" /> <span>عربي</span> </>
+             ) : (
+               <> <span>ENGLISH</span> <Globe size={14} className="text-brand-red" /> </>
+             )}
+           </button>
         </div>
 
-        {/* Center Side (Mobile): LOGO */}
+        {/* CENTER COLUMN: LOGO */}
         <div className="flex items-center justify-center">
-          <Link href="/" className="relative w-36 h-12">
+          <Link href="/" className="relative w-36 h-12 transition-transform active:scale-95">
             <Image src={BRANDING.logo.url} alt={BRANDING.nameEn} fill className="object-contain mix-blend-multiply" priority />
           </Link>
         </div>
 
-        {/* Right Side (Mobile): Language in Arabic; Orders & Auth in English */}
+        {/* END COLUMN (Left in AR, Right in EN): Auth & Orders */}
         <div className="flex items-center justify-end gap-3">
-          {language === 'ar' ? (
-             <button onClick={toggleLanguage} className="flex items-center gap-2 px-4 py-2 rounded-full border border-brand-red/10 text-[10px] font-black uppercase tracking-widest bg-white shadow-sm active:scale-95 transition-all">
-               <Globe size={14} className="text-brand-red" />
-               <span>عربي</span>
-             </button>
-          ) : (
-            <>
-               <Link href="/my-orders" className="w-10 h-10 flex items-center justify-center bg-white border border-brand-red/10 rounded-full shadow-sm active:scale-95 transition-all">
-                 <ShoppingBag size={18} className="text-brand-black/60" />
-               </Link>
-               <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-brand-red ring-2 ring-white">
-                 <Image src={session?.user?.image || 'https://placehold.co/100x100/F9F7F2/1A1A1A.png?text=U'} alt="User" fill className="object-cover" />
+           <Link href="/my-orders" className="w-10 h-10 flex items-center justify-center bg-white border border-brand-red/10 rounded-full shadow-sm active:scale-95 transition-all">
+             <ShoppingBag size={18} className="text-brand-black/60" />
+           </Link>
+           
+           <button 
+             onClick={() => session ? signOut() : signIn('google')}
+             className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-brand-red ring-2 ring-white shadow-md active:scale-90 transition-all group"
+           >
+             {session ? (
+               <Image src={session.user?.image || ''} alt="User" fill className="object-cover group-hover:opacity-75" />
+             ) : (
+               <div className="w-full h-full bg-brand-red/5 flex items-center justify-center">
+                 <User size={18} className="text-brand-red" />
                </div>
-            </>
-          )}
+             )}
+           </button>
         </div>
       </div>
 
       {/* DESKTOP CONTENT (hidden md:flex) - Side-to-Side Layout */}
       <div className="hidden md:flex w-full h-full items-center justify-between">
-        {/* LEFT: All Actions Grouped */}
+        {/* LEFT (Desktop): Actions Grouped */}
         <div className="flex items-center gap-1.5 md:gap-3">
            <button onClick={onCartOpen} className="relative p-2.5 md:p-3.5 bg-brand-black text-white rounded-full transition-all hover:scale-110 shadow-lg active:scale-95 flex-shrink-0">
              <ShoppingCart size={18} className="md:w-5 md:h-5" strokeWidth={2.5} />
@@ -96,23 +92,28 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
            </button>
 
            <div className="flex items-center">
-             {session ? (
-               <div className="flex items-center gap-2 bg-brand-red/5 hover:bg-brand-red/10 p-1.5 pr-4 rounded-full border border-brand-red/10 transition-colors">
-                  <button onClick={() => signOut()} className="text-brand-black/30 hover:text-brand-red transition-all">
-                    <LogOut size={20} className="md:w-6 md:h-6" /> 
-                  </button>
-                  <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-brand-red ring-2 ring-white">
-                    <Image src={session.user?.image || 'https://placehold.co/100x100/F9F7F2/1A1A1A.png?text=U'} alt="User" fill className="object-cover" />
-                  </div>
-               </div>
-             ) : (
-               <button onClick={() => signIn('google')} className="flex items-center gap-2 px-6 py-3 bg-brand-red/5 border border-brand-red/10 text-brand-black rounded-full hover:bg-white hover:border-brand-red/30 shadow-sm transition-all active:scale-95 group">
-                 <span className="font-black text-sm tracking-tight uppercase">{language === 'ar' ? 'تسجيل الدخول' : 'Sign In'}</span>
-                 <div className="bg-white p-1 rounded-full shadow-sm">
-                   <User size={16} className="text-brand-red" />
-                 </div>
+               <button 
+                 onClick={() => session ? signOut() : signIn('google')}
+                 className="flex items-center gap-2 bg-brand-red/5 hover:bg-brand-red/10 p-1.5 pr-4 rounded-full border border-brand-red/10 transition-colors active:scale-95"
+               >
+                  {session ? (
+                    <>
+                      <div className="text-brand-black/30 hover:text-brand-red transition-all">
+                        <LogOut size={20} /> 
+                      </div>
+                      <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-brand-red ring-2 ring-white shadow-sm">
+                        <Image src={session.user?.image || ''} alt="User" fill className="object-cover" />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-3 px-4 py-1.5">
+                      <span className="font-black text-sm tracking-tight uppercase">{language === 'ar' ? 'دخول' : 'Sign In'}</span>
+                      <div className="bg-white p-2 rounded-full shadow-sm">
+                        <User size={18} className="text-brand-red" />
+                      </div>
+                    </div>
+                  )}
                </button>
-             )}
            </div>
 
            <Link href="/my-orders" className="p-3.5 text-brand-black/60 bg-brand-red/5 rounded-full border border-brand-red/10 shadow-sm transition-all hover:bg-white active:scale-95 group">
@@ -125,7 +126,7 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
            </button>
         </div>
 
-        {/* RIGHT: Logo */}
+        {/* RIGHT (Desktop): Logo */}
         <div className="flex items-center justify-end">
           <Link href="/" className="relative md:w-64 md:h-16 lg:w-80 lg:h-24 transition-transform hover:scale-105 active:scale-95">
             <Image src={BRANDING.logo.url} alt={BRANDING.nameEn} fill className="object-contain object-right mix-blend-multiply" priority />
