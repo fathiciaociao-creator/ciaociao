@@ -79,21 +79,25 @@ export default function HomeClient({
       <Header onCartOpen={() => setIsSidebarOpen(true)} />
       
       <main className="pt-24 pb-32">
-        <div className="sticky top-20 md:top-24 z-40 bg-brand-cream/90 backdrop-blur-md border-b border-brand-red/10 overflow-hidden shadow-sm">
-          <div className="max-w-7xl mx-auto px-6">
-             <div className="flex-1 overflow-x-auto no-scrollbar flex items-center justify-center gap-8 md:gap-16 py-6 scroll-smooth">
+        <div className="sticky top-20 z-40 bg-brand-cream/80 backdrop-blur-md border-b border-brand-red/10 mb-8">
+          <div className="max-w-7xl mx-auto px-6 flex items-center gap-6">
+             <button className="flex-shrink-0 text-black p-2">
+                <Menu size={24} strokeWidth={2.5} />
+             </button>
+
+             <div className="flex-1 overflow-x-auto no-scrollbar flex items-center gap-10 py-6">
                 {categories.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`text-xs md:text-sm font-black uppercase whitespace-nowrap relative py-2 transition-all tracking-widest
-                      ${activeCategory === cat ? 'text-brand-red scale-110' : 'text-brand-black/30 hover:text-brand-red'}`}
+                    className={`text-sm font-bold uppercase whitespace-nowrap relative py-2 transition-all
+                      ${activeCategory === cat ? 'text-black' : 'text-gray-400 hover:text-black'}`}
                   >
                     {cat}
                     {activeCategory === cat && (
                       <motion.div 
                         layoutId="activeUnderline"
-                        className="absolute -bottom-[2px] left-0 right-0 h-1 bg-brand-red rounded-full shadow-[0_4px_10px_rgba(61,90,68,0.4)]"
+                        className="absolute -bottom-[2px] left-0 right-0 h-1 bg-brand-red rounded-full"
                       />
                     )}
                   </button>
@@ -102,17 +106,9 @@ export default function HomeClient({
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 mt-16 mb-20 text-center">
-           <motion.h2 
-             key={activeCategory}
-             initial={{ opacity: 0, y: 20 }}
-             animate={{ opacity: 1, y: 0 }}
-             className="text-4xl md:text-6xl lg:text-7xl font-black text-brand-black luxury-heading mb-4 tracking-tighter uppercase"
-           >
-             {activeCategory}
-           </motion.h2>
-           <div className="w-24 h-1.5 bg-brand-red mx-auto mb-6 rounded-full opacity-20" />
-           <p className="text-brand-black/40 text-sm md:text-base font-bold uppercase tracking-[0.3em] max-w-xl mx-auto leading-relaxed">
+        <div className="max-w-7xl mx-auto px-6 mb-10 text-center">
+           <h2 className="text-3xl font-bold text-black luxury-heading mb-2">{activeCategory}</h2>
+           <p className="text-gray-500 text-sm font-medium">
              {language === 'ar' ? 'أطباق مختارة بعناية خصيصاً لك' : 'Carefully selected premium dishes just for you'}
            </p>
         </div>

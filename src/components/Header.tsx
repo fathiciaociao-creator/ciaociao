@@ -37,9 +37,10 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
          {/* Language Toggle */}
          <button 
            onClick={toggleLanguage}
-           className="p-2.5 rounded-full border border-brand-red/10 text-brand-red hover:bg-brand-red hover:text-white transition-all active:scale-95 bg-brand-cream/50 shadow-sm"
+           className="flex items-center gap-2 px-3 py-2 rounded-xl border border-brand-red/10 text-[10px] font-black uppercase tracking-widest hover:bg-brand-red hover:text-white transition-all active:scale-95 bg-brand-cream/50 shadow-sm"
          >
-           <Globe size={18} className="md:w-5 md:h-5" />
+           <Globe size={14} className="text-brand-red" />
+           <span className="md:inline">{language === 'ar' ? 'EN' : 'عربي'}</span>
          </button>
 
          {/* Store Status Dot */}
