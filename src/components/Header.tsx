@@ -35,8 +35,8 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
       {/* LEFT SECTION */}
       <div className="flex-1 flex justify-start items-center">
         {/* Desktop: Logo */}
-        <Link href="/" className="hidden md:block relative w-56 h-20 transition-transform active:scale-95">
-          <Image src={BRANDING.logo.url} alt={BRANDING.nameEn} fill className="object-contain object-left mix-blend-multiply" priority sizes="224px" />
+        <Link href="/" className="hidden md:block relative w-72 h-24 transition-transform active:scale-95">
+          <Image src={BRANDING.logo.url} alt={BRANDING.nameEn} fill className="object-contain object-left mix-blend-multiply" priority sizes="288px" />
         </Link>
         
         {/* Mobile: Auth */}
@@ -65,8 +65,8 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
       {/* CENTER SECTION */}
       <div className="flex-1 flex justify-center items-center">
         {/* Mobile: Logo */}
-        <Link href="/" className="md:hidden relative w-32 h-14 transition-transform active:scale-95">
-          <Image src={BRANDING.logo.url} alt={BRANDING.nameEn} fill className="object-contain object-center mix-blend-multiply" priority sizes="128px" />
+        <Link href="/" className="md:hidden relative w-44 h-20 transition-transform active:scale-95">
+          <Image src={BRANDING.logo.url} alt={BRANDING.nameEn} fill className="object-contain object-center mix-blend-multiply" priority sizes="176px" />
         </Link>
       </div>
 

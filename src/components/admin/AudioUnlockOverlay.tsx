@@ -15,7 +15,7 @@ export default function AudioUnlockOverlay({ onUnlock }: AudioUnlockOverlayProps
           <Volume2 size={60} strokeWidth={1} className="animate-bounce" />
         </div>
       </div>
-      <h2 className="text-4xl font-black text-white mb-4 tracking-tight">تفعيل نظام التنبيهات الصوتية</h2>
+      <h2 className="text-5xl md:text-6xl font-black text-white mb-6 tracking-tighter drop-shadow-sm">تفعيل نظام التنبيهات الصوتية</h2>
       <p className="text-white/70 text-lg font-bold mb-12 max-w-md leading-relaxed">يجب التفاعل مع الصفحة لمرة واحدة لتتمكن المتصفح من تشغيل صوت التنبيه عند وصول طلبات جديدة.</p>
       <button onClick={onUnlock} className="bg-white text-[#3D5A44] px-16 py-8 rounded-[2.5rem] font-black text-xl shadow-2xl hover:bg-brand-cream hover:scale-105 active:scale-95 transition-all flex items-center gap-4 group">
         <span>ابدأ الآن</span>
