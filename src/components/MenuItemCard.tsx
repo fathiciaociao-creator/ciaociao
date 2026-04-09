@@ -83,14 +83,14 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
 
       {/* TEXT SECTION - FIXED ALIGNMENT */}
       <div className={`flex flex-col gap-2 flex-1 px-1 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
-        <div className="min-h-[2.5rem] flex flex-col justify-center">
-            <h3 className="text-sm md:text-base font-black text-brand-black line-clamp-2 leading-tight uppercase tracking-tight">
+        <div className="min-h-[3rem] flex flex-col justify-center">
+            <h3 className="text-sm md:text-lg font-black text-brand-black line-clamp-2 leading-tight uppercase tracking-tight">
               {language === 'ar' ? item.nameAr : (item.nameEn || item.nameAr)}
             </h3>
         </div>
-        <div className="flex items-center gap-2 mt-auto pt-1">
-          <span className="text-[10px] font-black text-brand-red/20 uppercase tracking-widest">{language === 'ar' ? 'د.أ' : 'JOD'}</span>
-          <span className="text-lg font-black text-brand-red font-serif">{item.price.toFixed(2)}</span>
+        <div className="flex items-center gap-2 mt-auto pt-2 border-t border-brand-red/5">
+          <span className="text-[10px] md:text-xs font-black text-brand-red/30 uppercase tracking-[0.2em]">{language === 'ar' ? 'د.أ' : 'JOD'}</span>
+          <span className="text-xl md:text-2xl font-black text-brand-red font-serif">{item.price.toFixed(2)}</span>
         </div>
       </div>
     </motion.div>
