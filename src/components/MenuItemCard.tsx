@@ -52,7 +52,7 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
       <div className="relative w-full aspect-[4/3] rounded-[2rem] overflow-hidden bg-brand-cream border border-brand-red/10 shadow-sm transition-all duration-500 group-hover:shadow-xl group-hover:border-brand-red/20 flex items-center justify-center">
         <Image 
           src={(item.imageUrl && item.imageUrl !== 'no') ? item.imageUrl : '/hero-food.png'} 
-          alt={`${item.nameEn || ''} ${item.nameAr || ''} - ${BRANDING.nameEn}, Amman Chinese Food & Sushi`.trim()}
+          alt={`${item.nameEn || ''} ${item.nameAr || ''} - ${BRANDING.nameEn}, Amman Italian Food & Pizza`.trim()}
           fill 
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-contain transition-all duration-1000 group-hover:scale-110"

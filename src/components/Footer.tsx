@@ -18,8 +18,8 @@ export default function Footer() {
 
   const t = {
     story: language === 'ar' 
-      ? `في ${BRANDING.shortNameAr}، نؤمن بأن المذاق لغة عالمية. نقدم لكم أرقى المأكولات الآسيوية بلمسة عصرية وشغف عميق بالتقاليد.` 
-      : `At ${BRANDING.shortNameEn}, we believe taste is a universal language. We bring you the finest Asian cuisine with a modern touch and deep passion for tradition.`,
+      ? `في ${BRANDING.shortNameAr}، نؤمن بأن المذاق لغة عالمية. نقدم لكم أرقى المأكولات الإيطالية بلمسة عصرية وشغف عميق بالتقاليد.` 
+      : `At ${BRANDING.shortNameEn}, we believe taste is a universal language. We bring you the finest Italian cuisine with a modern touch and deep passion for tradition.`,
     quickLinks: language === 'ar' ? 'روابط سريعة' : 'Quick Links',
     home: language === 'ar' ? 'الرئيسية' : 'Home',
     menu: language === 'ar' ? 'قائمة الطعام' : 'Menu',

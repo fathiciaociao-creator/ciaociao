@@ -7,13 +7,13 @@ import { BRANDING } from "@/constants/branding";
 export const metadata: Metadata = {
   metadataBase: new URL(BRANDING.seo.url),
   title: {
-    default: `${BRANDING.nameEn} | Asian Cuisine Amman`,
+    default: `${BRANDING.nameEn} | Italian Cuisine Amman`,
     template: `%s | ${BRANDING.shortNameEn}`
   },
   description: BRANDING.seo.descriptionEn,
   robots: "index, follow",
   openGraph: {
-    title: `${BRANDING.nameEn} | Asian Cuisine Amman`,
+    title: `${BRANDING.nameEn} | Italian Cuisine Amman`,
     description: BRANDING.seo.descriptionEn,
     url: BRANDING.seo.url,
     siteName: BRANDING.nameEn,
@@ -76,7 +76,7 @@ export default function RootLayout({
       "name": "Our Menu",
       "url": `${BRANDING.seo.url}#menu-anchor`
     },
-    "servesCuisine": ["Asian", "Chinese", "Sushi", "Noodles", "Dumplings"],
+    "servesCuisine": ["Italian", "Pizza", "Pasta"],
     "priceRange": "$$"
   };
 

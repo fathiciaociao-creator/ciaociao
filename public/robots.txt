@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://xianrestaurant.com/sitemap.xml
+Sitemap: https://ciaociao-jo.com/sitemap.xml

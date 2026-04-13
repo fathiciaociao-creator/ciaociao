@@ -7,19 +7,19 @@ import { BRANDING } from '@/constants/branding';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: `${BRANDING.nameEn} | Asian Cuisine & Chinese Food Amman`,
+  title: `${BRANDING.nameEn} | Italian Cuisine & Authentic Pizza Amman`,
   description: BRANDING.seo.descriptionEn,
-  keywords: `restaurant, food, sushi, asian, ${BRANDING.shortNameEn.toLowerCase()}, delivery, pickup`,
+  keywords: `restaurant, food, pizza, pasta, italian, ${BRANDING.shortNameEn.toLowerCase()}, delivery, pickup`,
   openGraph: {
     title: `مزيج يأسرك! اطلب الآن من ${BRANDING.nameAr} | ${BRANDING.nameEn}`,
     description: BRANDING.seo.descriptionAr,
-    images: [{ url: '/hero-food.png', width: 1200, height: 630, alt: `${BRANDING.nameEn} - Asian Cuisine Amman` }],
+    images: [{ url: '/hero-food.png', width: 1200, height: 630, alt: `${BRANDING.nameEn} - Italian Cuisine Amman` }],
     type: 'website',
     url: BRANDING.seo.url,
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${BRANDING.nameEn} | Asian Cuisine Amman`,
+    title: `${BRANDING.nameEn} | Italian Cuisine Amman`,
     description: BRANDING.seo.descriptionEn,
     images: ['/hero-food.png'],
   },

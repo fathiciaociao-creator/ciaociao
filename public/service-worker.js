@@ -9,7 +9,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('push', function(event) {
   const data = event.data?.json() ?? {
     title: 'طلب جديد! 🚨',
-    body: 'وصل طلب جديد لمطعم شيان',
+    body: 'وصل طلب جديد لمطعم تشاو تشاو',
     icon: '/logo.png',
     badge: '/logo.png'
   };
