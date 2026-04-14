@@ -5,7 +5,7 @@ import { ShoppingBag, ShoppingCart, User, LogOut, Globe } from 'lucide-react';
 import { useCart } from '@/store/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+
 import { useLanguage } from '@/store/useLanguage';
 import { BRANDING } from '@/constants/branding';
 
@@ -14,18 +14,6 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
   const { data: session } = useSession();
   const { items } = useCart();
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
-  const [isStoreOpen, setIsStoreOpen] = useState<boolean>(true);
-
-  useEffect(() => {
-    fetch('/api/settings')
-      .then(res => res.json())
-      .then(data => {
-        if (data && typeof data.isStoreOpen === 'boolean') {
-          setIsStoreOpen(data.isStoreOpen);
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   return (
     <header

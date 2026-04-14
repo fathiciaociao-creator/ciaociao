@@ -108,7 +108,7 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
     cliqVerifying: isAr ? 'جاري التحقق من تحويل كليك...' : 'Verifying CliQ transfer...',
     orderDetails: isAr ? 'تفاصيل الطلب' : 'Order Details',
     total: isAr ? 'المجموع' : 'TOTAL',
-    backMenu: isAr ? 'العودة للقائمة الرئيسية 🥢' : 'Back to Main Menu 🥢',
+    backMenu: isAr ? 'العودة للقائمة الرئيسية' : 'Back to Main Menu',
   };
 
   const statusLabels = {

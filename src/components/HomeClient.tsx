@@ -1,7 +1,7 @@
 'use client';
 import { useCart } from '@/store/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import MenuItemCard, { Product } from '@/components/MenuItemCard';
@@ -81,9 +81,7 @@ export default function HomeClient({
       <main className="pt-24 pb-32">
         <div className="sticky top-20 z-40 bg-brand-cream/80 backdrop-blur-md border-b border-brand-red/10 mb-8">
           <div className="max-w-7xl mx-auto px-6 flex items-center gap-6">
-             <button className="flex-shrink-0 text-black p-2">
-                <Menu size={24} strokeWidth={2.5} />
-             </button>
+
 
              <div className="flex-1 overflow-x-auto no-scrollbar flex items-center gap-10 py-6">
                 {categories.map((cat) => (
