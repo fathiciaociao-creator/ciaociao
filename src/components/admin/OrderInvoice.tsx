@@ -175,7 +175,7 @@ const OrderInvoice: React.FC<OrderInvoiceProps> = ({ order }) => {
             <div key={idx} className="item-row">
               <div className="col-qty">{item.quantity}</div>
               <div className="col-desc">{item.name}</div>
-              <div className="col-total">{(item.price * item.quantity).toFixed(2)}</div>
+              <div className="col-total">{((item.price || 0) * (item.quantity || 1)).toFixed(2)}</div>
             </div>
           ))}
         </div>
@@ -186,27 +186,27 @@ const OrderInvoice: React.FC<OrderInvoiceProps> = ({ order }) => {
         <div className="totals-section">
           <div className="total-row">
             <span>SUBTOTAL:</span>
-            <span>{calculatedSubtotal.toFixed(2)} JOD</span>
+            <span>{(calculatedSubtotal || 0).toFixed(2)} JOD</span>
           </div>
           
           {deliveryFee > 0 && (
             <div className="total-row">
               <span>DELIVERY FEE:</span>
-              <span>+{deliveryFee.toFixed(2)} JOD</span>
+              <span>+{(deliveryFee || 0).toFixed(2)} JOD</span>
             </div>
           )}
           
           {serviceFee > 0 && (
             <div className="total-row">
               <span>FEES/SERVICE CHARGE:</span>
-              <span>+{serviceFee.toFixed(2)} JOD</span>
+              <span>+{(serviceFee || 0).toFixed(2)} JOD</span>
             </div>
           )}
           
           {discountAmount > 0 && (
             <div className="total-row" style={{ color: '#000' }}>
               <span>PROMO DISCOUNT ({order.couponCode}):</span>
-              <span>-{discountAmount.toFixed(2)} JOD</span>
+              <span>-{(discountAmount || 0).toFixed(2)} JOD</span>
             </div>
           )}
 
@@ -214,7 +214,7 @@ const OrderInvoice: React.FC<OrderInvoiceProps> = ({ order }) => {
           
           <div className="total-row grand-total" style={{ fontSize: '18px', borderTop: 'none', marginTop: '1mm' }}>
             <span>GRAND TOTAL:</span>
-            <span>{finalTotal.toFixed(2)} JOD</span>
+            <span>{(finalTotal || 0).toFixed(2)} JOD</span>
           </div>
           
           <div className="receipt-divider" style={{ borderTopStyle: 'solid', marginBottom: '2mm', marginTop: '1mm' }}></div>

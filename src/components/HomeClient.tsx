@@ -13,10 +13,11 @@ export default function HomeClient({
   initialSettings = null 
 }: { 
   initialData?: Product[], 
-  initialSettings?: { categoryOrder?: string } | null 
+  initialSettings?: { isStoreOpen?: boolean; categoryOrder?: string } | null 
 }) {
   const { language } = useLanguage();
   const { items, getTotalPrice } = useCart();
+  const isStoreOpen = initialSettings?.isStoreOpen ?? true; // Default to open
   const products = initialData;
   const categoryOrder = (() => {
     if (initialSettings?.categoryOrder) {
@@ -71,12 +72,11 @@ export default function HomeClient({
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const totalPrice = getTotalPrice();
 
-  // Effect to set initial category if we have data from server
-  if (!mounted) return null;
+  // Removed: if (!mounted) return null;
 
   return (
     <div className="bg-brand-cream min-h-screen font-body" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      <Header onCartOpen={() => setIsSidebarOpen(true)} />
+      <Header onCartOpen={() => setIsSidebarOpen(true)} isStoreOpen={isStoreOpen} />
       
       <main className="pt-24 pb-32">
         <div className="sticky top-20 z-40 bg-brand-cream/80 backdrop-blur-md border-b border-brand-red/10 mb-8">
@@ -92,7 +92,7 @@ export default function HomeClient({
                       ${activeCategory === cat ? 'text-black' : 'text-gray-400 hover:text-black'}`}
                   >
                     {cat}
-                    {activeCategory === cat && (
+                    {mounted && activeCategory === cat && (
                       <motion.div 
                         layoutId="activeUnderline"
                         className="absolute -bottom-[2px] left-0 right-0 h-1 bg-brand-red rounded-full"
@@ -135,7 +135,7 @@ export default function HomeClient({
       </main>
 
       <AnimatePresence>
-        {totalPrice > 0 && !isSidebarOpen ? (
+        {mounted && totalPrice > 0 && !isSidebarOpen ? (
           <motion.div 
             initial={{ y: 100 }}
             animate={{ y: 0 }}
@@ -146,7 +146,7 @@ export default function HomeClient({
                <span className="text-xs font-bold text-gray-400">
                  {language === 'ar' ? 'إجمالي الطلب' : 'Current Order Total'}
                </span>
-               <span className="text-xl font-bold text-black">{totalPrice.toFixed(2)} {language === 'ar' ? 'د.أ' : 'JOD'}</span>
+               <span className="text-xl font-bold text-black">{(totalPrice || 0).toFixed(2)} {language === 'ar' ? 'د.أ' : 'JOD'}</span>
             </div>
             <button 
               onClick={() => setIsSidebarOpen(true)}

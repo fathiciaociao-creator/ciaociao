@@ -116,7 +116,7 @@ export default function OrderCard({ order, onUpdateStatus, onArchive, onPaymentR
           {order.items.map((item: OrderItem, idx: number) => (
             <div key={idx} className="flex justify-between items-center text-xs">
               <span className="font-black text-gray-500">{item.quantity}x {item.name}</span>
-              <span className="font-bold text-gray-400">{(item.price * item.quantity).toFixed(2)}</span>
+              <span className="font-bold text-gray-400">{((item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
             </div>
           ))}
 
@@ -126,19 +126,19 @@ export default function OrderCard({ order, onUpdateStatus, onArchive, onPaymentR
               {order.deliveryFee > 0 && (
                 <div className="flex justify-between items-center text-[10px] font-bold text-gray-400">
                   <span>رسوم التوصيل:</span>
-                  <span>+{order.deliveryFee.toFixed(2)}</span>
+                  <span>+{(order.deliveryFee || 0).toFixed(2)}</span>
                 </div>
               )}
               {order.serviceFee > 0 && (
                 <div className="flex justify-between items-center text-[10px] font-bold text-gray-400">
                   <span>رسوم إضافية:</span>
-                  <span>+{order.serviceFee.toFixed(2)}</span>
+                  <span>+{(order.serviceFee || 0).toFixed(2)}</span>
                 </div>
               )}
               {order.discountAmount > 0 && (
                 <div className="flex justify-between items-center text-[10px] font-black text-brand-red">
                   <span>خصم {order.couponCode ? `(${order.couponCode})` : ''}:</span>
-                  <span>-{order.discountAmount.toFixed(2)}</span>
+                  <span>-{(order.discountAmount || 0).toFixed(2)}</span>
                 </div>
               )}
             </div>
@@ -154,7 +154,7 @@ export default function OrderCard({ order, onUpdateStatus, onArchive, onPaymentR
         <div className="mt-auto pt-6 border-t border-brand-gray/30">
           <div className="flex justify-between items-center mb-6">
             <span className="text-[10px] font-black text-brand-black/30">المجموع الكلي</span>
-            <span className="text-2xl font-black text-brand-red font-serif tracking-tighter">{order.totalPrice.toFixed(2)} <small className="text-[9px] tracking-normal font-sans uppercase">د.أ</small></span>
+            <span className="text-2xl font-black text-brand-red font-serif tracking-tighter">{(order.totalPrice || 0).toFixed(2)} <small className="text-[9px] tracking-normal font-sans uppercase">د.أ</small></span>
           </div>
 
           <div className="flex flex-col gap-3">

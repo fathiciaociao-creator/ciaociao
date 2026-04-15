@@ -117,7 +117,7 @@ export default function OrderDetailsModal({
                     <div className="w-8 h-8 rounded-lg bg-brand-cream flex items-center justify-center font-black text-brand-red text-xs">{item.quantity}x</div>
                     <span className="font-bold text-brand-black text-sm">{item.name}</span>
                   </div>
-                  <span className="font-black text-brand-red text-sm">{item.price.toFixed(2)} د.أ</span>
+                  <span className="font-black text-brand-red text-sm">{(item.price || 0).toFixed(2)} د.أ</span>
                 </div>
               ))}
               {/* التحليل المالي التفصيلي */}
@@ -126,19 +126,19 @@ export default function OrderDetailsModal({
                   {order.deliveryFee > 0 && (
                     <div className="flex justify-between items-center text-sm font-bold text-gray-400">
                       <span>رسوم التوصيل:</span>
-                      <span>+{order.deliveryFee.toFixed(2)} د.أ</span>
+                      <span>+{(order.deliveryFee || 0).toFixed(2)} د.أ</span>
                     </div>
                   )}
                   {order.serviceFee > 0 && (
                     <div className="flex justify-between items-center text-sm font-bold text-gray-400">
                       <span>رسوم إضافية:</span>
-                      <span>+{order.serviceFee.toFixed(2)} د.أ</span>
+                      <span>+{(order.serviceFee || 0).toFixed(2)} د.أ</span>
                     </div>
                   )}
                   {order.discountAmount > 0 && (
                     <div className="flex justify-between items-center text-sm font-black text-brand-red">
                       <span>خصم {order.couponCode ? `(${order.couponCode})` : ''}:</span>
-                      <span>-{order.discountAmount.toFixed(2)} د.أ</span>
+                      <span>-{(order.discountAmount || 0).toFixed(2)} د.أ</span>
                     </div>
                   )}
                 </div>
@@ -146,7 +146,7 @@ export default function OrderDetailsModal({
 
               <div className="pt-4 mt-4 border-t border-brand-gray/10 flex justify-between items-center px-2">
                 <span className="font-black text-brand-black text-lg">المجموع الكلي</span>
-                <span className="font-black text-brand-red text-2xl">{order.totalPrice.toFixed(2)} د.أ</span>
+                <span className="font-black text-brand-red text-2xl">{(order.totalPrice || 0).toFixed(2)} د.أ</span>
               </div>
             </div>
           </div>

@@ -1,12 +1,12 @@
-import { MetadataRoute } from 'next';
+import { NextResponse } from 'next/server';
 import { BRANDING } from '@/constants/branding';
 
-export default function manifest(): MetadataRoute.Manifest {
-  return {
-    name: BRANDING.nameEn,
-    short_name: BRANDING.shortNameEn,
-    description: BRANDING.seo.descriptionEn,
-    start_url: '/',
+export async function GET() {
+  const manifest = {
+    name: `${BRANDING.shortNameEn} Admin`,
+    short_name: `${BRANDING.shortNameEn} Admin`,
+    description: `${BRANDING.nameEn} Admin Dashboard`,
+    start_url: '/admin',
     display: 'standalone',
     background_color: '#ffffff',
     theme_color: BRANDING.colors.primary,
@@ -23,4 +23,6 @@ export default function manifest(): MetadataRoute.Manifest {
       },
     ],
   };
+
+  return NextResponse.json(manifest);
 }

@@ -9,7 +9,7 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import { useLanguage } from '@/store/useLanguage';
 import { BRANDING } from '@/constants/branding';
 
-export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
+export default function Header({ onCartOpen, isStoreOpen = true }: { onCartOpen?: () => void; isStoreOpen?: boolean | null }) {
   const { language, toggleLanguage } = useLanguage();
   const { data: session } = useSession();
   const { items } = useCart();
@@ -37,10 +37,21 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
         </div>
 
         {/* CENTER COLUMN: LOGO */}
-        <div className="flex items-center justify-center">
-          <Link href="/" className="relative w-36 h-12 transition-transform active:scale-95">
+        <div className="flex flex-col items-center justify-center gap-1">
+          <Link href="/" className="relative w-28 h-8 transition-transform active:scale-95">
             <Image src={BRANDING.logo.url} alt={BRANDING.nameEn} fill className="object-contain mix-blend-multiply" priority />
           </Link>
+          {!isStoreOpen && (
+            <motion.div 
+               initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
+               className="flex items-center gap-1.5 px-2.5 py-0.5 bg-brand-red text-white rounded-full shadow-lg shadow-brand-red/20"
+            >
+              <div className="w-1 h-1 bg-white rounded-full animate-ping" />
+              <span className="text-[8px] font-black uppercase tracking-tighter whitespace-nowrap">
+                {language === 'ar' ? 'مغلق' : 'Closed'}
+              </span>
+            </motion.div>
+          )}
         </div>
 
         {/* END COLUMN (Left in AR, Right in EN): Auth & Orders */}
@@ -115,8 +126,27 @@ export default function Header({ onCartOpen }: { onCartOpen?: () => void }) {
         </div>
 
         {/* RIGHT (Desktop): Logo */}
-        <div className="flex items-center justify-end">
-          <Link href="/" className="relative md:w-64 md:h-16 lg:w-80 lg:h-24 transition-transform hover:scale-105 active:scale-95">
+        <div className="flex items-center justify-end gap-6">
+          {!isStoreOpen && (
+            <motion.div 
+               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+               className="flex items-center gap-3 px-5 py-2.5 bg-brand-red/5 border-2 border-brand-red/20 rounded-2xl shadow-sm"
+            >
+              <div className="relative">
+                <div className="w-2.5 h-2.5 bg-brand-red rounded-full" />
+                <div className="absolute inset-0 w-2.5 h-2.5 bg-brand-red rounded-full animate-ping" />
+              </div>
+              <div className="flex flex-col">
+                 <span className="text-[10px] leading-none font-black text-brand-red uppercase tracking-widest mb-0.5">
+                   {language === 'ar' ? 'المطعم مغلق' : 'Restaurant Closed'}
+                 </span>
+                 <span className="text-[8px] leading-none font-bold text-brand-black/40 uppercase tracking-tighter">
+                   {language === 'ar' ? 'نعتذر عن استقبال الطلبات' : 'Not accepting orders now'}
+                 </span>
+              </div>
+            </motion.div>
+          )}
+          <Link href="/" className="relative md:w-64 md:h-16 lg:w-72 lg:h-20 transition-transform hover:scale-105 active:scale-95">
             <Image src={BRANDING.logo.url} alt={BRANDING.nameEn} fill className="object-contain object-right mix-blend-multiply" priority />
           </Link>
         </div>

@@ -25,12 +25,12 @@ export default function ZonesTab({
           <div className="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-2xl flex items-center justify-center"><MapPin size={24} /></div>
           إضافة منطقة توصيل
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <input type="text" placeholder="الاسم بالعربي (مثال: اللويبدة)" className="bg-brand-gray/10 p-5 rounded-3xl outline-none font-bold placeholder:text-gray-400 text-[16px]" value={zoneForm.nameAr} onChange={e => setZoneForm({ ...zoneForm, nameAr: e.target.value })} />
-          <input type="text" placeholder="الاسم بالإنجليزي" className="bg-brand-gray/10 p-5 rounded-3xl outline-none font-bold placeholder:text-gray-400 text-[16px]" value={zoneForm.nameEn} onChange={e => setZoneForm({ ...zoneForm, nameEn: e.target.value })} />
-          <input type="number" step="0.1" placeholder="سعر التوصيل" className="bg-brand-gray/10 p-5 rounded-3xl outline-none font-bold placeholder:text-gray-400 text-[16px]" value={zoneForm.fee} onChange={e => setZoneForm({ ...zoneForm, fee: e.target.value })} />
-          <button onClick={onAdd} className="bg-brand-black text-white p-5 rounded-3xl font-black shadow-xl hover:bg-brand-red transition-all">حفظ المنطقة</button>
-        </div>
+        <form onSubmit={onAdd} className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <input required type="text" placeholder="الاسم بالعربي (مثال: اللويبدة)" className="bg-brand-gray/10 p-5 rounded-3xl outline-none font-bold placeholder:text-gray-400 text-[16px]" value={zoneForm.nameAr} onChange={e => setZoneForm({ ...zoneForm, nameAr: e.target.value })} />
+          <input required type="text" placeholder="الاسم بالإنجليزي" className="bg-brand-gray/10 p-5 rounded-3xl outline-none font-bold placeholder:text-gray-400 text-[16px]" value={zoneForm.nameEn} onChange={e => setZoneForm({ ...zoneForm, nameEn: e.target.value })} />
+          <input required type="number" step="0.1" placeholder="سعر التوصيل" className="bg-brand-gray/10 p-5 rounded-3xl outline-none font-bold placeholder:text-gray-400 text-[16px]" value={zoneForm.fee} onChange={e => setZoneForm({ ...zoneForm, fee: e.target.value })} />
+          <button type="submit" className="bg-brand-black text-white p-5 rounded-3xl font-black shadow-xl hover:bg-brand-red transition-all">حفظ المنطقة</button>
+        </form>
       </div>
 
       <div className="bg-white rounded-[3rem] border border-brand-gray shadow-sm overflow-hidden">

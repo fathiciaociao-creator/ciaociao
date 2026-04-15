@@ -25,11 +25,11 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
   const isAvailable = item.isAvailable;
 
   const handleAddToCart = () => {
-    addItem({ 
-      id: item.id.toString(), 
-      name: language === 'ar' ? item.nameAr : (item.nameEn || item.nameAr), 
-      price: item.price, 
-      imageUrl: item.imageUrl || undefined 
+    addItem({
+      id: item.id.toString(),
+      name: language === 'ar' ? item.nameAr : (item.nameEn || item.nameAr),
+      price: item.price,
+      imageUrl: item.imageUrl || undefined
     });
     const msg = language === 'ar' ? 'تمت الإضافة للسلة' : 'Added to cart';
     toast.success(`${item.nameEn || item.nameAr} ${msg}`, {
@@ -42,7 +42,7 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={priority ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -50,18 +50,18 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
     >
       {/* IMAGE CONTAINER */}
       <div className="relative w-full aspect-[4/3] rounded-[2rem] overflow-hidden bg-brand-cream border border-brand-red/10 shadow-sm transition-all duration-500 group-hover:shadow-xl group-hover:border-brand-red/20 flex items-center justify-center">
-        <Image 
-          src={(item.imageUrl && item.imageUrl !== 'no') ? item.imageUrl : '/hero-food.png'} 
+        <Image
+          src={(item.imageUrl && item.imageUrl !== 'no') ? item.imageUrl : '/hero-food.png'}
           alt={`${item.nameEn || ''} ${item.nameAr || ''} - ${BRANDING.nameEn}, Amman Italian Food & Pizza`.trim()}
-          fill 
+          fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-contain transition-all duration-1000 group-hover:scale-110"
           priority={priority}
           quality={60}
         />
-        
+
         {/* CIRCULAR ADD BUTTON - ELEVATED DESIGN */}
-        <button 
+        <button
           disabled={!isAvailable}
           onClick={(e) => {
             e.stopPropagation();
@@ -84,9 +84,9 @@ export default function MenuItemCard({ item, priority = false }: { item: Product
       {/* TEXT SECTION - FIXED ALIGNMENT */}
       <div className={`flex flex-col gap-2 flex-1 px-1 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
         <div className="min-h-[3rem] flex flex-col justify-center">
-            <h3 className="text-sm md:text-lg font-black text-brand-black line-clamp-2 leading-tight uppercase tracking-tight">
-              {language === 'ar' ? item.nameAr : (item.nameEn || item.nameAr)}
-            </h3>
+          <h3 className="text-sm md:text-lg font-black text-brand-black line-clamp-2 leading-tight uppercase tracking-tight">
+            {language === 'ar' ? item.nameAr : (item.nameEn || item.nameAr)}
+          </h3>
         </div>
         <div className="flex items-center gap-2 mt-auto pt-2 border-t border-brand-red/5">
           <span className="text-[10px] md:text-xs font-black text-brand-red/30 uppercase tracking-[0.2em]">{language === 'ar' ? 'د.أ' : 'JOD'}</span>

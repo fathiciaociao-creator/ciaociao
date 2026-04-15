@@ -16,8 +16,12 @@ export async function POST(req: Request) {
   if (!await isAdminAuthenticated()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const body = await req.json();
+    const { nameEn, nameAr, fee } = body;
+    if (!nameEn?.trim() || !nameAr?.trim() || isNaN(parseFloat(fee))) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
     const zone = await prisma.deliveryZone.create({
-      data: { nameEn: body.nameEn, nameAr: body.nameAr, fee: parseFloat(body.fee) }
+      data: { nameEn, nameAr, fee: parseFloat(fee) }
     });
     return NextResponse.json(zone);
   } catch { return NextResponse.json({ error: "Failed" }, { status: 500 }); }

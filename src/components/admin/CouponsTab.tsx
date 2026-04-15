@@ -30,22 +30,22 @@ export default function CouponsTab({
     <motion.div key="coupons" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-12">
       <div className="bg-white p-12 rounded-[3.5rem] border-2 border-brand-gray shadow-sm">
         <h2 className="text-2xl font-black mb-8 font-serif text-brand-black">إضافة كوبون خصم جديد</h2>
-        <form onSubmit={onCreate} className="flex flex-col md:flex-row gap-6">
-          <div className="flex-1 relative">
-            <Ticket size={20} className="absolute right-6 top-1/2 -translate-y-1/2 text-brand-black/20" />
+        <form onSubmit={onCreate} className="flex flex-col xl:flex-row gap-6">
+          <div className="flex-[1.8] relative group">
+            <Ticket size={24} className="absolute right-6 top-1/2 -translate-y-1/2 text-brand-black/20 group-focus-within:text-brand-red/40 transition-colors" />
             <input
               type="text" placeholder="رمز الكوبون (مثال: FREE10)"
               value={couponCode} onChange={e => setCouponCode(e.target.value.toUpperCase().replace(/\s/g, ''))}
-              className="w-full bg-brand-cream/30 border-2 border-brand-gray/50 focus:border-brand-red/30 rounded-3xl p-6 pr-14 outline-none font-black text-xl transition-all" required
+              className="w-full bg-brand-cream/30 border-2 border-brand-gray/50 focus:border-brand-red focus:bg-white focus:shadow-2xl focus:shadow-brand-red/10 rounded-3xl p-8 pr-16 outline-none font-black text-2xl text-brand-black placeholder:text-brand-black/20 transition-all" required
             />
           </div>
           <div className="flex-1 flex gap-4">
             <input
               type="number" placeholder="نسبة الخصم %"
               value={couponDiscount} onChange={e => setCouponDiscount(e.target.value)}
-              className="flex-1 bg-brand-cream/30 border-2 border-brand-gray/50 focus:border-brand-red/30 rounded-3xl p-6 outline-none font-black text-xl transition-all" required
+              className="flex-1 bg-brand-cream/30 border-2 border-brand-gray/50 focus:border-brand-red focus:bg-white focus:shadow-2xl focus:shadow-brand-red/10 rounded-3xl p-8 outline-none font-black text-2xl text-brand-black placeholder:text-brand-black/20 transition-all" required
             />
-            <button type="submit" className="bg-brand-black text-white px-12 py-6 rounded-3xl font-black shadow-xl hover:scale-[1.02] active:scale-95 transition-all">إنشاء</button>
+            <button type="submit" className="bg-brand-black text-white px-12 py-8 rounded-3xl font-black text-xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all">إنشاء</button>
           </div>
         </form>
       </div>

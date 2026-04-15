@@ -203,10 +203,10 @@ export default function AdminDashboard() {
       });
       if (res.ok) {
         setIsStoreOpen(!isStoreOpen);
-        toast.success(isStoreOpen ? 'تم إغلاق المطعم' : 'تم فتح المطعم');
+        toast.success(isStoreOpen ? 'تم إغلاق المطعم' : 'تم فتح المطعم', { id: 'admin-action', duration: 1500 });
       }
     } catch {
-      toast.error('حدث خطأ');
+      toast.error('حدث خطأ', { id: 'admin-action', duration: 1500 });
     }
   };
 
@@ -218,12 +218,12 @@ export default function AdminDashboard() {
         body: JSON.stringify({ status })
       });
       if (res.ok) {
-        toast.success('تم تحديث الحالة');
+        toast.success('تم التحديث', { id: 'admin-action', duration: 1000 });
         fetchOrders();
         stopAlarm();
       }
     } catch {
-      toast.error('خطأ في التحديث');
+      toast.error('خطأ في التحديث', { id: 'admin-action', duration: 1500 });
     }
   };
 
@@ -235,12 +235,12 @@ export default function AdminDashboard() {
         body: JSON.stringify({ isArchived: true })
       });
       if (res.ok) {
-        toast.success('تمت الأرشفة');
+        toast.success('تمت الأرشفة', { id: 'admin-action', duration: 1500 });
         fetchOrders();
         stopAlarm();
       }
     } catch {
-      toast.error('خطأ في الأرشفة');
+      toast.error('خطأ في الأرشفة', { id: 'admin-action', duration: 1500 });
     }
   };
 
@@ -253,12 +253,12 @@ export default function AdminDashboard() {
         body: JSON.stringify({ paymentStatus: 'COMPLETED' })
       });
       if (res.ok) {
-        toast.success('تم تأكيد الدفع');
+        toast.success('تم تأكيد الدفع', { id: 'admin-action', duration: 1500 });
         fetchOrders();
         stopAlarm();
       }
     } catch {
-      toast.error('خطأ');
+      toast.error('خطأ', { id: 'admin-action', duration: 1500 });
     }
   };
 
@@ -460,7 +460,12 @@ export default function AdminDashboard() {
     } catch (_error) { console.error(_error); }
   }, []);
 
-  const handleAddZone = async () => {
+  const handleAddZone = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!zoneForm.nameAr.trim() || !zoneForm.nameEn.trim() || !zoneForm.fee) {
+      toast.error('يرجى تعبئة جميع معلومات المنطقة');
+      return;
+    }
     try {
       const res = await fetch('/api/admin/delivery-zones', {
         method: 'POST',
@@ -470,6 +475,7 @@ export default function AdminDashboard() {
       if (res.ok) {
         fetchZones();
         setZoneForm({ nameEn: '', nameAr: '', fee: '' });
+        toast.success('تمت إضافة المنطقة', { id: 'admin-action', duration: 1500 });
       }
     } catch (_error) { console.error(_error); }
   };
@@ -693,7 +699,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-brand-cream flex flex-col lg:flex-row font-sans overflow-x-hidden" dir="rtl">
-      <Toaster position="top-right" />
+      <Toaster position="top-right" toastOptions={{ duration: 2500, style: { fontWeight: '900', borderRadius: '1rem' } }} gutter={8} />
 
       {!isAudioUnlocked && <AudioUnlockOverlay onUnlock={unlockAudio} />}
 
